@@ -2,26 +2,32 @@ package priv.szf.fastcall.core.model.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.BaseAuthContent;
 
 import java.time.LocalDateTime;
 
 @Data
-public class FcAuthVO {
+public class FcApiVO {
 
     private Long id;
 
     private Long sysId;
 
-    private AuthType type;
+    private String name;
 
-    private BaseAuthContent content;
+    private String path;
 
-    private Integer expiration;
+    private String method;
+
+    private Integer connectTimeout;
+
+    private Integer readTimeout;
+
+    private Integer writeTimeout;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastAccessTime;
 
     private String particularHost;
+
+    private String description;
 }

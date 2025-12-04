@@ -31,4 +31,7 @@ public class FcSystem {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateAt;
 
+    @TableField(exist = false)
+    private FcAuth auth;
+
 }

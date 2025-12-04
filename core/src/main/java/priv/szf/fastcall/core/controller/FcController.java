@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.core.model.dto.FcApiDTO;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
+import priv.szf.fastcall.core.model.vo.FcApiVO;
 import priv.szf.fastcall.core.model.vo.FcSystemVO;
+import priv.szf.fastcall.core.service.FcApiService;
 import priv.szf.fastcall.core.service.FcSystemService;
 
 import javax.validation.Valid;
@@ -23,6 +26,8 @@ import java.util.List;
 public class FcController {
 
     private final FcSystemService systemService;
+
+    private final FcApiService apiService;
 
     @GetMapping("/all")
     public List<FcSystemVO> listAll(){
@@ -42,6 +47,16 @@ public class FcController {
     @DeleteMapping("/{id}")
     public void deleteOne(@PathVariable("id") Long id){
         systemService.removeById(id);
+    }
+
+    @GetMapping("/{id}/api/all")
+    public List<FcApiVO> listAllApiOfSystem(@PathVariable("id") Long id){
+        return apiService.listAllBySystemId(id);
+    }
+
+    @PostMapping("/{id}/api/save")
+    public void saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
+        apiService.saveOrUpdate(id, apiList);
     }
 
 }
