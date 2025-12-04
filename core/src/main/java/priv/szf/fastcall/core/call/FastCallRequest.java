@@ -9,7 +9,7 @@ public class FastCallRequest {
 
     private String systemCode;
 
-    private String
+    private String hh;
 
 
 }

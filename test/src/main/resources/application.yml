@@ -3,6 +3,17 @@ server:
   servlet:
     context-path: /
 
+fast-call:
+  pool:
+    max-idle-connections: 50
+    keep-alive-minutes: 5
+  client:
+    connect-timeout: 15
+    read-timeout: 45
+    write-timeout: 45
+  max-requests: 200
+  max-requests-per-host: 20
+
 spring:
   application:
     name: test-application
