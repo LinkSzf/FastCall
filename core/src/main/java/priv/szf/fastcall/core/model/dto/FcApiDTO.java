@@ -1,5 +1,6 @@
 package priv.szf.fastcall.core.model.dto;
 
+import lombok.Data;
 import priv.szf.fastcall.core.common.ApiMethod;
 
 import javax.validation.constraints.Max;
@@ -7,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+@Data
 public class FcApiDTO {
 
     private Long id;

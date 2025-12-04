@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.common.FcDataDuplicatedException;
@@ -13,9 +12,9 @@ import priv.szf.fastcall.core.common.FcDataNotFoundException;
 import priv.szf.fastcall.core.mapper.FcSystemMapper;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
 import priv.szf.fastcall.core.model.entity.FcSystem;
+import priv.szf.fastcall.core.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.core.model.vo.FcSystemVO;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,38 +27,37 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
 
     private final FcAuthService authService;
 
+    private final FcApiService apiService;
+
+    private final FcSystemMapping systemMapping;
+
     public List<FcSystemVO> listAll() {
         List<FcSystem> list = super.list();
-        List<FcSystemVO> voList = new ArrayList<>();
-        for (FcSystem fcSystem : list) {
-            FcSystemVO vo = new FcSystemVO();
-            BeanUtils.copyProperties(fcSystem, vo);
-            voList.add(vo);
-        }
-        return voList;
+        return systemMapping.toVoList(list);
     }
 
     public FcSystemVO getById(Long id) {
         return Optional.ofNullable(super.getById(id)).map(i -> {
                     i.setAuth(authService.getBySystemId(i.getId()));
-//                    return systemMapping.toVo(i);
-                    return new FcSystemVO();
+                    return systemMapping.toVo(i);
                 })
                 .orElseThrow(FcDataNotFoundException::new);
     }
 
-    public void saveOrUpdate(FcSystemDTO dto) {
+    public FcSystemVO saveOrUpdate(FcSystemDTO dto) {
         checkData(dto);
 
-        FcSystem system = new FcSystem();
-        BeanUtils.copyProperties(dto, system);
+        FcSystem system = systemMapping.toEntity(dto);
         super.saveOrUpdate(system);
 
-        authService.saveOrUpdate(dto.getAuth(), system.getId());
+        authService.saveOrUpdate(system.getAuth(), system.getId());
+
+        return systemMapping.toVo(system);
     }
 
     public void removeById(Long id) {
         authService.removeBySystemId(id);
+        apiService.removeBySystemId(id);
         super.removeById(id);
     }
 
