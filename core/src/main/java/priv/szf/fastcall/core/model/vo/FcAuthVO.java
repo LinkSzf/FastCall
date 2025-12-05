@@ -3,7 +3,7 @@ package priv.szf.fastcall.core.model.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.BaseAuthContent;
+import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.time.LocalDateTime;
 

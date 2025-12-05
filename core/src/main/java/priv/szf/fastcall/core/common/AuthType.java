@@ -1,12 +1,12 @@
 package priv.szf.fastcall.core.common;
 
 import lombok.AllArgsConstructor;
-import priv.szf.fastcall.core.model.BaseAuthContent;
-import priv.szf.fastcall.core.model.dto.ApiKeyAuth;
-import priv.szf.fastcall.core.model.dto.BasicAuth;
-import priv.szf.fastcall.core.model.dto.BearerAuth;
-import priv.szf.fastcall.core.model.dto.NoneAuth;
-import priv.szf.fastcall.core.model.dto.TokenAuth;
+import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.auth.ApiKeyAuth;
+import priv.szf.fastcall.core.model.auth.BasicAuth;
+import priv.szf.fastcall.core.model.auth.BearerAuth;
+import priv.szf.fastcall.core.model.auth.NoneAuth;
+import priv.szf.fastcall.core.model.auth.TokenAuth;
 
 @AllArgsConstructor
 public enum AuthType {

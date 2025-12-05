@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call;
+package priv.szf.fastcall.core.model.call;
 
 public class FastCallResult<T> {
     private T data;

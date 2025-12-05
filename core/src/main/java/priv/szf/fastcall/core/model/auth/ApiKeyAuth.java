@@ -1,9 +1,8 @@
-package priv.szf.fastcall.core.model.dto;
+package priv.szf.fastcall.core.model.auth;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import priv.szf.fastcall.core.common.ParamPos;
-import priv.szf.fastcall.core.model.BaseAuthContent;
 
 import javax.validation.constraints.NotNull;
 

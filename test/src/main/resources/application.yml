@@ -13,6 +13,7 @@ fast-call:
     write-timeout: 45
   max-requests: 200
   max-requests-per-host: 20
+  enable-memory-cache: true
 
 spring:
   application:

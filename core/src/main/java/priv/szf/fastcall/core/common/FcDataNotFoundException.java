@@ -6,4 +6,8 @@ public class FcDataNotFoundException extends FcBizException {
     public FcDataNotFoundException() {
         super(DATA_NOT_FOUND_CODE);
     }
+
+    public FcDataNotFoundException(String message) {
+        super(DATA_NOT_FOUND_CODE, message);
+    }
 }

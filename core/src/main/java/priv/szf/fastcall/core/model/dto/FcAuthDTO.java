@@ -2,7 +2,7 @@ package priv.szf.fastcall.core.model.dto;
 
 import lombok.Data;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.BaseAuthContent;
+import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;

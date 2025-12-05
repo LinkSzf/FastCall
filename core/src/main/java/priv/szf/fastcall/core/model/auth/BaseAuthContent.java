@@ -1,15 +1,9 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.core.model.auth;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.dto.ApiKeyAuth;
-import priv.szf.fastcall.core.model.dto.BasicAuth;
-import priv.szf.fastcall.core.model.dto.BearerAuth;
-import priv.szf.fastcall.core.model.dto.NoneAuth;
-import priv.szf.fastcall.core.model.dto.TokenAuth;
 
 import javax.validation.constraints.NotNull;
 

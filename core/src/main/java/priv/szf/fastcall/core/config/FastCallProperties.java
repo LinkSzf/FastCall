@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix = "fast-call")
-@Component
 @Data
 public class FastCallProperties {
     /** 客户端配置 */
@@ -20,6 +19,9 @@ public class FastCallProperties {
 
     /** 每主机最大并发请求数 */
     private int maxRequestsPerHost = 30;
+
+    /** 是否启用内存缓存 */
+    private boolean enableMemoryCache = true;
 
     private Retry retry = new Retry();
 
