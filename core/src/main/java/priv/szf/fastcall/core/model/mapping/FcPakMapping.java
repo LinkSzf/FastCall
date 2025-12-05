@@ -9,9 +9,10 @@ import priv.szf.fastcall.core.model.entity.FcApi;
 import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = "spring",
+        uses = {FcAuthContentConverter.class}
+)
 public interface FcPakMapping {
 
     @Mapping(target = "clientSetting.connectTimeout", source = "connectTimeout")
@@ -19,6 +20,7 @@ public interface FcPakMapping {
     @Mapping(target = "clientSetting.writeTimeout", source = "writeTimeout")
     FcSystemPak toSystemPak(FcSystem system);
 
+    @Mapping(target = "content", source = "auth")
     FcAuthPak toAuthPak(FcAuth auth);
 
     @Mapping(target = "clientSetting.connectTimeout", source = "connectTimeout")

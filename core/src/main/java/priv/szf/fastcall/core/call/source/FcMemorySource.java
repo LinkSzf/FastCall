@@ -1,10 +1,10 @@
-package priv.szf.fastcall.core.model.call.source;
+package priv.szf.fastcall.core.call.source;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.model.call.FcUtils;
+import priv.szf.fastcall.core.call.FcUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class FcMemorySource implements IFcSource {
 
-    private final Map<String, SourcePak> cache = new ConcurrentHashMap<>();
+    private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
 
     private final FcDatabaseSource databaseSource;
 
 
     @Override
-    public SourcePak getSourcePak(String systemCode, String apiName) {
+    public FcSourcePak getSourcePak(String systemCode, String apiName) {
         String key = FcUtils.getApiUniqueCode(systemCode, apiName);
         return cache.computeIfAbsent(key, k -> databaseSource.getSourcePak(systemCode, apiName));
     }

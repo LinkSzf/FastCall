@@ -15,7 +15,6 @@ public interface FcAuthMapping {
     @Mapping(target = "content", source = "entity")
     FcAuthVO toVo(FcAuth entity);
 
-    @Mapping(target = "content", source = "dto")
     FcAuth toEntity(FcAuthDTO dto);
 
 }

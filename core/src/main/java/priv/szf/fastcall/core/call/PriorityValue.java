@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.call;
+package priv.szf.fastcall.core.call;
 
 
 import priv.szf.fastcall.core.common.FcBizException;

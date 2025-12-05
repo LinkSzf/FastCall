@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.call.source;
+package priv.szf.fastcall.core.call.source;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -31,7 +31,7 @@ public class FcDatabaseSource implements IFcSource {
     private final FcPakMapping pakMapping;
 
     @Override
-    public SourcePak getSourcePak(String systemCode, String apiName) {
+    public FcSourcePak getSourcePak(String systemCode, String apiName) {
         LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
                 .eq(FcSystem::getCode, systemCode);
         FcSystem system = systemMapper.selectOne(systemQw);
@@ -46,7 +46,7 @@ public class FcDatabaseSource implements IFcSource {
 
         FcApiPak api = getApiBySysIdAndApiName(systemId, apiName);
 
-        return new SourcePak(systemPak, auth, api);
+        return new FcSourcePak(systemPak, auth, api);
     }
 
     private FcApiPak getApiBySysIdAndApiName(Long systemId, String apiName) {

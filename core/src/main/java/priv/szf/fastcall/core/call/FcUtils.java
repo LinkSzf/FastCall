@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.call;
+package priv.szf.fastcall.core.call;
 
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.model.FcApiPak;

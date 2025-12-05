@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.call;
+package priv.szf.fastcall.core.call;
 
 
 import lombok.RequiredArgsConstructor;
@@ -6,13 +6,14 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.call.Auth.FcAuthInceptor;
 import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.common.FcDataNotFoundException;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.call.source.IFcSource;
-import priv.szf.fastcall.core.model.call.source.SourcePak;
+import priv.szf.fastcall.core.call.source.IFcSource;
+import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.config.FastCallProperties;
 
 import java.util.Map;
@@ -34,12 +35,14 @@ public class FastCallClientFactory {
 
     private final Dispatcher dispatcher;
 
-    public FastCallClient createNewCallClient(SourcePak sourcePak) {
+    private final FcAuthInceptor authInceptor;
+
+    public FastCallClient createNewCallClient(FcSourcePak sourcePak) {
         OkHttpClient okHttpClient = initOkHttpClient(sourcePak);
-        return new FastCallClient(okHttpClient);
+        return new FastCallClient(okHttpClient, sourcePak);
     }
 
-    private OkHttpClient initOkHttpClient(SourcePak sourcePak) {
+    private OkHttpClient initOkHttpClient(FcSourcePak sourcePak) {
         FcClientSettingPak apiSetting = sourcePak.getApi().getClientSetting();
         FcClientSettingPak systemSetting = sourcePak.getSystem().getClientSetting();
         FastCallProperties.Client globalSetting = properties.getClient();
@@ -69,11 +72,12 @@ public class FastCallClientFactory {
                 .retryOnConnectionFailure(false)
                 .connectionPool(connectionPool)
                 .dispatcher(dispatcher)
+                .addInterceptor(authInceptor)
                 .build();
     }
 
     public FastCallClient getClient(String systemCode, String apiName) {
-        SourcePak sourcePak = source.getSourcePak(systemCode, apiName);
+        FcSourcePak sourcePak = source.getSourcePak(systemCode, apiName);
         FcSystemPak system = sourcePak.getSystem();
         if (!system.isEnable()) {
             throw new FcBizException(String.format("系统[%s]未配置启用", systemCode));
@@ -85,6 +89,11 @@ public class FastCallClientFactory {
         }
 
         String clientKey = FcUtils.calculateClientKey(system, apiPak);
-        return CLIENT_MAP.computeIfAbsent(clientKey, k -> createNewCallClient(sourcePak));
+        return CLIENT_MAP.computeIfAbsent(clientKey, k -> createNewCallClient(sourcePak))
+                .withApi(apiPak);
+    }
+
+    public static FastCallClient getSystemClient(String systemCode) {
+        return CLIENT_MAP.get("system");
     }
 }

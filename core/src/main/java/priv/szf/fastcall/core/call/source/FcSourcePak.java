@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.call.source;
+package priv.szf.fastcall.core.call.source;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import priv.szf.fastcall.core.model.FcSystemPak;
 
 @Data
 @AllArgsConstructor
-public class SourcePak {
+public class FcSourcePak {
 
     private FcSystemPak system;
 
