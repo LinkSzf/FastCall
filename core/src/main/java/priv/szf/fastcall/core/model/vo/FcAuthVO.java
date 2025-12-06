@@ -3,7 +3,7 @@ package priv.szf.fastcall.core.model.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.dto.auth.BaseAuthContentDTO;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +16,7 @@ public class FcAuthVO {
 
     private AuthType type;
 
-    private BaseAuthContent content;
+    private BaseAuthContentDTO content;
 
     private Integer expiration;
 

@@ -2,7 +2,7 @@ package priv.szf.fastcall.core.model.dto;
 
 import lombok.Data;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.dto.auth.BaseAuthContentDTO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -23,7 +23,7 @@ public class FcAuthDTO {
 
     @Valid
     @NotNull(message = "认证信息不能为空")
-    private BaseAuthContent content;
+    private BaseAuthContentDTO content;
 
     @Min(value = 1, message = "授权过期时间不能小于1")
     @Max(value = Integer.MAX_VALUE, message = "授权过期时间过大")

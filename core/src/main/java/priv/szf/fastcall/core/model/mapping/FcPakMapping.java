@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.model.mapping;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import priv.szf.fastcall.core.model.AuthContentConverter;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
@@ -11,7 +12,7 @@ import priv.szf.fastcall.core.model.entity.FcSystem;
 
 @Mapper(
         componentModel = "spring",
-        uses = {FcAuthContentConverter.class}
+        uses = {AuthContentConverter.class}
 )
 public interface FcPakMapping {
 

@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.controller;
+package priv.szf.fastcall.core.config;
 
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
@@ -7,9 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.common.FcDataNotFoundException;
-
-import java.util.HashMap;
-import java.util.Map;
+import priv.szf.fastcall.core.common.FcUnexpectedException;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -35,7 +33,7 @@ public class ControllerExceptionHandler {
                 .body(ErrorResponse.of(ex.getCode(), ex.getMessage()));
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler({RuntimeException.class, FcUnexpectedException.class})
     public ResponseEntity<ErrorResponse> handleBusinessException(RuntimeException ex) {
         return ResponseEntity.internalServerError()
                 .body(ErrorResponse.of("unexpected error", ex.getMessage()));
