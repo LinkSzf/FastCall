@@ -5,6 +5,7 @@ import lombok.Data;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
+import priv.szf.fastcall.core.model.FcTokenPak;
 
 import java.util.Map;
 
@@ -15,6 +16,8 @@ public class FcSourcePak {
     private FcSystemPak system;
 
     private FcAuthPak auth;
+
+    FcTokenPak accessToken;
 
 //    private List<FcApiPak> apiList;
 

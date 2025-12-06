@@ -9,12 +9,15 @@ import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.mapper.FcAuthMapper;
 import priv.szf.fastcall.core.mapper.FcSystemMapper;
+import priv.szf.fastcall.core.mapper.FcTokenMapper;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
+import priv.szf.fastcall.core.model.FcTokenPak;
 import priv.szf.fastcall.core.model.entity.FcApi;
 import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
+import priv.szf.fastcall.core.model.entity.FcToken;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
 import java.util.List;
@@ -32,6 +35,8 @@ public class FcDatabaseSource implements IFcSource {
 
     private final FcAuthMapper authMapper;
 
+    private final FcTokenMapper tokenMapper;
+
     private final FcApiMapper apiMapper;
 
     private final FcPakMapping pakMapping;
@@ -40,26 +45,27 @@ public class FcDatabaseSource implements IFcSource {
     public FcSourcePak getSourcePak(String systemCode) {
         LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
                 .eq(FcSystem::getCode, systemCode);
-        FcSystem system = systemMapper.selectOne(systemQw);
-        if (Objects.isNull(system)) {
+        FcSystem systemEntity = systemMapper.selectOne(systemQw);
+        if (Objects.isNull(systemEntity)) {
             throw new FcBizException("未找到该系统信息");
         }
 
-        FcSystemPak systemPak = pakMapping.toSystemPak(system);
+        FcSystemPak system = pakMapping.toSystemPak(systemEntity);
 
-        Long systemId = system.getId();
+        Long systemId = systemEntity.getId();
         FcAuthPak auth = getAuthBySysId(systemId);
+
+        FcTokenPak token = getAccessTokenBySysId(systemId);
 
 //        List<FcApiPak> apis = getApisBySystemId(systemId);
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
-        return new FcSourcePak(systemPak, auth, apis);
+        return new FcSourcePak(system, auth, token, apis);
     }
 
     @Override
-    public String getAccessToken(String systemCode) {
-        // TODO: 获取系统访问令牌
-        return "";
+    public FcTokenPak getAccessToken(String systemCode) {
+        return getSourcePak(systemCode).getAccessToken();
     }
 
     private FcApiPak getApiBySysIdAndApiName(Long systemId, String apiName) {
@@ -79,6 +85,13 @@ public class FcDatabaseSource implements IFcSource {
         }
 
         return pakMapping.toAuthPak(auth);
+    }
+
+    private FcTokenPak getAccessTokenBySysId(Long systemId) {
+        LambdaQueryWrapper<FcToken> tokenQw = Wrappers.<FcToken>lambdaQuery()
+                .eq(FcToken::getSysId, systemId);
+        FcToken accessToken = tokenMapper.selectOne(tokenQw);
+        return pakMapping.toTokenPak(accessToken);
     }
 
     private Map<String, FcApiPak> getApisBySysId(Long sysId) {

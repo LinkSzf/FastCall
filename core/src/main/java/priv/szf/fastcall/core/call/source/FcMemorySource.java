@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.call.FcUtils;
+import priv.szf.fastcall.core.model.FcTokenPak;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,8 +30,7 @@ public class FcMemorySource implements IFcSource {
     }
 
     @Override
-    public String getAccessToken(String systemCode) {
-        // TODO 获取系统访问令牌
-        return "";
+    public FcTokenPak getAccessToken(String systemCode) {
+        return getSourcePak(systemCode).getAccessToken();
     }
 }

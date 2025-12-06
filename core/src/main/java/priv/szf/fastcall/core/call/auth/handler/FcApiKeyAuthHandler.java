@@ -16,7 +16,7 @@ public class FcApiKeyAuthHandler extends FcBaseAuthHandler<ApiKeyAuth> {
 
     @Override
     public Request modifyRequest(Request request) {
-        ApiKeyAuth content = getContent(request);
+        ApiKeyAuth content = getAuthContent(request);
 
         String key = content.getKey();
         String value = content.getValue();

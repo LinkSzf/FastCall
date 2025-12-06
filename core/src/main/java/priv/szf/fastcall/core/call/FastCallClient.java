@@ -22,10 +22,10 @@ public class FastCallClient {
     private final ThreadLocal<FcApiPak> api = new ThreadLocal<>();
 
 
-    public FastCallClient(OkHttpClient client) {
+    public FastCallClient(OkHttpClient client, FcSystemPak system, FcAuthPak auth) {
         this.client = client;
-        this.system = null;
-        this.auth = null;
+        this.system = system;
+        this.auth = auth;
     }
 
     public <T> FastCallResult<T> call() {
@@ -34,6 +34,8 @@ public class FastCallClient {
 
         Request request = new Request.Builder()
                 .url("https://api.example.com/protected-resource")
+                .tag(FcSystemPak.class, system)
+                .tag(FcAuthPak.class, auth)
 //                .header("Authorization", basicAuth)
                 .build();
 

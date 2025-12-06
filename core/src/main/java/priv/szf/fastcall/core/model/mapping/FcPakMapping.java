@@ -7,6 +7,7 @@ import priv.szf.fastcall.core.model.*;
 import priv.szf.fastcall.core.model.entity.FcApi;
 import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
+import priv.szf.fastcall.core.model.entity.FcToken;
 
 @Mapper(
         componentModel = "spring",
@@ -29,4 +30,5 @@ public interface FcPakMapping {
 
     FcClientSettingPak toClientSettingPak(FastCallProperties.Client clientSetting);
 
+    FcTokenPak toTokenPak(FcToken token);
 }

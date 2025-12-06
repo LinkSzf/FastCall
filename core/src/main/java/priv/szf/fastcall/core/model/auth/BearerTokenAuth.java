@@ -7,6 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 public class BearerTokenAuth extends BaseAuthContent {
 
-    private String token;
+
 
 }

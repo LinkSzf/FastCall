@@ -19,7 +19,7 @@ public class FcBasicAuthHandler extends FcBaseAuthHandler<BasicAuth> {
 
     @Override
     public Request modifyRequest(Request request) {
-        BasicAuth content = getContent(request);
+        BasicAuth content = getAuthContent(request);
         String authorization = genAuthorization(content);
 
         return request.newBuilder()
