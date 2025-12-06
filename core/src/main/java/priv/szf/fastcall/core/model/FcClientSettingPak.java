@@ -1,8 +1,8 @@
 package priv.szf.fastcall.core.model;
 
-import cn.hutool.core.util.ObjUtil;
 import lombok.Data;
 
+import java.util.Objects;
 
 @Data
 public class FcClientSettingPak {
@@ -13,7 +13,17 @@ public class FcClientSettingPak {
 
     private Integer writeTimeout;
 
-    public boolean isAllEmpty() {
-        return ObjUtil.isAllEmpty(connectTimeout, readTimeout, writeTimeout);
+    public void completeWith(FcClientSettingPak candidate) {
+        if (Objects.isNull(getConnectTimeout())) {
+            setConnectTimeout(candidate.getConnectTimeout());
+        }
+        
+        if (Objects.isNull(getReadTimeout())) {
+            setReadTimeout(candidate.getReadTimeout());
+        }
+        
+        if (Objects.isNull(getWriteTimeout())) {
+            setWriteTimeout(candidate.getWriteTimeout());
+        }
     }
 }

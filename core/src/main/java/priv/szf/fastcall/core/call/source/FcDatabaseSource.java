@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.mapper.FcAuthMapper;
@@ -16,8 +17,13 @@ import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Transactional
 @Component
 @RequiredArgsConstructor
 public class FcDatabaseSource implements IFcSource {
@@ -31,7 +37,7 @@ public class FcDatabaseSource implements IFcSource {
     private final FcPakMapping pakMapping;
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode, String apiName) {
+    public FcSourcePak getSourcePak(String systemCode) {
         LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
                 .eq(FcSystem::getCode, systemCode);
         FcSystem system = systemMapper.selectOne(systemQw);
@@ -44,9 +50,16 @@ public class FcDatabaseSource implements IFcSource {
         Long systemId = system.getId();
         FcAuthPak auth = getAuthBySysId(systemId);
 
-        FcApiPak api = getApiBySysIdAndApiName(systemId, apiName);
+//        List<FcApiPak> apis = getApisBySystemId(systemId);
+        Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
-        return new FcSourcePak(systemPak, auth, api);
+        return new FcSourcePak(systemPak, auth, apis);
+    }
+
+    @Override
+    public String getAccessToken(String systemCode) {
+        // TODO: 获取系统访问令牌
+        return "";
     }
 
     private FcApiPak getApiBySysIdAndApiName(Long systemId, String apiName) {
@@ -68,15 +81,22 @@ public class FcDatabaseSource implements IFcSource {
         return pakMapping.toAuthPak(auth);
     }
 
-//    private Map<String, FcApiPak> getApisBySysId(Long sysId) {
-//        LambdaQueryWrapper<FcApi> apiQw = Wrappers.<FcApi>lambdaQuery()
-//                .eq(FcApi::getSysId, sysId);
-//        return apiMapper.selectList(apiQw)
-//                .stream()
-//                .map(pakMapping::toApiPak)
-//                .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
-//    }
+    private Map<String, FcApiPak> getApisBySysId(Long sysId) {
+        LambdaQueryWrapper<FcApi> apiQw = Wrappers.<FcApi>lambdaQuery()
+                .eq(FcApi::getSysId, sysId);
+        return apiMapper.selectList(apiQw)
+                .stream()
+                .map(pakMapping::toApiPak)
+                .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
+    }
 
-
+    private List<FcApiPak> getApisBySystemId(Long sysId) {
+        LambdaQueryWrapper<FcApi> apiQw = Wrappers.<FcApi>lambdaQuery()
+                .eq(FcApi::getSysId, sysId);
+        return apiMapper.selectList(apiQw)
+                .stream()
+                .map(pakMapping::toApiPak)
+                .collect(Collectors.toList());
+    }
 
 }

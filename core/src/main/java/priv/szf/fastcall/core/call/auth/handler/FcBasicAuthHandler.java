@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call.Auth;
+package priv.szf.fastcall.core.call.auth.handler;
 
 import okhttp3.Request;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call.Auth;
+package priv.szf.fastcall.core.call.auth;
 
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;

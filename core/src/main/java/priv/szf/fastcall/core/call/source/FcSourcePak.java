@@ -6,6 +6,8 @@ import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 public class FcSourcePak {
@@ -14,6 +16,8 @@ public class FcSourcePak {
 
     private FcAuthPak auth;
 
-    private FcApiPak api;
+//    private List<FcApiPak> apiList;
+
+    private Map<String, FcApiPak> apiMap;
 
 }

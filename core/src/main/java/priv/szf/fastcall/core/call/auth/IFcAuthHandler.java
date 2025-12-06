@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call.Auth;
+package priv.szf.fastcall.core.call.auth;
 
 import okhttp3.Request;
 import priv.szf.fastcall.core.common.AuthType;

@@ -24,10 +24,14 @@ public class FcMemorySource implements IFcSource {
 
     private final FcDatabaseSource databaseSource;
 
+    @Override
+    public FcSourcePak getSourcePak(String systemCode) {
+        return cache.computeIfAbsent(systemCode, databaseSource::getSourcePak);
+    }
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode, String apiName) {
-        String key = FcUtils.getApiUniqueCode(systemCode, apiName);
-        return cache.computeIfAbsent(key, k -> databaseSource.getSourcePak(systemCode, apiName));
+    public String getAccessToken(String systemCode) {
+        // TODO 获取系统访问令牌
+        return "";
     }
 }

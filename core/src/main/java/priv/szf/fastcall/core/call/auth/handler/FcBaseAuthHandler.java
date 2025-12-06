@@ -1,11 +1,14 @@
-package priv.szf.fastcall.core.call.Auth;
+package priv.szf.fastcall.core.call.auth.handler;
 
 import okhttp3.Request;
+import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.util.Objects;
 
 public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IFcAuthHandler {
+
+
 
 
     T getContent(Request request) {

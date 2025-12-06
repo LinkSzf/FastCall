@@ -7,7 +7,6 @@ import okhttp3.Response;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.call.source.FcSourcePak;
 
 import java.io.IOException;
 
@@ -23,10 +22,10 @@ public class FastCallClient {
     private final ThreadLocal<FcApiPak> api = new ThreadLocal<>();
 
 
-    public FastCallClient(OkHttpClient client, FcSourcePak source) {
+    public FastCallClient(OkHttpClient client) {
         this.client = client;
-        this.system = source.getSystem();
-        this.auth = source.getAuth();
+        this.system = null;
+        this.auth = null;
     }
 
     public <T> FastCallResult<T> call() {
