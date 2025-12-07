@@ -13,5 +13,7 @@ public class FcAuthPak {
 
     private Integer expiration;
 
+    private String path;
+
     private String particularHost;
 }

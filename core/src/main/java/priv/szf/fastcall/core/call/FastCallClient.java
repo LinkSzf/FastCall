@@ -1,12 +1,18 @@
 package priv.szf.fastcall.core.call;
 
 import lombok.AllArgsConstructor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
+import okio.BufferedSink;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.model.FcApiPak;
+import priv.szf.fastcall.core.model.FcAuthPak;
+import priv.szf.fastcall.core.model.FcSystemPak;
+import priv.szf.fastcall.core.model.FcTokenPak;
 
 import java.io.IOException;
 
@@ -32,20 +38,16 @@ public class FastCallClient {
 //        this.token = accessToken;
 //    }
 
-    public FastCallClient(OkHttpClient client, FcSourcePak source) {
-        this.client = client;
-        this.source = source;
-    }
+//    public FastCallClient(OkHttpClient client, FcSourcePak source) {
+//        this.client = client;
+//        this.source = source;
+//    }
 
     public <T> FastCallResult<T> call() {
-//        String getTicket = AuthProvider.getTicket();
-
-
         Request request = new Request.Builder()
                 .url("https://api.example.com/protected-resource")
                 .tag(FcSourcePak.class, source)
                 .tag(AuthType.class, source.getAuth().getType())
-//                .header("Authorization", basicAuth)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -65,6 +67,41 @@ public class FastCallClient {
         return this;
     }
 
+    public FcTokenPak doAuth() {
+        FcAuthPak auth = source.getAuth();
+        FcSystemPak system = source.getSystem();
+        String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
+        String url = host + auth.getPath();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .post(new RequestBody() {
+                    @Nullable
+                    @Override
+                    public MediaType contentType() {
+                        return null;
+                    }
+
+                    @Override
+                    public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+
+                    }
+                })
+                .tag(FcCallType.class, FcCallType.AUTH)
+                .build();
+        Call call = client.newCall(request);
+        try (Response response = call.execute()) {
+            ResponseBody body = response.body();
+
+
+        } catch (IOException e) {
+
+        }
+
+        return null;
+    }
 
 
 

@@ -13,7 +13,8 @@ import java.util.Optional;
 
 public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IFcAuthHandler {
 
-    FcSourcePak getSourceInfo(Request request) {
+    @Override
+    public FcSourcePak getSourceInfo(Request request) {
         FcSourcePak source = request.tag(FcSourcePak.class);
         if (Objects.isNull(source)) {
             throw new FcUnexpectedException(String.format("请求[%s]未传递源信息上下文", request.url()));

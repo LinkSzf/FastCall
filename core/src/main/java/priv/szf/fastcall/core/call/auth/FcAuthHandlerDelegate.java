@@ -4,21 +4,23 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.model.FcTokenPak;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.FcSystemPak;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
-public class FcAuthHandlerDelegate {
+public class FcAuthHandlerDelegate implements IFcAuthHandler {
+
+    private final Map<String, Object> systemLocks = new ConcurrentHashMap<>();
 
     private final Map<AuthType, IFcAuthHandler> handlerMap;
 
@@ -28,10 +30,30 @@ public class FcAuthHandlerDelegate {
                 .collect(Collectors.toMap(IFcAuthHandler::getAuthType, Function.identity()));
     }
 
-    public Request getNewRequest(Request request) {
+    @Override
+    public AuthType getAuthType() {
+        return null;
+    }
+
+    @Override
+    public FcSourcePak getSourceInfo(Request request) {
+        return getHandler(request).getSourceInfo(request);
+    }
+
+    @Override
+    public Request modifyRequest(Request request) {
+        return getHandler(request).modifyRequest(request);
+    }
+
+    public boolean isAuthRefreshable(Request request) {
+        IFcAuthHandler handler = getHandler(request);
+        return handler.isAuthRefreshable(request);
+    }
+
+    private IFcAuthHandler getHandler(Request request) {
         AuthType authType = request.tag(AuthType.class);
         if (Objects.isNull(authType)) {
-            return request;
+            throw new FcUnexpectedException("FastCall-未传递认证类型上下文");
         }
 
         IFcAuthHandler handler = handlerMap.get(authType);
@@ -39,17 +61,27 @@ public class FcAuthHandlerDelegate {
             throw new FcUnexpectedException("FastCall-未找到对应的认证处理器");
         }}
 
-        return handler.modifyRequest(request);
+        return handler;
     }
 
-
-    public boolean isInvalidToken(FcTokenPak accessToken) {
-        if (Objects.isNull(accessToken)) {
-            return true;
+    public void preRefreshTokenIfNecessary(Request request) {
+        IFcAuthHandler handler = getHandler(request);
+        FcSourcePak sourceInfo = handler.getSourceInfo(request);
+        FcSystemPak system = sourceInfo.getSystem();
+        if (Objects.isNull(system)) {
+            throw new FcUnexpectedException("FastCall-未传递系统信息上下文");
         }
 
-        LocalDateTime estimatedExpirationTime = accessToken.getEstimatedExpirationTime();
-        return Objects.isNull(estimatedExpirationTime)
-                || estimatedExpirationTime.isBefore(LocalDateTime.now());
+        String systemKey = system.getCode();
+        Object systemLock = systemLocks.computeIfAbsent(systemKey, k -> new Object());
+
+        if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
+            synchronized (systemLock) {
+                if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
+                    handler.refreshToken(sourceInfo);
+                }
+            }
+            Request newRequest = handler.modifyRequest(request);
+        }
     }
 }

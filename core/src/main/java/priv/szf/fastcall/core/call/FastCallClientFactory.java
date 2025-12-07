@@ -6,9 +6,10 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.call.auth.interceptor.FcAuthInceptor;
+import priv.szf.fastcall.core.call.auth.interceptor.FcAuthInterceptor;
 import priv.szf.fastcall.core.call.auth.interceptor.FcTokenRefreshInterceptor;
 import priv.szf.fastcall.core.common.FcBizException;
+import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.call.source.IFcSource;
@@ -17,6 +18,7 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +36,7 @@ public class FastCallClientFactory {
 
     private final Dispatcher dispatcher;
 
-    private final FcAuthInceptor authInceptor;
+    private final FcAuthInterceptor authInceptor;
 
     private final FcTokenRefreshInterceptor tokenRefreshInterceptor;
 
@@ -56,6 +58,14 @@ public class FastCallClientFactory {
 //        return CLIENT_MAP.computeIfAbsent(clientKey, k -> createNewCallClient(sourcePak))
 //                .withApi(apiPak);
 //    }
+
+    public static FastCallClient getExistedClient(String systemCode) {
+        FastCallClient client = CLIENT_MAP.get(systemCode);
+        if (Objects.isNull(client)) {
+            throw new FcUnexpectedException("FastCall-该系统客户端未注册");
+        }
+        return client;
+    }
 
     public FastCallClient getClient(String systemCode) {
         return CLIENT_MAP.computeIfAbsent(systemCode, this::createNewClient);
