@@ -15,9 +15,15 @@ public class FcBizException extends RuntimeException {
         this.message = message;
     }
 
-    public FcBizException(String code) {
-        super(code);
+    public FcBizException(String message) {
+        super(message);
+        this.code = message;
+        this.message = message;
+    }
+
+    public FcBizException(Throwable e, String code, String message) {
+        super(message, e);
         this.code = code;
-        this.message = code;
+        this.message = message;
     }
 }

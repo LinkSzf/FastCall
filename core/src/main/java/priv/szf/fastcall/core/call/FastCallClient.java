@@ -1,20 +1,25 @@
 package priv.szf.fastcall.core.call;
 
+import cn.hutool.core.util.URLUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import okhttp3.*;
-import okio.BufferedSink;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import priv.szf.fastcall.core.call.auth.FcCallType;
+import priv.szf.fastcall.core.call.auth.IRefreshableAuth;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
+import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
+import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 
 @AllArgsConstructor
 public class FastCallClient {
@@ -62,47 +67,70 @@ public class FastCallClient {
         return null;
     }
 
-    public FastCallClient withApi(FcApiPak apiPak) {
-        this.api.set(apiPak);
-        return this;
-    }
-
     public FcTokenPak doAuth() {
-        FcAuthPak auth = source.getAuth();
         FcSystemPak system = source.getSystem();
-        String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
-        String url = host + auth.getPath();
+        FcAuthPak auth = source.getAuth();
+        BaseAuthContent content = auth.getContent();
+        if (!(content instanceof IRefreshableAuth)) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]的认证方式不支持刷新", system.getName())
+            );
+        }
 
+        Map<String, String> params = ((IRefreshableAuth) content).getParams();
+        RequestBody requestBody = RequestBody.create(
+                new JSONObject(params).toString(),
+                MediaType.parse("application/json")
+        );
+        
+        
+        String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
+        String url = URLUtil.completeUrl(host, auth.getPath());
         Request request = new Request.Builder()
                 .url(url)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .post(new RequestBody() {
-                    @Nullable
-                    @Override
-                    public MediaType contentType() {
-                        return null;
-                    }
-
-                    @Override
-                    public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
-
-                    }
-                })
+                .post(requestBody)
                 .tag(FcCallType.class, FcCallType.AUTH)
                 .build();
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
-            ResponseBody body = response.body();
+            String tokenField = ((IRefreshableAuth) content).getTokenField();
+            ResponseBody responseBody = getResponseBody(response, system);
+            JSONObject jsonResponse = JSONUtil.parseObj(responseBody.string());
+            String token = jsonResponse.getByPath(tokenField, String.class);
+            if (StringUtils.isBlank(token)) {
+                throw new FcUnexpectedException(
+                        String.format("FastCall-系统[%s]刷新认证失败，响应体中路径[%s]未找到token字段",
+                                system.getName(), tokenField)
+                );
+            }
 
-
+            FcTokenPak tokenPak = new FcTokenPak();
+            tokenPak.setToken(token);
+            return tokenPak;
         } catch (IOException e) {
-
+            throw new FcUnexpectedException(e, String.format("FastCall-系统[%s]刷新认证失败，IO异常",  system.getName()));
         }
-
-        return null;
     }
 
+    private ResponseBody getResponseBody(Response response, FcSystemPak system) {
+        if (!response.isSuccessful()) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s]",
+                            system.getName(), response.code(), response.message())
+            );
+        }
+
+        ResponseBody body = response.body();
+        if (Objects.isNull(body)) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，响应体为空", system.getName())
+            );
+        }
+
+        return body;
+    }
 
 
 }
