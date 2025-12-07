@@ -71,7 +71,8 @@ public class FastCallClientFactory {
 
         FcClientSettingPak clientSetting = getClientSetting(system);
         OkHttpClient okHttpClient = initCoreClient(clientSetting);
-        return new FastCallClient(okHttpClient, system, sourcePak.getAuth());
+//        return new FastCallClient(okHttpClient, system, sourcePak.getAuth(), sourcePak.getAccessToken());
+        return new FastCallClient(okHttpClient, sourcePak);
     }
 
     private FcClientSettingPak getClientSetting(FcSystemPak system) {

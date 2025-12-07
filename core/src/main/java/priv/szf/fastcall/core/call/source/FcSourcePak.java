@@ -17,7 +17,7 @@ public class FcSourcePak {
 
     private FcAuthPak auth;
 
-    FcTokenPak accessToken;
+    private FcTokenPak accessToken;
 
 //    private List<FcApiPak> apiList;
 

@@ -26,4 +26,8 @@ public enum AuthType {
 
     private final String prefix;
 
+    public static boolean isRefreshable(AuthType authType) {
+        return authType == JWT
+                || authType == BEARER;
+    }
 }
