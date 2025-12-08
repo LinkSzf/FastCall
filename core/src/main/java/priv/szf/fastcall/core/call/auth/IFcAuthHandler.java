@@ -3,19 +3,18 @@ package priv.szf.fastcall.core.call.auth;
 import okhttp3.Request;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 public interface IFcAuthHandler {
 
     AuthType getAuthType();
 
     FcSourcePak getSourceInfo(Request request);
+
+    String getSystemCode(Request request);
 
     Request modifyRequest(Request request);
 
@@ -28,10 +27,10 @@ public interface IFcAuthHandler {
             return true;
         }
 
-        LocalDateTime estimatedExpirationTime = accessToken.getEstimatedExpirationTime();
+        LocalDateTime estimatedExpirationTime = accessToken.getEstimatedExpiration();
         return Objects.isNull(estimatedExpirationTime)
                 || estimatedExpirationTime.isBefore(LocalDateTime.now());
     }
 
-    default void refreshToken(FcSourcePak sourceInfo) {}
+    default void refreshToken(Request request) {}
 }

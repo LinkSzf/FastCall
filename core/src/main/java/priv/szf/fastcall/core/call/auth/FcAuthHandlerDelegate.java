@@ -68,18 +68,13 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     public void preRefreshTokenIfNecessary(Request request) {
         IFcAuthHandler handler = getHandler(request);
         FcSourcePak sourceInfo = handler.getSourceInfo(request);
-        FcSystemPak system = sourceInfo.getSystem();
-        if (Objects.isNull(system)) {
-            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()));
-        }
-
-        String systemKey = system.getCode();
-        Object systemLock = systemLocks.computeIfAbsent(systemKey, k -> new Object());
+        String systemCode = handler.getSystemCode(request);
+        Object systemLock = systemLocks.computeIfAbsent(systemCode, k -> new Object());
 
         if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
             synchronized (systemLock) {
                 if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
-                    handler.refreshToken(sourceInfo);
+                    handler.refreshToken(request);
                 }
             }
             Request newRequest = handler.modifyRequest(request);

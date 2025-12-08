@@ -22,6 +22,15 @@ public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IF
         return source;
     }
 
+    @Override
+    public String getSystemCode(Request request) {
+        return Optional.of(getSystemInfo(request))
+                .map(FcSystemPak::getCode)
+                .orElseThrow(() ->
+                        new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()))
+                );
+    }
+
     T getAuthContent(Request request) {
         FcAuthPak authPak = getAuthInfo(request);
         return (T) Optional.of(authPak)
@@ -45,10 +54,6 @@ public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IF
                 .orElseThrow(() ->
                         new FcUnexpectedException(String.format("FastCall-url[%s]未传递认证信息上下文", request.url()))
                 );
-    }
-
-    String getSystemCode(Request request) {
-        return getSystemInfo(request).getCode();
     }
 
 
