@@ -17,6 +17,8 @@ public class FcAuth {
 
     private AuthType type;
 
+    private String path;
+
     private String content;
 
     private Integer expiration;

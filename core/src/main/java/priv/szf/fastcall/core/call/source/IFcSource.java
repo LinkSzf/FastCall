@@ -10,4 +10,5 @@ public interface IFcSource {
 
     FcTokenPak getAccessToken(String systemCode);
 
+    void updateAccessToken(String systemCode, FcTokenPak token);
 }

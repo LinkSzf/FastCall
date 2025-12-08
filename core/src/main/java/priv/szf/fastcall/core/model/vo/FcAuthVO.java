@@ -16,6 +16,8 @@ public class FcAuthVO {
 
     private AuthType type;
 
+    private String path;
+
     private BaseAuthContentDTO content;
 
     private Integer expiration;

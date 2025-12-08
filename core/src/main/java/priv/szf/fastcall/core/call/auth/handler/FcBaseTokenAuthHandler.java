@@ -5,7 +5,6 @@ import priv.szf.fastcall.core.call.FastCallClient;
 import priv.szf.fastcall.core.call.FastCallClientFactory;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.call.source.IFcSource;
-import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
 import priv.szf.fastcall.core.model.auth.BaseAuthContent;
@@ -42,11 +41,9 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseAuthContent> extends 
     public void refreshToken(FcSourcePak sourceInfo) {
         FcSystemPak system = sourceInfo.getSystem();
         String systemCode = system.getCode();
-        FcTokenPak accessToken = sourceInfo.getAccessToken();
-        FcAuthPak auth = sourceInfo.getAuth();
 
         FastCallClient client = FastCallClientFactory.getExistedClient(systemCode);
         FcTokenPak token = client.doAuth();
-//        getSource().updateAccessToken(systemCode, token);
+        getSource().updateAccessToken(systemCode, token);
     }
 }

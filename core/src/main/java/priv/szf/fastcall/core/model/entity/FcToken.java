@@ -18,8 +18,8 @@ public class FcToken {
 
     private String token;
 
-    private LocalDateTime issuanceTime;
+    private LocalDateTime issuance;
 
-    private LocalDateTime estimatedExpirationTime;
+    private LocalDateTime estimatedExpiration;
 
 }

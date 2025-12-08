@@ -17,9 +17,11 @@ public class FcApiDTO {
     private Long sysId;
 
     @Size(min = 1, max = 50, message = "名称长度必须在1到50个字符之间")
+    @NotNull(message = "名称不能为空")
     private String name;
 
     @Size(min = 1, max = 200, message = "路径长度必须在1到200个字符之间")
+    @NotNull(message = "路径不能为空")
     private String path;
 
     @NotNull(message = "请求方式不能为空")

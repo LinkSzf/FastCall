@@ -33,4 +33,12 @@ public class FcMemorySource implements IFcSource {
     public FcTokenPak getAccessToken(String systemCode) {
         return getSourcePak(systemCode).getAccessToken();
     }
+
+    @Override
+    public void updateAccessToken(String systemCode, FcTokenPak token) {
+        // TODO 应异步更新
+        databaseSource.updateAccessToken(systemCode, token);
+        FcSourcePak fcSourcePak = getSourcePak(systemCode);
+        fcSourcePak.setAccessToken(token);
+    }
 }

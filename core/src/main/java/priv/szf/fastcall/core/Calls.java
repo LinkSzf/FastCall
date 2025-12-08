@@ -12,7 +12,7 @@ public class Calls {
     private final FastCallClientFactory clientFactory;
 
     public FastCallClient newCall(String systemCode, String apiName) {
-        return clientFactory.getClient(systemCode, apiName);
+        return clientFactory.getClient(systemCode);
     }
 
 

@@ -51,39 +51,22 @@ public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor {
 
         Response response = chain.proceed(request);
 
-        if (response.code() == 401) {
-            synchronized (systemLock) {
-                // 再次检查，防止其他线程已经刷新了token
-                if (response.code() == 401) {
-                    refreshToken(system);
-                    // 创建新请求并重试
-                    Request newRequest = request.newBuilder()
-                            .header("Authorization", "Bearer " + authHandler.getCurrentToken(system))
-                            .build();
-                    response.close();
-                    return chain.proceed(newRequest);
-                }
-            }
-        }
+//        if (response.code() == 401) {
+//            synchronized (systemLock) {
+//                // 再次检查，防止其他线程已经刷新了token
+//                if (response.code() == 401) {
+//                    refreshToken(system);
+//                    // 创建新请求并重试
+//                    Request newRequest = request.newBuilder()
+//                            .header("Authorization", "Bearer " + authHandler.getCurrentToken(system))
+//                            .build();
+//                    response.close();
+//                    return chain.proceed(newRequest);
+//                }
+//            }
+//        }
 
         return response;
     }
-
-    private boolean isInvalidToken(FcTokenPak accessToken) {
-        if (Objects.isNull(accessToken)) {
-            return true;
-        }
-
-        LocalDateTime estimatedExpirationTime = accessToken.getEstimatedExpirationTime();
-        return Objects.isNull(estimatedExpirationTime)
-                || estimatedExpirationTime.isBefore(LocalDateTime.now());
-    }
-
-
-
-
-
-
-
 
 }

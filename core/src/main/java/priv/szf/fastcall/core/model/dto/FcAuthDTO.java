@@ -21,6 +21,10 @@ public class FcAuthDTO {
     @NotNull(message = "认证类型不能为空")
     private AuthType type;
 
+    @NotNull(message = "认证路径不能为空")
+    @Size(min = 1, max = 200, message = "认证路径长度必须在1到200个字符之间")
+    private String path;
+
     @Valid
     @NotNull(message = "认证信息不能为空")
     private BaseAuthContentDTO content;

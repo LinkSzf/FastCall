@@ -18,6 +18,7 @@ import priv.szf.fastcall.core.model.FcTokenPak;
 import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 
@@ -106,9 +107,11 @@ public class FastCallClient {
                 );
             }
 
-            FcTokenPak tokenPak = new FcTokenPak();
-            tokenPak.setToken(token);
-            return tokenPak;
+            return FcTokenPak.builder()
+                    .token(token)
+                    .issuance(LocalDateTime.now())
+                    .estimatedExpiration(LocalDateTime.now().plusSeconds(auth.getExpiration()))
+                    .build();
         } catch (IOException e) {
             throw new FcUnexpectedException(e, String.format("FastCall-系统[%s]刷新认证失败，IO异常",  system.getName()));
         }

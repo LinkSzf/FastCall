@@ -32,7 +32,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
 
     @Override
     public AuthType getAuthType() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -45,6 +45,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return getHandler(request).modifyRequest(request);
     }
 
+    @Override
     public boolean isAuthRefreshable(Request request) {
         IFcAuthHandler handler = getHandler(request);
         return handler.isAuthRefreshable(request);
@@ -53,12 +54,12 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     private IFcAuthHandler getHandler(Request request) {
         AuthType authType = request.tag(AuthType.class);
         if (Objects.isNull(authType)) {
-            throw new FcUnexpectedException("FastCall-未传递认证类型上下文");
+            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递认证类型上下文", request.url()));
         }
 
         IFcAuthHandler handler = handlerMap.get(authType);
         if (Objects.isNull(handler)) {{
-            throw new FcUnexpectedException("FastCall-未找到对应的认证处理器");
+            throw new FcUnexpectedException(String.format("FastCall-url[%s]未找到对应的认证处理器", request.url()));
         }}
 
         return handler;
@@ -69,7 +70,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         FcSourcePak sourceInfo = handler.getSourceInfo(request);
         FcSystemPak system = sourceInfo.getSystem();
         if (Objects.isNull(system)) {
-            throw new FcUnexpectedException("FastCall-未传递系统信息上下文");
+            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()));
         }
 
         String systemKey = system.getCode();

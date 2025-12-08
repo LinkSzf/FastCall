@@ -12,8 +12,6 @@ public enum AuthType {
 
     APIKEY(ApiKeyAuth.class),
 
-    JWT(JwtTokenAuth.class, "Bearer "),
-
     BASIC(BasicAuth.class, "Basic "),
 
     BEARER(BearerTokenAuth.class, "Bearer ");
@@ -26,8 +24,4 @@ public enum AuthType {
 
     private final String prefix;
 
-    public static boolean isRefreshable(AuthType authType) {
-        return authType == JWT
-                || authType == BEARER;
-    }
 }
