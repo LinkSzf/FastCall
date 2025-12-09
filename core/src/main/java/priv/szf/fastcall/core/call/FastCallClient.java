@@ -1,15 +1,20 @@
 package priv.szf.fastcall.core.call;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
+import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
@@ -21,9 +26,11 @@ import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class FastCallClient {
@@ -75,8 +82,8 @@ public class FastCallClient {
         return null;
     }
 
-    public <T> Builder<T> url(String url) {
-        return new Builder<T>(this, url);
+    public <T> Builder<T> newCall() {
+        return new Builder<T>(this);
     }
 
     public FcTokenPak doAuth() {
@@ -146,35 +153,62 @@ public class FastCallClient {
         return body;
     }
 
+    @Getter
+
     public class Builder<T> {
-
-        private final FastCallClient client;
-
-        private final String url;
-
-        private FcRequestMethod method = FcRequestMethod.GET;
 
         private final Map<String, String> headers = new HashMap<>();
 
-        private Object body;
+        private final FastCallClient client;
 
-        private FcMediaType mediaType;
+        private FcRequestMethod method = FcRequestMethod.GET;
+
+        private FcMediaType mediaType = FcMediaType.ALL;
 
         private FcCallType callType = FcCallType.NORMAL;
 
-        private Builder(FastCallClient client, String url) {
+        private String url;
+
+        private String fullUrl;
+
+        private Map<String, String> params;
+
+        private Object body;
+
+        private Map<String, String> respone;
+
+        private Builder(FastCallClient client) {
             this.client = client;
-            this.url = url;
+        }
+
+        public Builder<T> url(String url) {
+            this.url = Optional.ofNullable(url)
+                    .filter(StringUtils::isNotBlank)
+                    .map(URLUtil::normalize)
+                    .orElseThrow(() -> new FcUnexpectedException("FastCall-请求地址不能为空"));
+            return this;
+        }
+
+        public Builder<T> params(Map<String, String> params) {
+            this.params = params;
+            return this;
         }
 
         public Builder<T> method(FcRequestMethod requestMethod) {
-            this.method = requestMethod;
+            this.method = (Objects.isNull(requestMethod)) ? FcRequestMethod.GET : requestMethod;
             return this;
         }
 
         public Builder<T> header(String key, String value) {
             headers.put(key, value);
             return this;
+        }
+
+        public Builder<T> header(FcHttpHeader key, FcMediaType value) {
+            if (Objects.isNull(key) || Objects.isNull(value)) {
+                return this;
+            }
+            return header(key.getName(), value.getName());
         }
 
         public Builder<T> body(Object body) {
@@ -188,14 +222,23 @@ public class FastCallClient {
             return this;
         }
 
-        public void call() {
-            client.call(this);
+        public Builder<T> response(Map<String, String> responseMap) {
+            this.respone = responseMap;
+            return this;
+        }
+
+        public T call() {
+            if (CollectionUtil.isNotEmpty(params)) {
+                this.fullUrl = URLUtil.buildQuery(params, url);
+            } else {
+                this.fullUrl = url;
+            }
+            return client.call(this);
         }
 
         public T anonymousCall() {
             this.callType = FcCallType.AUTH;
-            client.call(this);
-            return null;
+            return call();
         }
     }
 

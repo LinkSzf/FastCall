@@ -41,6 +41,11 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     }
 
     @Override
+    public String getSystemCode(Request request) {
+        return getHandler(request).getSystemCode(request);
+    }
+
+    @Override
     public Request modifyRequest(Request request) {
         return getHandler(request).modifyRequest(request);
     }

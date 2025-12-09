@@ -16,4 +16,6 @@ public class BaseDynAuthContent extends BaseAuthContent {
 
     private String expiredInField;
 
+    private String issuanceField;
+
 }
