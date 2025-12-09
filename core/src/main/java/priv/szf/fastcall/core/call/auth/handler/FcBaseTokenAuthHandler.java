@@ -5,6 +5,7 @@ import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallClient;
 import priv.szf.fastcall.core.call.FastCallClientFactory;
+import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
 import priv.szf.fastcall.core.call.auth.DefaultAuthProvider;
 import priv.szf.fastcall.core.call.auth.IAuthProvider;
@@ -29,7 +30,7 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
 
         String authorization = getAuthType().getPrefix() + token;
         return request.newBuilder()
-                .header("Authorization", authorization)
+                .header(FcHttpHeader.AUTHORIZATION.getName(), authorization)
                 .build();
     }
 
@@ -56,16 +57,15 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
         T authContent = getAuthContent(request);
         IAuthProvider<T> authProvider = getAuthProvider(systemCode);
 
-        Map<String, Object> resultMap = client.<Map<String, Object>>newCall()
+        FastCallResponse<String> response = client.<String>newCall()
                 .url(getUrl(sourceInfo))
                 .method(FcRequestMethod.POST)
                 .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)
                 .header(FcHttpHeader.ACCEPT, FcMediaType.APPLICATION_JSON)
                 .body(authProvider.getRequestBody(authContent))
-                .response(authProvider.getResponseMap(authContent))
                 .anonymousCall();
 
-        FcTokenPak token = authProvider.mapToToken(resultMap);
+        FcTokenPak token = authProvider.mapToToken(response, authContent);
 
         getSource().updateAccessToken(systemCode, token);
     }

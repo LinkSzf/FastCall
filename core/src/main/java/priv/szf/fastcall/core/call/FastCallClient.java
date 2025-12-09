@@ -1,7 +1,7 @@
 package priv.szf.fastcall.core.call;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -9,24 +9,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
 import priv.szf.fastcall.core.call.auth.FcCallType;
-import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
-import priv.szf.fastcall.core.model.FcApiPak;
-import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.FcTokenPak;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Collections;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -38,123 +31,58 @@ public class FastCallClient {
     private final OkHttpClient client;
 
     private final FcSourcePak source;
+    private <T> FastCallResponse<T> call(Builder<T> builder) {
+        FcSystemPak system = source.getSystem();
 
-//    private final FcSystemPak system;
-//
-//    private final FcAuthPak auth;
-//
-//    private final FcTokenPak token;
+        Headers.Builder headerBuilder = new Headers.Builder();
+        builder.getHeaders().forEach(headerBuilder::add);
+        Headers headers = headerBuilder.build();
 
-    private final ThreadLocal<FcApiPak> api = new ThreadLocal<>();
+        RequestBody requestBody = RequestBody.create(
+                new JSONObject(builder.getBody()).toString(),
+                MediaType.parse(builder.getMediaType().getName())
+        );
 
-//    public FastCallClient(OkHttpClient client, FcSystemPak system, FcAuthPak auth, FcTokenPak accessToken) {
-//        this.client = client;
-//        this.system = system;
-//        this.auth = auth;
-//        this.token = accessToken;
-//    }
-
-//    public FastCallClient(OkHttpClient client, FcSourcePak source) {
-//        this.client = client;
-//        this.source = source;
-//    }
-
-    public <T> FastCallResult<T> call() {
         Request request = new Request.Builder()
-                .url("https://api.example.com/protected-resource")
-                .tag(FcSourcePak.class, source)
-                .tag(AuthType.class, source.getAuth().getType())
+                .tag(FcCallType.class, builder.getCallType())
+                .url(builder.getFullUrl())
+                .headers(headers)
+                .method(builder.getMethod().getName(), requestBody)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
+        TypeReference<T> dataType = new TypeReference<T>() {};
+        Call call = client.newCall(request);
+        try (Response response = call.execute()) {
+            int code = response.code();
+            String message = response.message();
+            boolean isSuccessful = response.isSuccessful();
+            ResponseBody body = response.body();
+            T data = null;
+            if (Objects.nonNull(body)) {
+                if (String.class == dataType.getType()) {
+                    data = (T) body.string();
+                }
+                else {
+                    data = (T) JSONUtil.toBean(body.string(), dataType.getType().getClass());
+                }
             }
 
-            System.out.println(response.body().string());
+            return FastCallResponse.<T>builder()
+                    .code(code)
+                    .message(message)
+                    .isSuccessful(isSuccessful)
+                    .data(data)
+                    .build();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FcUnexpectedException(e, String.format("FastCall-系统[%s]刷新认证失败，IO异常",  system.getCode()));
         }
-        return null;
-    }
-
-    public <T> T call(Builder<T> builder) {
-        return null;
     }
 
     public <T> Builder<T> newCall() {
         return new Builder<T>(this);
     }
 
-    public FcTokenPak doAuth() {
-        FcSystemPak system = source.getSystem();
-        FcAuthPak auth = source.getAuth();
-        BaseAuthContent content = auth.getContent();
-        if (!(content instanceof BaseDynAuthContent)) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统[%s]的认证方式不支持刷新", system.getName())
-            );
-        }
-
-        Map<String, String> params = ((BaseDynAuthContent) content).getParams();
-        RequestBody requestBody = RequestBody.create(
-                new JSONObject(params).toString(),
-                MediaType.parse("application/json")
-        );
-        
-        
-        String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
-        String url = URLUtil.completeUrl(host, auth.getPath());
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .post(requestBody)
-                .tag(FcCallType.class, FcCallType.AUTH)
-                .build();
-        Call call = client.newCall(request);
-        try (Response response = call.execute()) {
-            String tokenField = ((BaseDynAuthContent) content).getTokenField();
-            ResponseBody responseBody = getResponseBody(response, system);
-            JSONObject jsonResponse = JSONUtil.parseObj(responseBody.string());
-            String token = jsonResponse.getByPath(tokenField, String.class);
-            if (StringUtils.isBlank(token)) {
-                throw new FcUnexpectedException(
-                        String.format("FastCall-系统[%s]刷新认证失败，响应体中路径[%s]未找到token字段",
-                                system.getName(), tokenField)
-                );
-            }
-
-            return FcTokenPak.builder()
-                    .token(token)
-                    .issuance(LocalDateTime.now())
-                    .estimatedExpiration(LocalDateTime.now().plusSeconds(auth.getExpiration()))
-                    .build();
-        } catch (IOException e) {
-            throw new FcUnexpectedException(e, String.format("FastCall-系统[%s]刷新认证失败，IO异常",  system.getName()));
-        }
-    }
-
-    private ResponseBody getResponseBody(Response response, FcSystemPak system) {
-        if (!response.isSuccessful()) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s]",
-                            system.getName(), response.code(), response.message())
-            );
-        }
-
-        ResponseBody body = response.body();
-        if (Objects.isNull(body)) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统[%s]刷新认证失败，响应体为空", system.getName())
-            );
-        }
-
-        return body;
-    }
-
     @Getter
-
     public class Builder<T> {
 
         private final Map<String, String> headers = new HashMap<>();
@@ -174,8 +102,6 @@ public class FastCallClient {
         private Map<String, String> params;
 
         private Object body;
-
-        private Map<String, String> respone;
 
         private Builder(FastCallClient client) {
             this.client = client;
@@ -222,24 +148,20 @@ public class FastCallClient {
             return this;
         }
 
-        public Builder<T> response(Map<String, String> responseMap) {
-            this.respone = responseMap;
-            return this;
-        }
-
-        public T call() {
+        public FastCallResponse<T> call() {
             if (CollectionUtil.isNotEmpty(params)) {
-                this.fullUrl = URLUtil.buildQuery(params, url);
+                this.fullUrl = url + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             } else {
                 this.fullUrl = url;
             }
             return client.call(this);
         }
 
-        public T anonymousCall() {
+        public FastCallResponse<T> anonymousCall() {
             this.callType = FcCallType.AUTH;
             return call();
         }
+
     }
 
 

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.model.FcSystemPak;
 
 import java.util.List;
 import java.util.Map;

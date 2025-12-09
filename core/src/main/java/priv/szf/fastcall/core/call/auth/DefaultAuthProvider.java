@@ -1,19 +1,14 @@
 package priv.szf.fastcall.core.call.auth;
 
-import cn.hutool.core.util.NumberUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.common.TokenConst;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -29,19 +24,28 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
     }
 
     @Override
-    public Map<String, String> getResponseMap(BaseDynAuthContent authContent) {
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put(TokenConst.TOKEN_KEY, authContent.getTokenField());
-        responseMap.put(TokenConst.ISSUANCE_KEY, authContent.getIssuanceField());
-        responseMap.put(TokenConst.EXPIRED_IN_KEY, authContent.getExpiredInField());
-        return responseMap;
-    }
+    public FcTokenPak mapToToken(FastCallResponse<String> response, T authContent) {
+        if (!response.isSuccessful()) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s]",
+                            identity, response.getCode(), response.getMessage())
+            );
+        }
 
-    @Override
-    public FcTokenPak mapToToken(Map<String, Object> resultMap) {
-        String tokenStr = getToken(resultMap);
-        LocalDateTime issuance = getIssuance(resultMap);
-        LocalDateTime estimatedExpiration = getEstimatedExpiration(resultMap, issuance);
+        String data = response.getData();
+        if (Objects.isNull(data)) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，响应体为空，code[%s], message[%s]",
+                            identity, response.getCode(), response.getMessage())
+            );
+        }
+
+
+        JSONObject jsonData = JSONUtil.parseObj(data);
+
+        String tokenStr = getToken(jsonData, authContent.getTokenField());
+        LocalDateTime issuance = getIssuance(jsonData, authContent.getIssuanceField());
+        LocalDateTime estimatedExpiration = getEstimatedExpiration(jsonData, authContent.getExpiredInField(), issuance);
         return FcTokenPak.builder()
                 .token(tokenStr)
                 .issuance(issuance)
@@ -49,34 +53,29 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
                 .build();
     }
 
-    public LocalDateTime getEstimatedExpiration(Map<String, Object> resultMap, LocalDateTime issuance) {
-        Object expiredIn = resultMap.get(TokenConst.EXPIRED_IN_KEY);
-        long expiredInNum = (Objects.isNull(expiredIn)) ? DEFAULT_EXPIRED_IN : NumberUtil.parseLong(StrUtil.toString(expiredIn));
+    public LocalDateTime getEstimatedExpiration(JSONObject jsonData, String fieldPath, LocalDateTime issuance) {
+        Long expiredIn = jsonData.getByPath(fieldPath, Long.class);
+        long expiredInNum = (Objects.isNull(expiredIn)) ? DEFAULT_EXPIRED_IN : expiredIn;
         return issuance.plusSeconds(expiredInNum);
     }
 
-    public LocalDateTime getIssuance(Map<String, Object> resultMap) {
-        Object issuance = resultMap.get(TokenConst.ISSUANCE_KEY);
-        if (issuance instanceof Date) {
-            return LocalDateTime.ofInstant(((Date) issuance).toInstant(), ZoneId.systemDefault());
-        }
-        if (issuance instanceof LocalDateTime) {
-            return (LocalDateTime) issuance;
-        }
-        if (issuance instanceof Long) {
-            return LocalDateTime.ofInstant(Instant.ofEpochMilli((Long) issuance), ZoneId.systemDefault());
-        }
-        if (issuance instanceof CharSequence) {
-            return LocalDateTime.parse(StrUtil.toString(issuance));
+    public LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {
+        String issuance = jsonData.getByPath(fieldPath, String.class);
+        if (StringUtils.isNotBlank(issuance)) {
+            return LocalDateTime.parse(issuance);
         }
         return LocalDateTime.now();
     }
 
-    public String getToken(Map<String, Object> resultMap) {
-        Object token = resultMap.get(TokenConst.TOKEN_KEY);
-        if (!(token instanceof CharSequence) || StringUtils.isBlank((CharSequence) token)) {
-            throw new FcUnexpectedException(String.format("FastCall-对[%s]请求认证时获取token失败，请求终止", identity));
+    public String getToken(JSONObject jsonData, String fieldPath) {
+        String token = jsonData.getByPath(fieldPath, String.class);
+        if (StringUtils.isBlank(token)) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，响应体[%s]中路径[%s]未找到token字段",
+                            identity, jsonData, fieldPath)
+            );
         }
-        return StrUtil.toString(token);
+        return token;
     }
+
 }
