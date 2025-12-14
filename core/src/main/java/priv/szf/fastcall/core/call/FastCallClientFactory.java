@@ -42,27 +42,10 @@ public class FastCallClientFactory {
 
     private final FcPakMapping fcPakMapping;
 
-//    public FastCallClient getClient(String systemCode, String apiName) {
-//        FcSourcePak sourcePak = source.getSourcePak(systemCode, apiName);
-//        FcSystemPak system = sourcePak.getSystem();
-//        if (!system.isEnable()) {
-//            throw new FcBizException(String.format("系统[%s]未配置启用", systemCode));
-//        }
-//
-//        FcApiPak apiPak = sourcePak.getApi();
-//        if (Objects.isNull(apiPak)) {
-//            throw new FcDataNotFoundException(String.format("API[%s]未在系统[%s]中注册", apiName, systemCode));
-//        }
-//
-//        String clientKey = FcUtils.calculateClientKey(system, apiPak);
-//        return CLIENT_MAP.computeIfAbsent(clientKey, k -> createNewCallClient(sourcePak))
-//                .withApi(apiPak);
-//    }
-
     public static FastCallClient getExistedClient(String systemCode) {
         FastCallClient client = CLIENT_MAP.get(systemCode);
         if (Objects.isNull(client)) {
-            throw new FcUnexpectedException("FastCall-该系统客户端未注册");
+            throw new FcUnexpectedException(String.format("FastCall-系统[%s]未注册，无法发起请求", systemCode));
         }
         return client;
     }
@@ -81,7 +64,6 @@ public class FastCallClientFactory {
 
         FcClientSettingPak clientSetting = getClientSetting(system);
         OkHttpClient okHttpClient = initCoreClient(clientSetting);
-//        return new FastCallClient(okHttpClient, system, sourcePak.getAuth(), sourcePak.getAccessToken());
         return new FastCallClient(okHttpClient, sourcePak);
     }
 

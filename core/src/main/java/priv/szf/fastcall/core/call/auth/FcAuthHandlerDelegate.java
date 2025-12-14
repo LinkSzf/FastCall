@@ -7,10 +7,12 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.model.FcAuthPak;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -56,10 +58,10 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     }
 
     private IFcAuthHandler getHandler(Request request) {
-        AuthType authType = request.tag(AuthType.class);
-        if (Objects.isNull(authType)) {
-            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递认证类型上下文", request.url()));
-        }
+        AuthType authType = Optional.ofNullable(request.tag(FcSourcePak.class))
+                .map(FcSourcePak::getAuth)
+                .map(FcAuthPak::getType)
+                .orElseThrow(() -> new FcUnexpectedException(String.format("FastCall-url[%s]未传递认证类型上下文", request.url())));
 
         IFcAuthHandler handler = handlerMap.get(authType);
         if (Objects.isNull(handler)) {{

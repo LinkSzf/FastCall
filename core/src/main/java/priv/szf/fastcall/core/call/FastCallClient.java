@@ -6,7 +6,6 @@ import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -41,21 +40,24 @@ public class FastCallClient {
         FcSystemPak system = source.getSystem();
 
         Headers.Builder headerBuilder = new Headers.Builder();
-        builder.getHeaders().forEach(headerBuilder::add);
+        builder.headers.forEach(headerBuilder::add);
         Headers headers = headerBuilder.build();
 
-        RequestBody requestBody = RequestBody.create(
-                new JSONObject(builder.getBody()).toString(),
-                MediaType.parse(builder.getMediaType().getName())
-        );
+        FcRequestMethod method = builder.method;
+        RequestBody requestBody = (method == FcRequestMethod.GET) ? null :
+                RequestBody.create(
+                        new JSONObject(builder.body).toString(),
+                        MediaType.parse(builder.mediaType.getName())
+                );
 
-        String url = builder.getFullUrl();
+        String url = builder.fullUrl;
 
         Request request = new Request.Builder()
-                .tag(FcCallType.class, builder.getCallType())
+                .tag(FcSourcePak.class, source)
+                .tag(FcCallType.class, builder.callType)
                 .url(url)
                 .headers(headers)
-                .method(builder.getMethod().getName(), requestBody)
+                .method(method.getName(), requestBody)
                 .build();
 
         TypeReference<T> dataType = new TypeReference<T>() {};
@@ -72,7 +74,7 @@ public class FastCallClient {
                         data = (T) body.string();
                     }
                     else {
-                        data = (T) JSONUtil.toBean(body.string(), dataType.getType().getClass());
+                        data = JSONUtil.toBean(body.string(), (Class<T>)dataType.getType());
                     }
                 } catch (ClassCastException e) {
                     throw new FcUnexpectedException(e,
@@ -99,12 +101,13 @@ public class FastCallClient {
         return new Builder<T>(this);
     }
 
-    @Getter
     public class Builder<T> {
 
         private final Map<String, String> headers = new HashMap<>();
 
         private final FastCallClient client;
+
+        private final String host;
 
         private FcRequestMethod method = FcRequestMethod.GET;
 
@@ -112,7 +115,7 @@ public class FastCallClient {
 
         private FcCallType callType = FcCallType.NORMAL;
 
-        private String url;
+        private String url = "/";
 
         private String fullUrl;
 
@@ -122,13 +125,11 @@ public class FastCallClient {
 
         private Builder(FastCallClient client) {
             this.client = client;
+            this.host = source.getSystem().getHost();
         }
 
         public Builder<T> url(String url) {
-            this.url = Optional.ofNullable(url)
-                    .filter(StringUtils::isNotBlank)
-                    .map(URLUtil::normalize)
-                    .orElseThrow(() -> new FcUnexpectedException("FastCall-请求地址不能为空"));
+            this.url = url;
             return this;
         }
 
@@ -166,16 +167,15 @@ public class FastCallClient {
         }
 
         public FastCallResponse<T> call() {
+            this.fullUrl = URLUtil.completeUrl(host, url);
             if (CollectionUtil.isNotEmpty(params)) {
-                this.fullUrl = url + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
-            } else {
-                this.fullUrl = url;
+                this.fullUrl = this.fullUrl + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             }
             return client.call(this);
         }
 
         public FastCallResponse<T> anonymousCall() {
-            this.callType = FcCallType.AUTH;
+            this.callType = FcCallType.ANONYMOUS;
             return call();
         }
 

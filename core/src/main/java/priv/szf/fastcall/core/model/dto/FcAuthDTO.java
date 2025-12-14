@@ -15,9 +15,6 @@ public class FcAuthDTO {
 
     private Long id;
 
-    @NotNull(message = "系统id不能为空")
-    private Long sysId;
-
     @NotNull(message = "认证类型不能为空")
     private AuthType type;
 

@@ -8,6 +8,6 @@ public abstract class FcBaseAuthInterceptor implements Interceptor {
 
     boolean isNotAuthNeed(Request originRequest) {
         FcCallType callType = originRequest.tag(FcCallType.class);
-        return callType == FcCallType.AUTH;
+        return callType == FcCallType.ANONYMOUS;
     }
 }

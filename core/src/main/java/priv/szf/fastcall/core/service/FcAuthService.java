@@ -34,6 +34,7 @@ public class FcAuthService extends ServiceImpl<FcAuthMapper, FcAuth> {
             removeBySystemId(systemId);
         }
 
+        auth.setSysId(systemId);
         super.saveOrUpdate(auth);
     }
 

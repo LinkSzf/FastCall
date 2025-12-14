@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.core.FastCall;
+import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.model.dto.FcApiDTO;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
 import priv.szf.fastcall.core.model.vo.FcApiVO;
@@ -28,6 +31,8 @@ public class FcController {
     private final FcSystemService systemService;
 
     private final FcApiService apiService;
+
+    private final FastCall fastCall;
 
     @GetMapping("/all")
     public List<FcSystemVO> listAll(){
@@ -57,6 +62,14 @@ public class FcController {
     @PostMapping("/{id}/api/save")
     public List<FcApiVO> saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
         return apiService.saveOrUpdate(id, apiList);
+    }
+
+    @GetMapping("/api/test")
+    public FastCallResponse<String> ApiTest(@RequestParam String systemCode, @RequestParam String apiName) {
+        return fastCall.getClient(systemCode)
+                .<String>newCall()
+                .url(apiName)
+                .call();
     }
 
 }
