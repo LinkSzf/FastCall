@@ -52,7 +52,6 @@ public class FcDatabaseSource implements IFcSource {
 
         FcTokenPak token = getAccessTokenBySysId(systemId);
 
-//        List<FcApiPak> apis = getApisBySystemId(systemId);
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
         return new FcSourcePak(system, auth, token, apis);

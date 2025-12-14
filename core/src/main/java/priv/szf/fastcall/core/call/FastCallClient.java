@@ -7,11 +7,17 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
-import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
@@ -43,9 +49,11 @@ public class FastCallClient {
                 MediaType.parse(builder.getMediaType().getName())
         );
 
+        String url = builder.getFullUrl();
+
         Request request = new Request.Builder()
                 .tag(FcCallType.class, builder.getCallType())
-                .url(builder.getFullUrl())
+                .url(url)
                 .headers(headers)
                 .method(builder.getMethod().getName(), requestBody)
                 .build();
@@ -59,11 +67,19 @@ public class FastCallClient {
             ResponseBody body = response.body();
             T data = null;
             if (Objects.nonNull(body)) {
-                if (String.class == dataType.getType()) {
-                    data = (T) body.string();
-                }
-                else {
-                    data = (T) JSONUtil.toBean(body.string(), dataType.getType().getClass());
+                try {
+                    if (String.class == dataType.getType()) {
+                        data = (T) body.string();
+                    }
+                    else {
+                        data = (T) JSONUtil.toBean(body.string(), dataType.getType().getClass());
+                    }
+                } catch (ClassCastException e) {
+                    throw new FcUnexpectedException(e,
+                            String.format("FastCall-url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
+                                    url,
+                                    body.string(),
+                                    dataType.getType().getTypeName()));
                 }
             }
 
@@ -73,8 +89,9 @@ public class FastCallClient {
                     .isSuccessful(isSuccessful)
                     .data(data)
                     .build();
+
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, String.format("FastCall-系统[%s]刷新认证失败，IO异常",  system.getCode()));
+            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，IO异常", url));
         }
     }
 

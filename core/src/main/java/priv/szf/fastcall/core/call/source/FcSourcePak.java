@@ -19,8 +19,6 @@ public class FcSourcePak {
 
     private FcTokenPak accessToken;
 
-//    private List<FcApiPak> apiList;
-
     private Map<String, FcApiPak> apiMap;
 
 }

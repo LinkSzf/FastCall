@@ -1,7 +1,7 @@
 package priv.szf.fastcall.core.call.auth.handler;
 
 import cn.hutool.core.util.URLUtil;
-import okhttp3.*;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallClient;
 import priv.szf.fastcall.core.call.FastCallClientFactory;
@@ -17,8 +17,6 @@ import priv.szf.fastcall.core.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
-
-import java.util.Map;
 
 public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> extends FcBaseAuthHandler<T> {
 
