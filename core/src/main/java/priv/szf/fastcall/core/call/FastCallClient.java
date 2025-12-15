@@ -1,7 +1,6 @@
 package priv.szf.fastcall.core.call;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -14,21 +13,18 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
-import priv.szf.fastcall.core.model.FcSystemPak;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @AllArgsConstructor
 public class FastCallClient {
@@ -37,8 +33,6 @@ public class FastCallClient {
 
     private final FcSourcePak source;
     private <T> FastCallResponse<T> call(Builder<T> builder) {
-        FcSystemPak system = source.getSystem();
-
         Headers.Builder headerBuilder = new Headers.Builder();
         builder.headers.forEach(headerBuilder::add);
         Headers headers = headerBuilder.build();
@@ -60,7 +54,6 @@ public class FastCallClient {
                 .method(method.getName(), requestBody)
                 .build();
 
-        TypeReference<T> dataType = new TypeReference<T>() {};
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             int code = response.code();
@@ -68,20 +61,22 @@ public class FastCallClient {
             boolean isSuccessful = response.isSuccessful();
             ResponseBody body = response.body();
             T data = null;
+            Class<T> dataType = builder.dataType;
             if (Objects.nonNull(body)) {
+                String bodyStr = body.string();
                 try {
-                    if (String.class == dataType.getType()) {
-                        data = (T) body.string();
+                    if (String.class == dataType) {
+                        data = (T) bodyStr;
                     }
                     else {
-                        data = JSONUtil.toBean(body.string(), (Class<T>)dataType.getType());
+                        data = JSONUtil.toBean(bodyStr, dataType);
                     }
                 } catch (ClassCastException e) {
                     throw new FcUnexpectedException(e,
                             String.format("FastCall-url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
                                     url,
-                                    body.string(),
-                                    dataType.getType().getTypeName()));
+                                    bodyStr,
+                                    dataType.getName()));
                 }
             }
 
@@ -97,8 +92,12 @@ public class FastCallClient {
         }
     }
 
+    public <T> Builder<T> newCall(Class<T> dataType) {
+        return new Builder<>(this, dataType);
+    }
+
     public <T> Builder<T> newCall() {
-        return new Builder<T>(this);
+        return new Builder<>(this, (Class<T>)Object.class);
     }
 
     public class Builder<T> {
@@ -106,6 +105,8 @@ public class FastCallClient {
         private final Map<String, String> headers = new HashMap<>();
 
         private final FastCallClient client;
+
+        private final Class<T> dataType;
 
         private final String host;
 
@@ -123,8 +124,9 @@ public class FastCallClient {
 
         private Object body;
 
-        private Builder(FastCallClient client) {
+        private Builder(FastCallClient client, Class<T> dataType) {
             this.client = client;
+            this.dataType = dataType;
             this.host = source.getSystem().getHost();
         }
 

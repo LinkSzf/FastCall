@@ -55,7 +55,7 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
         T authContent = getAuthContent(request);
         IAuthProvider<T> authProvider = getAuthProvider(systemCode);
 
-        FastCallResponse<String> response = client.<String>newCall()
+        FastCallResponse<String> response = client.newCall(String.class)
                 .url(getUrl(sourceInfo))
                 .method(FcRequestMethod.POST)
                 .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)

@@ -83,7 +83,8 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
                     handler.refreshToken(request);
                 }
             }
-            Request newRequest = handler.modifyRequest(request);
         }
     }
+
+
 }
