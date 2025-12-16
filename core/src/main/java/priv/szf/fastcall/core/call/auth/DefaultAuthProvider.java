@@ -1,5 +1,8 @@
 package priv.szf.fastcall.core.call.auth;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
@@ -62,7 +65,11 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
     public LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {
         String issuance = jsonData.getByPath(fieldPath, String.class);
         if (StringUtils.isNotBlank(issuance)) {
-            return LocalDateTime.parse(issuance);
+            if (NumberUtil.isLong(issuance)) {
+                long issuanceLong = NumberUtil.parseLong(issuance);
+                return DateUtil.date(issuanceLong).toLocalDateTime();
+            }
+            return LocalDateTimeUtil.parse(issuance);
         }
         return LocalDateTime.now();
     }

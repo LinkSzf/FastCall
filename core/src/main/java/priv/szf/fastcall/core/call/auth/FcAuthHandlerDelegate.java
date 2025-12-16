@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.call.auth;
 
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
@@ -71,7 +72,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return handler;
     }
 
-    public void preRefreshTokenIfNecessary(Request request) {
+    public boolean refreshTokenIfNecessary(Request request) {
         IFcAuthHandler handler = getHandler(request);
         FcSourcePak sourceInfo = handler.getSourceInfo(request);
         String systemCode = handler.getSystemCode(request);
@@ -83,8 +84,18 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
                     handler.refreshToken(request);
                 }
             }
+            return true;
         }
+
+        return false;
     }
 
+    public boolean refreshTokenIfNecessary(Request request, Response response) {
+        int code = response.code();
+        if (code != 401) {
+            return false;
+        }
 
+        return refreshTokenIfNecessary(request);
+    }
 }

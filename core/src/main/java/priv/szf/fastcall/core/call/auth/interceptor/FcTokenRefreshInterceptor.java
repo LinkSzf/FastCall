@@ -5,11 +5,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.auth.FcAuthHandlerDelegate;
-import priv.szf.fastcall.core.model.FcTokenPak;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -27,44 +24,18 @@ public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor {
             return chain.proceed(request);
         }
 
-        authHandler.preRefreshTokenIfNecessary(request);
+        // 访问之前先在本地判断是否token过期，过期则先刷新
+        boolean isRefreshed = authHandler.refreshTokenIfNecessary(request);
+        Request newRequest = isRefreshed ? authHandler.modifyRequest(request) : request;
+        Response response = chain.proceed(newRequest);
 
-//        if () {
-//
-//        }
-//
-//        FcSystemPak system = request.tag(FcSystemPak.class);
-//        String systemKey = system != null ? system.getCode() : "default";
-//        Object systemLock = systemLocks.computeIfAbsent(systemKey, k -> new Object());
-//
-//        FcTokenPak tokenPak = request.tag(FcTokenPak.class);
-//
-//        if (authHandler.isInvalidToken(tokenPak)) {
-//            synchronized (systemLock) {
-//                if (authHandler.isInvalidToken(tokenPak)) {
-//                    authHandler.refreshToken(system, auth);
-//                }
-//            }
-//
-//            // 用新token继续调用并返回Response
-//        }
-
-        Response response = chain.proceed(request);
-
-//        if (response.code() == 401) {
-//            synchronized (systemLock) {
-//                // 再次检查，防止其他线程已经刷新了token
-//                if (response.code() == 401) {
-//                    refreshToken(system);
-//                    // 创建新请求并重试
-//                    Request newRequest = request.newBuilder()
-//                            .header("Authorization", "Bearer " + authHandler.getCurrentToken(system))
-//                            .build();
-//                    response.close();
-//                    return chain.proceed(newRequest);
-//                }
-//            }
-//        }
+        // 访问之后判断响应是否返回认证失败，失败则刷新后重试
+        boolean isRedo = authHandler.refreshTokenIfNecessary(newRequest, response);
+        if (isRedo) {
+            response.close();
+            Request finalRequest = authHandler.modifyRequest(request);
+            return chain.proceed(finalRequest);
+        }
 
         return response;
     }

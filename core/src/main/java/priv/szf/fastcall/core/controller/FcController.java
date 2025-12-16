@@ -65,7 +65,7 @@ public class FcController {
     }
 
     @GetMapping("/api/test")
-    public FastCallResponse<?> ApiTest(@RequestParam String systemCode, @RequestParam String apiName) {
+    public FastCallResponse<?> apiTest(@RequestParam String systemCode, @RequestParam String apiName) {
         return fastCall.getClient(systemCode)
                 .newCall()
                 .url(apiName)

@@ -18,6 +18,9 @@ import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
+import java.util.Objects;
+import java.util.Optional;
+
 public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> extends FcBaseAuthHandler<T> {
 
     abstract IFcSource getSource();
@@ -25,7 +28,9 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
     @Override
     public Request modifyRequest(Request request) {
         String token = getToken(request);
-
+        if (Objects.isNull(token)) {
+            return request;
+        }
         String authorization = getAuthType().getPrefix() + token;
         return request.newBuilder()
                 .header(FcHttpHeader.AUTHORIZATION.getName(), authorization)
@@ -43,7 +48,9 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
     }
 
     String getToken(Request request) {
-        return getAccessToken(request).getToken();
+        return Optional.ofNullable(getAccessToken(request))
+                .map(FcTokenPak::getToken)
+                .orElse(null);
     }
 
     @Override

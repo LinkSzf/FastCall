@@ -46,15 +46,4 @@ public class FcBearerTokenAuthHandler extends FcBaseTokenAuthHandler<BearerToken
         return super.getToken(request);
     }
 
-    //    @Override
-//    public Request modifyRequest(Request request) {
-//        FcTokenPak accessToken = getAccessToken(request);
-//        String authorization = getAuthType().getPrefix() + accessToken.getToken();
-//        return request.newBuilder()
-//                .header("Authorization", authorization)
-//                .build();
-//    }
-
-
-
 }

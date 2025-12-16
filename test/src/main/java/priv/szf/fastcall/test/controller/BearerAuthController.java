@@ -11,6 +11,7 @@ import priv.szf.fastcall.test.pojo.BearerAuthRequestBody;
 import priv.szf.fastcall.test.pojo.BearerAuthResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/auth/bearer")
@@ -20,6 +21,8 @@ public class BearerAuthController {
 
     private static final long EXPIRE = 60;
 
+    private LocalDateTime lastAuthTime = LocalDateTime.now();
+
 
     @PostMapping
     public BearerAuthResponseBody bearerAuth(@RequestBody BearerAuthRequestBody bearerAuthRequestBody) {
@@ -28,6 +31,15 @@ public class BearerAuthController {
                 bearerAuthRequestBody.getUser(),
                 bearerAuthRequestBody.getPwd()
         );
+
+        // 通过这个检测在客户端持有的token失效且并发访问的情况下，客户端能否有效进行并发控制
+        if (LocalDateTime.now().minusMinutes(EXPIRE).isBefore(lastAuthTime)) {
+            throw new RuntimeException(
+                    String.format("请勿短期重复申请！上次申请时间为：%s, 冷却期为：%s秒", lastAuthTime, EXPIRE)
+            );
+        }
+
+        this.lastAuthTime = LocalDateTime.now();
 
         return BearerAuthResponseBody.builder()
                 .timestamp(System.currentTimeMillis())
