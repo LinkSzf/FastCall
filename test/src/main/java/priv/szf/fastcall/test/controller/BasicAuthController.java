@@ -7,15 +7,20 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/auth/basic")
 public class BasicAuthController {
 
-    @GetMapping("/basic")
+    @GetMapping
     public String basicAuth(HttpServletRequest request) {
-        String authorization = request.getHeader("pwd");
-        System.out.println(authorization);
-        return "hello world!";
+        String authorization = request.getHeader("Authorization");
+        System.out.println("Test-BasicAuth内容:" + authorization);
+        return authorization;
     }
+
+
+
+
+
 
 
 

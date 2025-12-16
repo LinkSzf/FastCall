@@ -65,13 +65,11 @@ public class FastCallClient {
             if (Objects.nonNull(body)) {
                 String bodyStr = body.string();
                 try {
-                    if (String.class == dataType) {
+                    if (String.class == dataType || Object.class == dataType) {
                         data = (T) bodyStr;
                     }
                     else if (JSONUtil.isTypeJSON(bodyStr)) {
                         data = JSONUtil.toBean(bodyStr, dataType);
-                    } else {
-                        data = (T) bodyStr;
                     }
                 } catch (ClassCastException e) {
                     throw new FcUnexpectedException(e,

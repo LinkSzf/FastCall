@@ -34,12 +34,6 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Starter (不包含web，因为这是工具包) -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter</artifactId>-->
-<!--            <version>${spring-boot.version}</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -78,7 +72,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <!-- HuTools -->
@@ -86,13 +80,6 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
-        </dependency>
-
-        <!-- FastJson -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
         </dependency>
 
         <!-- Apache Commons -->

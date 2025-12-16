@@ -17,8 +17,8 @@ public class FcSystemDTO {
     @Size(min = 1, max = 50, message = "名称长度必须在1到50个字符之间")
     private String name;
 
-    @NotNull(message = "代码不能为空")
-    @Size(min = 1, max = 10, message = "代码长度必须在1到10个字符之间")
+    @NotNull(message = "系统识别代码不能为空")
+    @Size(min = 1, max = 30, message = "系统识别代码长度必须在1到30个字符之间")
     private String code;
 
     @NotNull(message = "是否启用不能为空")
