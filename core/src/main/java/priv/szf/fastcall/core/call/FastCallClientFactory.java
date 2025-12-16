@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.call;
 
 
 import lombok.RequiredArgsConstructor;
+import okhttp3.Cache;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
@@ -17,8 +18,10 @@ import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +82,14 @@ public class FastCallClientFactory {
         int readTimeout = settingPak.getReadTimeout();
         int writeTimeout = settingPak.getWriteTimeout();
 
+        Cache cache = Optional.ofNullable(properties.getCache())
+                .filter(FastCallProperties.Cache::isEnable)
+                .map(cacheSetting -> {
+                    File cacheFile = new File(cacheSetting.getPath());
+                    return new Cache(cacheFile, cacheSetting.getMaxSize());
+                })
+                .orElse(null);
+
         return new OkHttpClient.Builder()
                 .connectTimeout(connectTimeout, TimeUnit.SECONDS)
                 .readTimeout(readTimeout, TimeUnit.SECONDS)
@@ -88,6 +99,7 @@ public class FastCallClientFactory {
                 .dispatcher(dispatcher)
                 .addInterceptor(authInceptor)
                 .addNetworkInterceptor(tokenRefreshInterceptor)
+                .cache(cache)
                 .build();
     }
 

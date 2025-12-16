@@ -3,7 +3,8 @@ package priv.szf.fastcall.core.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+
+import java.nio.file.Paths;
 
 @ConfigurationProperties(prefix = "fast-call")
 @Data
@@ -13,6 +14,9 @@ public class FastCallProperties {
 
     /** 连接池配置 */
     private Pool pool = new Pool();
+
+    /** 缓存配置 */
+    private Cache cache = new Cache();
 
     /** 最大并发请求数 */
     private int maxRequests = 200;
@@ -50,5 +54,17 @@ public class FastCallProperties {
     public static class Retry {
         private int maxAttempts = 3;
         private long delayMillis = 1000;
+    }
+
+    @Data
+    public static class Cache {
+        /** 启用请求缓存*/
+        private boolean enable = false;
+
+        /** 缓存最大大小（Byte）*/
+        private long maxSize = 10 * 1024 * 1024;
+
+        /** 缓存存储路径*/
+        private String path = Paths.get(System.getProperty("java.io.tmpdir"), "fast-call-cache").toString();
     }
 }

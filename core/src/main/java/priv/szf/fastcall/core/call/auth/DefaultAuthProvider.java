@@ -30,8 +30,8 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
     public FcTokenPak mapToToken(FastCallResponse<String> response, T authContent) {
         if (!response.isSuccessful()) {
             throw new FcUnexpectedException(
-                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s]",
-                            identity, response.getCode(), response.getMessage())
+                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s], data[%s]",
+                            identity, response.getCode(), response.getMessage(), response.getData())
             );
         }
 

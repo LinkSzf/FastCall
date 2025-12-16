@@ -2,6 +2,8 @@ package priv.szf.fastcall.test.controller;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +14,7 @@ import priv.szf.fastcall.test.pojo.BearerAuthResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth/bearer")
@@ -21,7 +24,7 @@ public class BearerAuthController {
 
     private static final long EXPIRE = 60;
 
-    private LocalDateTime lastAuthTime = LocalDateTime.now();
+    private LocalDateTime lastAuthTime = LocalDateTime.now().minusSeconds(EXPIRE);
 
 
     @PostMapping
@@ -33,7 +36,8 @@ public class BearerAuthController {
         );
 
         // 通过这个检测在客户端持有的token失效且并发访问的情况下，客户端能否有效进行并发控制
-        if (LocalDateTime.now().minusMinutes(EXPIRE).isBefore(lastAuthTime)) {
+        if (LocalDateTime.now().minusSeconds(EXPIRE).isBefore(lastAuthTime)) {
+            System.out.println("请勿短期重复申请！");
             throw new RuntimeException(
                     String.format("请勿短期重复申请！上次申请时间为：%s, 冷却期为：%s秒", lastAuthTime, EXPIRE)
             );
@@ -49,12 +53,15 @@ public class BearerAuthController {
 
 
     @GetMapping("/resource")
-    public String getResource(HttpServletRequest  request) {
+    public ResponseEntity<String> getResource(HttpServletRequest  request) {
+        System.out.println("资源被请求了！");
         String authorization = request.getHeader("Authorization");
         if (!StringUtils.endsWith(authorization, TOKEN)) {
-            return "拒绝访问资源：未认证！";
+            return ResponseEntity.ok().body("拒绝访问资源：未认证！");
         }
-        return "Hello World!";
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.SECONDS))
+                .body("Hello World!");
     }
 
 

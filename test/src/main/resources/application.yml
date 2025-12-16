@@ -11,6 +11,9 @@ fast-call:
     connect-timeout: 15
     read-timeout: 45
     write-timeout: 45
+  cache:
+    enable: true
+    max-size: 10485760
   max-requests: 200
   max-requests-per-host: 20
   enable-memory-cache: true
