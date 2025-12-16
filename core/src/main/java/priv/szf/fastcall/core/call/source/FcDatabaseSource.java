@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.call.source;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.common.FcBizException;
@@ -72,6 +73,7 @@ public class FcDatabaseSource implements IFcSource {
         return getSourcePak(systemCode).getAccessToken();
     }
 
+    @Async
     @Override
     public void updateAccessToken(String systemCode, FcTokenPak token) {
         FcToken accessToken = pakMapping.toToken(token);

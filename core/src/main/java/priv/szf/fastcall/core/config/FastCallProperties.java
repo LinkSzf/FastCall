@@ -65,6 +65,9 @@ public class FastCallProperties {
         private long maxSize = 10 * 1024 * 1024;
 
         /** 缓存存储路径*/
-        private String path = Paths.get(System.getProperty("java.io.tmpdir"), "fast-call-cache").toString();
+        private String path = Paths.get(
+                                        System.getProperty("java.io.tmpdir"),
+                                        "fast-call-cache"
+                                ).toString();
     }
 }
