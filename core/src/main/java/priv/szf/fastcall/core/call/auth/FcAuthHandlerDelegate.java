@@ -72,22 +72,15 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return handler;
     }
 
-    public boolean refreshTokenIfNecessary(Request request) {
+    public boolean preRefreshTokenIfNecessary(Request request) {
         IFcAuthHandler handler = getHandler(request);
-        FcSourcePak sourceInfo = handler.getSourceInfo(request);
-        String systemCode = handler.getSystemCode(request);
-        Object systemLock = systemLocks.computeIfAbsent(systemCode, k -> new Object());
-
-        if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
-            synchronized (systemLock) {
-                if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
-                    handler.refreshToken(request);
-                }
-            }
-            return true;
+        if (!handler.isAuthPreRefreshable()) {
+            return false;
         }
 
-        return false;
+        doRefreshToken(handler, request, null);
+
+        return true;
     }
 
     public boolean refreshTokenIfNecessary(Request request, Response response) {
@@ -96,6 +89,22 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
             return false;
         }
 
-        return refreshTokenIfNecessary(request);
+        IFcAuthHandler handler = getHandler(request);
+        doRefreshToken(handler, request, response);
+        return true;
+    }
+
+    private void doRefreshToken(IFcAuthHandler handler, Request request, Response response) {
+        FcSourcePak sourceInfo = handler.getSourceInfo(request);
+        String systemCode = handler.getSystemCode(request);
+        Object systemLock = systemLocks.computeIfAbsent(systemCode, k -> new Object());
+
+        if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
+            synchronized (systemLock) {
+                if (handler.isInvalidToken(sourceInfo.getAccessToken())) {
+                    handler.refreshToken(request, response);
+                }
+            }
+        }
     }
 }

@@ -25,7 +25,7 @@ public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor {
         }
 
         // 访问之前先在本地判断是否token过期，过期则先刷新
-        boolean isRefreshed = authHandler.refreshTokenIfNecessary(request);
+        boolean isRefreshed = authHandler.preRefreshTokenIfNecessary(request);
         Request newRequest = isRefreshed ? authHandler.modifyRequest(request) : request;
         Response response = chain.proceed(newRequest);
 

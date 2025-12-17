@@ -69,6 +69,7 @@ public class FcController {
         return fastCall.getClient(systemCode)
                 .newCall()
                 .url(apiName)
+                .prepared()
                 .call();
     }
 

@@ -14,6 +14,8 @@ public enum AuthType {
 
     BASIC(BasicAuth.class, "Basic "),
 
+    DIGEST(DigestAuth.class, "Digest "),
+
     BEARER(BearerTokenAuth.class, "Bearer ");
 
     AuthType(Class<? extends BaseAuthContent> clazz) {

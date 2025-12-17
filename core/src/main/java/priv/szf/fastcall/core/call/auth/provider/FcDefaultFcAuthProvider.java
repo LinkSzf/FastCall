@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call.auth;
+package priv.szf.fastcall.core.call.auth.provider;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
@@ -8,6 +8,8 @@ import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallResponse;
+import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
+import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthProvider<T> {
+public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IFcAuthProvider<T> {
 
     private static final long DEFAULT_EXPIRED_IN = 3600 * 24 * 7;
 
@@ -28,12 +30,7 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
 
     @Override
     public FcTokenPak mapToToken(FastCallResponse<String> response, T authContent) {
-        if (!response.isSuccessful()) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s], data[%s]",
-                            identity, response.getCode(), response.getMessage(), response.getData())
-            );
-        }
+        checkSuccess(response);
 
         String data = response.getData();
         if (Objects.isNull(data)) {
@@ -56,13 +53,26 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
                 .build();
     }
 
-    public LocalDateTime getEstimatedExpiration(JSONObject jsonData, String fieldPath, LocalDateTime issuance) {
+    protected String getIdentity() {
+        return identity;
+    }
+
+    protected void checkSuccess(FastCallResponse<String> response) {
+        if (!response.isSuccessful()) {
+            throw new FcUnexpectedException(
+                    String.format("FastCall-系统[%s]刷新认证失败，code[%s], message[%s], data[%s]",
+                            getIdentity(), response.getCode(), response.getMessage(), response.getData())
+            );
+        }
+    }
+
+    protected LocalDateTime getEstimatedExpiration(JSONObject jsonData, String fieldPath, LocalDateTime issuance) {
         Long expiredIn = jsonData.getByPath(fieldPath, Long.class);
         long expiredInNum = (Objects.isNull(expiredIn)) ? DEFAULT_EXPIRED_IN : expiredIn;
         return issuance.plusSeconds(expiredInNum);
     }
 
-    public LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {
+    protected LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {
         String issuance = jsonData.getByPath(fieldPath, String.class);
         if (StringUtils.isNotBlank(issuance)) {
             if (NumberUtil.isLong(issuance)) {
@@ -74,12 +84,12 @@ public class DefaultAuthProvider<T extends BaseDynAuthContent> implements IAuthP
         return LocalDateTime.now();
     }
 
-    public String getToken(JSONObject jsonData, String fieldPath) {
+    protected String getToken(JSONObject jsonData, String fieldPath) {
         String token = jsonData.getByPath(fieldPath, String.class);
         if (StringUtils.isBlank(token)) {
             throw new FcUnexpectedException(
                     String.format("FastCall-系统[%s]刷新认证失败，响应体[%s]中路径[%s]未找到token字段",
-                            identity, jsonData, fieldPath)
+                            getIdentity(), jsonData, fieldPath)
             );
         }
         return token;

@@ -21,7 +21,7 @@ public class FcBearerTokenAuthHandler extends FcBaseTokenAuthHandler<BearerToken
     }
 
     @Override
-    IFcSource getSource() {
+    protected IFcSource getSource() {
         return source;
     }
 

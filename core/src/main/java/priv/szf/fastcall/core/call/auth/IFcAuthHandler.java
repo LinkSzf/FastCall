@@ -1,6 +1,7 @@
 package priv.szf.fastcall.core.call.auth;
 
 import okhttp3.Request;
+import okhttp3.Response;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.model.FcTokenPak;
@@ -22,6 +23,10 @@ public interface IFcAuthHandler {
         return false;
     }
 
+    default boolean isAuthPreRefreshable() {
+        return true;
+    }
+
     default boolean isInvalidToken(FcTokenPak accessToken) {
         if (Objects.isNull(accessToken)) {
             return true;
@@ -32,5 +37,5 @@ public interface IFcAuthHandler {
                 || estimatedExpirationTime.isBefore(LocalDateTime.now());
     }
 
-    default void refreshToken(Request request) {}
+    default void refreshToken(Request request, Response response) {}
 }

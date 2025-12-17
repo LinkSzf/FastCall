@@ -23,6 +23,7 @@ import priv.szf.fastcall.core.common.FcRequestMethod;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,7 +33,10 @@ public class FastCallClient {
     private final OkHttpClient client;
 
     private final FcSourcePak source;
-    private <T> FastCallResponse<T> call(Builder<T> builder) {
+
+    private static final ThreadLocal<Builder<?>> LOCAL_BUILDER = new ThreadLocal<>();
+
+    private <T> Request createRequest(Builder<T> builder) {
         Headers.Builder headerBuilder = new Headers.Builder();
         builder.headers.forEach(headerBuilder::add);
         Headers headers = headerBuilder.build();
@@ -46,50 +50,70 @@ public class FastCallClient {
 
         String url = builder.fullUrl;
 
-        Request request = new Request.Builder()
+        return new Request.Builder()
                 .tag(FcSourcePak.class, source)
                 .tag(FcCallType.class, builder.callType)
                 .url(url)
                 .headers(headers)
                 .method(method.getName(), requestBody)
                 .build();
+    }
+
+    private <T> FastCallResponse<T> buildStandardResponse(Builder<T> builder, Response response) {
+        int code = response.code();
+        String message = response.message();
+        boolean isSuccessful = response.isSuccessful();
+        ResponseBody body = response.body();
+        T data = readResponseBodyData(builder.dataType, body, builder.fullUrl);
+        Headers headers = response.headers();
+        Map<String, List<String>> headersMap = headers.toMultimap();
+
+
+        return FastCallResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .isSuccessful(isSuccessful)
+                .data(data)
+                .headers(headersMap)
+                .build();
+    }
+
+    private <T> FastCallResponse<T> doCall(Builder<T> builder) {
+        Request request = createRequest(builder);
 
         Call call = client.newCall(request);
+
         try (Response response = call.execute()) {
-            int code = response.code();
-            String message = response.message();
-            boolean isSuccessful = response.isSuccessful();
-            ResponseBody body = response.body();
-            T data = null;
-            Class<T> dataType = builder.dataType;
-            if (Objects.nonNull(body)) {
-                String bodyStr = body.string();
-                try {
-                    if (String.class == dataType || Object.class == dataType) {
-                        data = (T) bodyStr;
-                    }
-                    else if (JSONUtil.isTypeJSON(bodyStr)) {
-                        data = JSONUtil.toBean(bodyStr, dataType);
-                    }
-                } catch (ClassCastException e) {
-                    throw new FcUnexpectedException(e,
-                            String.format("FastCall-url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
-                                    url,
-                                    bodyStr,
-                                    dataType.getName()));
-                }
-            }
-
-            return FastCallResponse.<T>builder()
-                    .code(code)
-                    .message(message)
-                    .isSuccessful(isSuccessful)
-                    .data(data)
-                    .build();
-
+            return buildStandardResponse(builder, response);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，IO异常", url));
+            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，IO异常", builder.fullUrl));
         }
+    }
+
+    private <T> T readResponseBodyData(Class<T> dataType, ResponseBody body, String url) {
+        if (Objects.isNull(body)) {
+            return null;
+        }
+
+        T data = null;
+        String bodyStr = null;
+        try {
+            bodyStr = body.string();
+            if (String.class == dataType || Object.class == dataType) {
+                data = (T) bodyStr;
+            } else if (JSONUtil.isTypeJSON(bodyStr)) {
+                data = JSONUtil.toBean(bodyStr, dataType);
+            }
+        } catch (IOException e) {
+            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，读取响应体字符串时IO异常", url));
+        } catch (ClassCastException e) {
+            throw new FcUnexpectedException(e,
+                    String.format("FastCall-url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
+                            url,
+                            bodyStr,
+                            dataType.getName()));
+        }
+        return data;
     }
 
     public <T> Builder<T> newCall(Class<T> dataType) {
@@ -98,6 +122,22 @@ public class FastCallClient {
 
     public <T> Builder<T> newCall() {
         return new Builder<>(this, (Class<T>)Object.class);
+    }
+
+    public <T> FastCallResponse<T> call() {
+        Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
+        try {
+            return doCall(builder);
+        }
+        finally {
+            LOCAL_BUILDER.remove();
+        }
+    }
+
+    public <T> FastCallResponse<T> anonymousCall() {
+        Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
+        builder.callType = FcCallType.ANONYMOUS;
+        return call();
     }
 
     public class Builder<T> {
@@ -168,17 +208,15 @@ public class FastCallClient {
             return this;
         }
 
-        public FastCallResponse<T> call() {
+        public FastCallClient prepared() {
             this.fullUrl = URLUtil.completeUrl(host, url);
             if (CollectionUtil.isNotEmpty(params)) {
                 this.fullUrl = this.fullUrl + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             }
-            return client.call(this);
-        }
 
-        public FastCallResponse<T> anonymousCall() {
-            this.callType = FcCallType.ANONYMOUS;
-            return call();
+            LOCAL_BUILDER.set(this);
+
+            return this.client;
         }
 
     }
