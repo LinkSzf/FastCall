@@ -4,7 +4,6 @@ import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.call.FastCallResponse;
-import priv.szf.fastcall.core.call.auth.provider.digest.ClientNonceMagnager;
 import priv.szf.fastcall.core.call.auth.provider.digest.DigestChallenge;
 import priv.szf.fastcall.core.call.auth.provider.digest.DigestCredential;
 import priv.szf.fastcall.core.common.FcHttpHeader;
@@ -14,14 +13,14 @@ import priv.szf.fastcall.core.model.auth.DigestAuth;
 
 import java.time.LocalDateTime;
 
-public class FcDigestAuthProvider extends FcDefaultFcAuthProvider<DigestAuth> {
+public class FcDigestAuthProvider extends FcDefaultFcAuthProvider<DigestAuth, DigestCredential> {
 
     public FcDigestAuthProvider(String identity) {
         super(identity);
     }
 
     @Override
-    public FcTokenPak mapToToken(Request request, FastCallResponse<String> response, DigestAuth authContent) {
+    public FcTokenPak<DigestCredential> mapToToken(Request request, FastCallResponse<String> response, DigestAuth authContent) {
         super.checkSuccess(response);
 
         String authenticateHeader = response.getHeader(FcHttpHeader.WWW_AUTHENTICATE.getName());
@@ -33,7 +32,6 @@ public class FcDigestAuthProvider extends FcDefaultFcAuthProvider<DigestAuth> {
         }
 
         DigestChallenge challenge = DigestChallenge.parse(authenticateHeader);
-        int nextNc = ClientNonceMagnager.system(getIdentity()).getNextNc(challenge.getNonce());
         String method = request.method();
         String uri = request.url().encodedPath();
         byte[] body = FcUtils.readRequestBody(request);
@@ -44,13 +42,11 @@ public class FcDigestAuthProvider extends FcDefaultFcAuthProvider<DigestAuth> {
                 .uri(uri)
                 .method(method)
                 .body(body)
-                .nc(nextNc)
+                .system(getIdentity())
                 .build();
 
-        String authHeader = credentials.buildCredentialStr();
-
-        return FcTokenPak.builder()
-                .token(authHeader)
+        return FcTokenPak.<DigestCredential>builder()
+                .token(credentials)
                 .issuance(LocalDateTime.now())
                 .estimatedExpiration(LocalDateTime.MAX)
                 .build();

@@ -6,6 +6,7 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IFcAuthProvider<T> {
+public class FcDefaultFcAuthProvider<C extends BaseDynAuthContent, T> implements IFcAuthProvider<C, T> {
 
     private static final long DEFAULT_EXPIRED_IN = 3600 * 24 * 7;
 
@@ -29,7 +30,7 @@ public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IF
     }
 
     @Override
-    public FcTokenPak mapToToken(FastCallResponse<String> response, T authContent) {
+    public FcTokenPak<T> mapToToken(Request request, FastCallResponse<String> response, C authContent) {
         checkSuccess(response);
 
         String data = response.getData();
@@ -43,10 +44,10 @@ public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IF
 
         JSONObject jsonData = JSONUtil.parseObj(data);
 
-        String tokenStr = getToken(jsonData, authContent.getTokenField());
+        T tokenStr = getToken(jsonData, authContent.getTokenField());
         LocalDateTime issuance = getIssuance(jsonData, authContent.getIssuanceField());
         LocalDateTime estimatedExpiration = getEstimatedExpiration(jsonData, authContent.getExpiredInField(), issuance);
-        return FcTokenPak.builder()
+        return FcTokenPak.<T>builder()
                 .token(tokenStr)
                 .issuance(issuance)
                 .estimatedExpiration(estimatedExpiration)
@@ -84,7 +85,7 @@ public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IF
         return LocalDateTime.now();
     }
 
-    protected String getToken(JSONObject jsonData, String fieldPath) {
+    protected T getToken(JSONObject jsonData, String fieldPath) {
         String token = jsonData.getByPath(fieldPath, String.class);
         if (StringUtils.isBlank(token)) {
             throw new FcUnexpectedException(
@@ -92,7 +93,7 @@ public class FcDefaultFcAuthProvider<T extends BaseDynAuthContent> implements IF
                             getIdentity(), jsonData, fieldPath)
             );
         }
-        return token;
+        return (T) token;
     }
 
 }

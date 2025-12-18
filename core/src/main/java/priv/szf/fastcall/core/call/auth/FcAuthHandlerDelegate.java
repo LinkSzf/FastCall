@@ -5,6 +5,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.call.auth.handler.FcBaseTokenAuthHandler;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
@@ -52,10 +53,12 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return getHandler(request).modifyRequest(request);
     }
 
-    @Override
     public boolean isAuthRefreshable(Request request) {
         IFcAuthHandler handler = getHandler(request);
-        return handler.isAuthRefreshable(request);
+        if (handler instanceof FcBaseTokenAuthHandler) {
+            return ((FcBaseTokenAuthHandler<?, ?>) handler).isAuthRefreshable(request);
+        }
+        return false;
     }
 
     private IFcAuthHandler getHandler(Request request) {
@@ -74,11 +77,12 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
 
     public boolean preRefreshTokenIfNecessary(Request request) {
         IFcAuthHandler handler = getHandler(request);
-        if (!handler.isAuthPreRefreshable()) {
+
+        if (!((FcBaseTokenAuthHandler<?, ?>) handler).isAuthPreRefreshable()) {
             return false;
         }
 
-        doRefreshToken(handler, request, null);
+        doRefreshToken(((FcBaseTokenAuthHandler<?, ?>) handler), request, null);
 
         return true;
     }
@@ -89,12 +93,12 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
             return false;
         }
 
-        IFcAuthHandler handler = getHandler(request);
+        FcBaseTokenAuthHandler<?, ?> handler = (FcBaseTokenAuthHandler<?, ?>) getHandler(request);
         doRefreshToken(handler, request, response);
         return true;
     }
 
-    private void doRefreshToken(IFcAuthHandler handler, Request request, Response response) {
+    private void doRefreshToken(FcBaseTokenAuthHandler<?, ?> handler, Request request, Response response) {
         FcSourcePak sourceInfo = handler.getSourceInfo(request);
         String systemCode = handler.getSystemCode(request);
         Object systemLock = systemLocks.computeIfAbsent(systemCode, k -> new Object());

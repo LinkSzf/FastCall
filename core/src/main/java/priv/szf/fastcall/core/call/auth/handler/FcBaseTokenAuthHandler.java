@@ -19,16 +19,17 @@ import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> extends FcBaseAuthHandler<T> {
+public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> extends FcBaseAuthHandler<C> {
 
     protected abstract IFcSource getSource();
 
     @Override
     public Request modifyRequest(Request request) {
-        String token = getToken(request);
+        T token = getToken(request);
         if (Objects.isNull(token)) {
             return request;
         }
@@ -38,36 +39,47 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
                 .build();
     }
 
-    @Override
     public boolean isAuthRefreshable(Request request) {
         return true;
     }
 
-    FcTokenPak getAccessToken(Request request) {
+    public boolean isAuthPreRefreshable() {
+        return true;
+    }
+
+    public boolean isInvalidToken(FcTokenPak<T> accessToken) {
+        if (Objects.isNull(accessToken)) {
+            return true;
+        }
+
+        LocalDateTime estimatedExpirationTime = accessToken.getEstimatedExpiration();
+        return Objects.isNull(estimatedExpirationTime)
+                || estimatedExpirationTime.isBefore(LocalDateTime.now());
+    }
+
+    FcTokenPak<T> getAccessToken(Request request) {
         String systemCode = getSystemCode(request);
         return getSource().getAccessToken(systemCode);
     }
 
-    String getToken(Request request) {
+    T getToken(Request request) {
         return Optional.ofNullable(getAccessToken(request))
-                .map(FcTokenPak::getToken)
+                .map(FcTokenPak<T>::getToken)
                 .orElse(null);
     }
-
-    @Override
     public void refreshToken(Request request, Response response) {
         String systemCode = getSystemCode(request);
-        FcTokenPak token = callAndGetToken(request, response, systemCode);
+        FcTokenPak<T> token = callAndGetToken(request, response, systemCode);
 
         getSource().updateAccessToken(systemCode, token);
     }
 
-    protected FcTokenPak callAndGetToken(Request request, Response response, String systemCode) {
-        IFcAuthProvider<T> authProvider = getAuthProvider(systemCode);
+    protected FcTokenPak<T> callAndGetToken(Request request, Response response, String systemCode) {
+        IFcAuthProvider<C, T> authProvider = getAuthProvider(systemCode);
 
         FastCallClient client = FastCallClientFactory.getExistedClient(systemCode);
         FcSourcePak sourceInfo = getSourceInfo(request);
-        T authContent = getAuthContent(request);
+        C authContent = getAuthContent(request);
 
         FastCallResponse<String> authResponse = client.newCall(String.class)
                 .url(getUrl(sourceInfo))
@@ -78,11 +90,11 @@ public abstract class FcBaseTokenAuthHandler<T extends BaseDynAuthContent> exten
                 .prepared()
                 .anonymousCall();
 
-        return authProvider.mapToToken(authResponse, authContent);
+        return authProvider.mapToToken(request, authResponse, authContent);
     }
 
 
-    protected IFcAuthProvider<T> getAuthProvider(String systemCode) {
+    protected IFcAuthProvider<C, T> getAuthProvider(String systemCode) {
         return new FcDefaultFcAuthProvider<>(systemCode);
     }
 

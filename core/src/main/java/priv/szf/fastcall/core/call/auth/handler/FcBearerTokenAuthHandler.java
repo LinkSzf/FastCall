@@ -11,7 +11,7 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
-public class FcBearerTokenAuthHandler extends FcBaseTokenAuthHandler<BearerTokenAuth> {
+public class FcBearerTokenAuthHandler extends FcBaseTokenAuthHandler<BearerTokenAuth, String> {
 
     private final IFcSource source;
 

@@ -2,12 +2,14 @@ package priv.szf.fastcall.core.call.auth.provider.digest;
 
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.digest.Digester;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
 import java.util.Objects;
 
+@Getter
 public class DigestCredential {
 
     private String username;
@@ -24,7 +26,7 @@ public class DigestCredential {
 
     private String opaque;
 
-    private String qop = "auth";
+    private String qop;
 
     private DigestAlgorithm algorithm = DigestAlgorithm.MD5;
 
@@ -36,11 +38,24 @@ public class DigestCredential {
 
     private String bodyHash;
 
+    private String system;
+
+    private String credentialStr;
+
     public static Builder builder() {
         return new Builder();
     }
 
     public String buildCredentialStr() {
+        if (Objects.nonNull(credentialStr) && !existQop()) {
+            return this.credentialStr;
+        }
+
+        if (existQop()) {
+            this.nc = ClientNonceMagnager.system(system).getNextNc(nonce);
+        }
+        this.cnonce = generateClientNonce();
+        this.response = calculateResponse();
         StringBuilder credential = new StringBuilder();
 
         credential.append("username=\"").append(username).append("\", ");
@@ -52,7 +67,7 @@ public class DigestCredential {
             credential.append("algorithm=").append(algorithm).append(", ");
         }
 
-        if (StringUtils.isNotBlank(qop)) {
+        if (existQop()) {
             String ncString = String.format("%08x", nc);
             credential.append("qop=").append(qop).append(", ");
             credential.append("nc=").append(ncString).append(", ");
@@ -64,19 +79,21 @@ public class DigestCredential {
         if (StringUtils.isNotBlank(opaque)) {
             credential.append(", opaque=\"").append(opaque).append("\"");
         }
+        this.credentialStr = credential.toString();
+        return this.credentialStr;
+    }
 
-        return credential.toString();
+    private boolean existQop() {
+        return StringUtils.isNotEmpty(qop);
     }
 
     private String calculateResponse() {
         String ha1 = calculateHA1();
         String ha2 = calculateHA2();
 
-        String ncString = String.format("%08x", nc);
-
-        String text = (StringUtils.isNotEmpty(qop) ?
-                StringUtils.joinWith(":", ha1, nonce, ncString, cnonce, qop, ha2)
-                : StringUtils.joinWith(":", ha1, nonce, ha2));
+        String text = existQop() ?
+                StringUtils.joinWith(":", ha1, nonce, String.format("%08x", nc), cnonce, qop, ha2)
+                : StringUtils.joinWith(":", ha1, nonce, ha2);
 
         return hash(text);
     }
@@ -125,79 +142,74 @@ public class DigestCredential {
 
     public static class Builder {
 
-        private final DigestCredential credentials = new DigestCredential();
+        private final DigestCredential credential = new DigestCredential();
 
         public Builder username(String username) {
-            this.credentials.username = username;
+            this.credential.username = username;
             return this;
         }
 
         public Builder password(String password) {
-            this.credentials.password = password;
+            this.credential.password = password;
             return this;
         }
 
         public Builder challenge(DigestChallenge challenge) {
-            this.credentials.realm = challenge.getRealm();
-            this.credentials.nonce = challenge.getNonce();
-            this.credentials.opaque = challenge.getOpaque();
+            this.credential.realm = challenge.getRealm();
+            this.credential.nonce = challenge.getNonce();
+            this.credential.opaque = challenge.getOpaque();
 
             if (StringUtils.isNotEmpty(challenge.getQop())) {
-                this.credentials.qop = challenge.getQop();
+                this.credential.qop = challenge.getQop();
             }
 
             if (StringUtils.isNotEmpty(challenge.getAlgorithm())) {
-                this.credentials.algorithm = DigestAlgorithm.fromString(challenge.getAlgorithm());
+                this.credential.algorithm = DigestAlgorithm.fromString(challenge.getAlgorithm());
             }
 
             return this;
         }
 
         public Builder uri(String uri) {
-            this.credentials.uri = uri;
+            this.credential.uri = uri;
             return this;
         }
 
         public Builder method(String method) {
-            this.credentials.method = method;
+            this.credential.method = method;
             return this;
         }
-
-        public Builder nc(int nc) {
-            this.credentials.nc = nc;
-            return this;
-        }
-
         public Builder body(byte[] body) {
             if (Objects.isNull(body)) {
                 body = new byte[0];
             }
-            this.credentials.bodyHash = credentials.hash(new String(body));
+            this.credential.bodyHash = credential.hash(new String(body));
+            return this;
+        }
+
+        public Builder system(String system) {
+            this.credential.system = system;
             return this;
         }
 
         public DigestCredential build() {
-            if (StringUtils.isAnyEmpty(credentials.username, credentials.password)) {
+            if (StringUtils.isAnyEmpty(credential.username, credential.password)) {
                 throw new IllegalArgumentException("用户名和密码不能为空");
             }
 
-            if (StringUtils.isAnyEmpty(credentials.realm, credentials.nonce)) {
+            if (StringUtils.isAnyEmpty(credential.realm, credential.nonce)) {
                 throw new IllegalArgumentException("realm和nonce不能为空");
             }
 
-            if (StringUtils.isAnyEmpty(credentials.uri, credentials.method)) {
+            if (StringUtils.isAnyEmpty(credential.uri, credential.method)) {
                 throw new IllegalArgumentException("URI和HTTP方法不能为空");
             }
 
-            if ("auth-int".equals(credentials.qop) && StringUtils.isEmpty(credentials.bodyHash)) {
-                throw new IllegalArgumentException("qop为auth时，bodyHash不能为空");
+            if ("auth-int".equals(credential.qop) && StringUtils.isEmpty(credential.bodyHash)) {
+                throw new IllegalArgumentException("qop为auth-int时，bodyHash不能为空");
             }
 
-            this.credentials.cnonce = credentials.generateClientNonce();
-
-            this.credentials.response = credentials.calculateResponse();
-
-            return credentials;
+            return credential;
         }
 
 

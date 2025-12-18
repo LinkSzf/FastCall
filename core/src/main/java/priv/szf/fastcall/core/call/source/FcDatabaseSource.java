@@ -51,7 +51,7 @@ public class FcDatabaseSource implements IFcSource {
         Long systemId = systemEntity.getId();
         FcAuthPak auth = getAuthBySysId(systemId);
 
-        FcTokenPak token = getAccessTokenBySysId(systemId);
+        FcTokenPak<?> token = getAccessTokenBySysId(systemId);
 
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
@@ -69,13 +69,13 @@ public class FcDatabaseSource implements IFcSource {
     }
 
     @Override
-    public FcTokenPak getAccessToken(String systemCode) {
+    public FcTokenPak<?> getAccessToken(String systemCode) {
         return getSourcePak(systemCode).getAccessToken();
     }
 
     @Async
     @Override
-    public void updateAccessToken(String systemCode, FcTokenPak token) {
+    public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
         FcToken accessToken = pakMapping.toToken(token);
         FcSystem system = getSystemByCode(systemCode);
         Long systemId = system.getId();
@@ -103,7 +103,7 @@ public class FcDatabaseSource implements IFcSource {
         return pakMapping.toAuthPak(auth);
     }
 
-    private FcTokenPak getAccessTokenBySysId(Long systemId) {
+    private FcTokenPak<?> getAccessTokenBySysId(Long systemId) {
         LambdaQueryWrapper<FcToken> tokenQw = Wrappers.<FcToken>lambdaQuery()
                 .eq(FcToken::getSysId, systemId);
         FcToken accessToken = tokenMapper.selectOne(tokenQw);

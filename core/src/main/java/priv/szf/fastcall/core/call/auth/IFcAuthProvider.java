@@ -4,9 +4,9 @@ import okhttp3.Request;
 import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.model.FcTokenPak;
 
-public interface IFcAuthProvider<T> {
+public interface IFcAuthProvider<C, T> {
 
-    Object getRequestBody(T authContent);
+    Object getRequestBody(C authContent);
 
-    FcTokenPak mapToToken(Request request, FastCallResponse<String> response, T authContent);
+    FcTokenPak<T> mapToToken(Request request, FastCallResponse<String> response, C authContent);
 }

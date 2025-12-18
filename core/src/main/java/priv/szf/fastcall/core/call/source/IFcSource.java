@@ -6,7 +6,7 @@ public interface IFcSource {
 
     FcSourcePak getSourcePak(String systemCode);
 
-    FcTokenPak getAccessToken(String systemCode);
+    <T> FcTokenPak<T> getAccessToken(String systemCode);
 
-    void updateAccessToken(String systemCode, FcTokenPak token);
+    <T> void updateAccessToken(String systemCode, FcTokenPak<T> token);
 }

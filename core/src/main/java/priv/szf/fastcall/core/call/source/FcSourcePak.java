@@ -17,7 +17,7 @@ public class FcSourcePak {
 
     private FcAuthPak auth;
 
-    private FcTokenPak accessToken;
+    private FcTokenPak<?> accessToken;
 
     private Map<String, FcApiPak> apiMap;
 

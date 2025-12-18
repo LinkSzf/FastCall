@@ -11,7 +11,7 @@ import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IFcAuthHandler {
+public abstract class FcBaseAuthHandler<C extends BaseAuthContent> implements IFcAuthHandler {
 
     @Override
     public FcSourcePak getSourceInfo(Request request) {
@@ -31,9 +31,9 @@ public abstract class FcBaseAuthHandler<T extends BaseAuthContent> implements IF
                 );
     }
 
-    T getAuthContent(Request request) {
+    C getAuthContent(Request request) {
         FcAuthPak authPak = getAuthInfo(request);
-        return (T) Optional.of(authPak)
+        return (C) Optional.of(authPak)
                 .map(FcAuthPak::getContent)
                 .orElseThrow(() ->
                         new FcUnexpectedException(String.format("FastCall-url[%s]未获取到设置的认证信息", request.url()))

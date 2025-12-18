@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 @Builder
 @Data
-public class FcTokenPak {
+public class FcTokenPak<T> {
 
-    private String token;
+    private T token;
 
     private LocalDateTime issuance;
 

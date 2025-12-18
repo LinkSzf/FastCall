@@ -30,7 +30,7 @@ public interface FcPakMapping {
 
     FcClientSettingPak toClientSettingPak(FastCallProperties.Client clientSetting);
 
-    FcTokenPak toTokenPak(FcToken token);
+    FcTokenPak<Object> toTokenPak(FcToken token);
 
-    FcToken toToken(FcTokenPak token);
+    FcToken toToken(FcTokenPak<Object> token);
 }
