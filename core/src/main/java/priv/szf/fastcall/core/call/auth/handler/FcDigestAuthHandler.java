@@ -50,27 +50,6 @@ public class FcDigestAuthHandler extends FcBaseTokenAuthHandler<DigestAuth> {
     protected FcTokenPak callAndGetToken(Request request, Response response, String systemCode) {
         IFcAuthProvider<DigestAuth> authProvider = getAuthProvider(systemCode);
 
-//        FastCallClient client = FastCallClientFactory.getExistedClient(systemCode);
-//        FcSourcePak sourceInfo = getSourceInfo(request);
-        DigestAuth authContent = getAuthContent(request);
-//        FastCallResponse<String> authResponse = client.newCall(String.class)
-//                .url(getUrl(sourceInfo))
-//                .method(FcRequestMethod.POST)
-//                .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)
-//                .header(FcHttpHeader.ACCEPT, FcMediaType.APPLICATION_JSON)
-//                .body(authProvider.getRequestBody(authContent))
-//                .prepared()
-//                .anonymousCall();
-
-//        String authenticateHeader = request.header(FcHttpHeader.WWW_AUTHENTICATE.getName());
-//        if (StringUtils.startsWith(authenticateHeader, getAuthType().getPrefix())) {
-//            throw new FcUnexpectedException(
-//                    String.format("FastCall-系统[%s]刷新认证失败，未识别到Digest认证头，code[%s], message[%s]",
-//                            systemCode, response.code(), response.message())
-//            );
-//        }
-
-
         Map<String, List<String>> headers = response.headers().toMultimap();
         FastCallResponse<String> authResponse = FastCallResponse.<String>builder()
                 .code(response.code())
@@ -79,7 +58,7 @@ public class FcDigestAuthHandler extends FcBaseTokenAuthHandler<DigestAuth> {
                 .headers(headers)
                 .build();
 
-
-        return authProvider.mapToToken(authResponse, authContent);
+        DigestAuth authContent = getAuthContent(request);
+        return authProvider.mapToToken(request, authResponse, authContent);
     }
 }
