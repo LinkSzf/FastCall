@@ -69,8 +69,8 @@ public class FcDatabaseSource implements IFcSource {
     }
 
     @Override
-    public FcTokenPak<?> getAccessToken(String systemCode) {
-        return getSourcePak(systemCode).getAccessToken();
+    public <T> FcTokenPak<T> getAccessToken(String systemCode) {
+        return (FcTokenPak<T>) getSourcePak(systemCode).getAccessToken();
     }
 
     @Async

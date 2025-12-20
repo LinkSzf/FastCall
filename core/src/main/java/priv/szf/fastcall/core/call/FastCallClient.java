@@ -197,7 +197,17 @@ public class FastCallClient {
             return header(key.getName(), value.getName());
         }
 
+        public Builder<T> headers(Map<String, String> headers) {
+            if (CollectionUtil.isNotEmpty(headers)) {
+                this.headers.putAll(headers);
+            }
+            return this;
+        }
+
         public Builder<T> body(Object body) {
+            if (Objects.isNull(body)) {
+                return this;
+            }
             String bodyStr = JSONUtil.toJsonStr(body);
             return body(bodyStr, FcMediaType.APPLICATION_JSON);
         }

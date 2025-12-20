@@ -25,11 +25,6 @@ public class FcDefaultFcAuthProvider<C extends BaseDynAuthContent, T> implements
     private final String identity;
 
     @Override
-    public Object getRequestBody(BaseDynAuthContent authContent) {
-        return authContent.getParams();
-    }
-
-    @Override
     public FcTokenPak<T> mapToToken(Request request, FastCallResponse<String> response, C authContent) {
         checkSuccess(response);
 

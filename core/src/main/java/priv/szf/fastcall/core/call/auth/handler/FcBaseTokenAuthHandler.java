@@ -18,6 +18,7 @@ import priv.szf.fastcall.core.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
+import priv.szf.fastcall.core.model.auth.FcAuthProp;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -80,12 +81,15 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
         FcSourcePak sourceInfo = getSourceInfo(request);
         C authContent = getAuthContent(request);
 
+        FcAuthProp authProp = authContent.getProp();
         FastCallResponse<String> authResponse = client.newCall(String.class)
                 .url(getUrl(sourceInfo))
+                .params(authProp.getParams())
                 .method(FcRequestMethod.POST)
                 .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)
                 .header(FcHttpHeader.ACCEPT, FcMediaType.APPLICATION_JSON)
-                .body(authProvider.getRequestBody(authContent))
+                .headers(authProp.getHeaders())
+                .body(authProp.getBody())
                 .prepared()
                 .anonymousCall();
 
