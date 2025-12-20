@@ -47,7 +47,7 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
         return true;
     }
 
-    public boolean isInvalidToken(FcTokenPak<T> accessToken) {
+    public boolean isInvalidToken(FcTokenPak<?> accessToken) {
         if (Objects.isNull(accessToken)) {
             return true;
         }
@@ -70,7 +70,6 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
     public void refreshToken(Request request, Response response) {
         String systemCode = getSystemCode(request);
         FcTokenPak<T> token = callAndGetToken(request, response, systemCode);
-
         getSource().updateAccessToken(systemCode, token);
     }
 
@@ -103,5 +102,8 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
         FcSystemPak system = source.getSystem();
         String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
         return URLUtil.completeUrl(host, auth.getPath());
+    }
+
+    public void doBeforeRefreshToken(Request request, Response response) {
     }
 }

@@ -76,7 +76,7 @@ public class FcDatabaseSource implements IFcSource {
     @Async
     @Override
     public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
-        FcToken accessToken = pakMapping.toToken(token);
+        FcToken accessToken = pakMapping.toToken((FcTokenPak<String>) token);
         FcSystem system = getSystemByCode(systemCode);
         Long systemId = system.getId();
         accessToken.setSysId(systemId);

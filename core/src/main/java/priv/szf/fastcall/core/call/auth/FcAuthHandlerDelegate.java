@@ -94,6 +94,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         }
 
         FcBaseTokenAuthHandler<?, ?> handler = (FcBaseTokenAuthHandler<?, ?>) getHandler(request);
+        handler.doBeforeRefreshToken(request, response);
         doRefreshToken(handler, request, response);
         return true;
     }

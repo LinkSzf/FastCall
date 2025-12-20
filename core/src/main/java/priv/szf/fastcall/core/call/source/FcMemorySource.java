@@ -30,15 +30,17 @@ public class FcMemorySource implements IFcSource {
     }
 
     @Override
-    public FcTokenPak<?> getAccessToken(String systemCode) {
-        return getSourcePak(systemCode).getAccessToken();
+    public <T> FcTokenPak<T> getAccessToken(String systemCode) {
+        return (FcTokenPak<T>) getSourcePak(systemCode).getAccessToken();
     }
 
     @Override
     public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
         FcSourcePak fcSourcePak = getSourcePak(systemCode);
         fcSourcePak.setAccessToken(token);
-        databaseSource.updateAccessToken(systemCode, token);
+        if (token.getToken() instanceof String) {
+            databaseSource.updateAccessToken(systemCode, token);
+        }
     }
 
 }

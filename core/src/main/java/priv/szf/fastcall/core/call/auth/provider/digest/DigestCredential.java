@@ -52,7 +52,7 @@ public class DigestCredential {
         }
 
         if (existQop()) {
-            this.nc = ClientNonceMagnager.system(system).getNextNc(nonce);
+            this.nc = ClientNonceManager.system(system).getNextNc(nonce);
         }
         this.cnonce = generateClientNonce();
         this.response = calculateResponse();

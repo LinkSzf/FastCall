@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.call.auth.provider.FcDigestAuthProvider;
-import priv.szf.fastcall.core.call.auth.provider.digest.ClientNonceMagnager;
+import priv.szf.fastcall.core.call.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.call.auth.provider.digest.DigestCredential;
 import priv.szf.fastcall.core.call.source.IFcSource;
 import priv.szf.fastcall.core.common.AuthType;
@@ -41,8 +41,23 @@ public class FcDigestAuthHandler extends FcBaseTokenAuthHandler<DigestAuth, Dige
     }
 
     @Override
-    public boolean isInvalidToken(FcTokenPak<DigestCredential> accessToken) {
-        return true;
+    public boolean isInvalidToken(FcTokenPak<?> accessToken) {
+        if (Objects.isNull(accessToken)) {
+            return true;
+        }
+
+        DigestCredential token = (DigestCredential) accessToken.getToken();
+        String nonce = token.getNonce();
+        String system = token.getSystem();
+
+        boolean exist = ClientNonceManager.system(system).exist(nonce);
+        return !exist;
+    }
+
+    @Override
+    public void doBeforeRefreshToken(Request request, Response response) {
+        String systemCode = getSystemCode(request);
+        ClientNonceManager.system(systemCode).invalidNonce();
     }
 
     @Override
@@ -73,8 +88,6 @@ public class FcDigestAuthHandler extends FcBaseTokenAuthHandler<DigestAuth, Dige
             return request;
         }
 
-        String systemCode = getSystemCode(request);
-        int nextNc = ClientNonceMagnager.system(systemCode).getNextNc(credential.getNonce());
         String token = credential.buildCredentialStr();
 
         String authorization = getAuthType().getPrefix() + token;
