@@ -1,9 +1,7 @@
 package priv.szf.fastcall.core.call.auth.handler;
 
-import cn.hutool.core.util.URLUtil;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallClient;
 import priv.szf.fastcall.core.call.FastCallClientFactory;
 import priv.szf.fastcall.core.call.FastCallResponse;
@@ -16,7 +14,6 @@ import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.FcTokenPak;
 import priv.szf.fastcall.core.model.auth.FcAuthProp;
 
@@ -80,10 +77,12 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
         FastCallClient client = FastCallClientFactory.getExistedClient(systemCode);
         FcSourcePak sourceInfo = getSourceInfo(request);
         C authContent = getAuthContent(request);
+        FcAuthPak authInfo = getAuthInfo(request);
 
         FcAuthProp authProp = authContent.getProp();
         FastCallResponse<String> authResponse = client.newCall(String.class)
-                .url(getUrl(sourceInfo))
+                .host(authInfo.getParticularHost())
+                .uri(authInfo.getPath())
                 .params(authProp.getParams())
                 .method(FcRequestMethod.POST)
                 .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)
@@ -99,13 +98,6 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
 
     protected IFcAuthProvider<C, T> getAuthProvider(String systemCode) {
         return new FcDefaultFcAuthProvider<>(systemCode);
-    }
-
-    protected String getUrl(FcSourcePak source) {
-        FcAuthPak auth = source.getAuth();
-        FcSystemPak system = source.getSystem();
-        String host = StringUtils.isBlank(auth.getParticularHost()) ? system.getHost() : auth.getParticularHost();
-        return URLUtil.completeUrl(host, auth.getPath());
     }
 
     public void doBeforeRefreshToken(Request request, Response response) {

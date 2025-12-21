@@ -13,6 +13,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.common.FcHttpHeader;
@@ -148,15 +149,17 @@ public class FastCallClient {
 
         private final Class<T> dataType;
 
-        private final String host;
-
         private FcRequestMethod method = FcRequestMethod.GET;
 
         private FcMediaType mediaType = FcMediaType.ALL;
 
         private FcCallType callType = FcCallType.NORMAL;
 
-        private String url = "/";
+        private String host;
+
+        private String uri;
+
+        private String url;
 
         private String fullUrl;
 
@@ -172,6 +175,18 @@ public class FastCallClient {
 
         public Builder<T> url(String url) {
             this.url = url;
+            return this;
+        }
+
+        public Builder<T> host(String host) {
+            if (StringUtils.isNotBlank(host)) {
+                this.host = host;
+            }
+            return this;
+        }
+
+        public Builder<T> uri(String uri) {
+            this.uri = uri;
             return this;
         }
 
@@ -219,7 +234,9 @@ public class FastCallClient {
         }
 
         public FastCallClient prepared() {
-            this.fullUrl = URLUtil.completeUrl(host, url);
+            this.fullUrl = (StringUtils.isNotBlank(this.url)) ? this.url
+                    : URLUtil.completeUrl(host, uri);
+
             if (CollectionUtil.isNotEmpty(params)) {
                 this.fullUrl = this.fullUrl + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             }

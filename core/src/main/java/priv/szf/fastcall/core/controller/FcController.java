@@ -68,7 +68,7 @@ public class FcController {
     public FastCallResponse<?> apiTest(@RequestParam String systemCode, @RequestParam String apiName) {
         return fastCall.getClient(systemCode)
                 .newCall()
-                .url(apiName)
+                .uri(apiName)
                 .prepared()
                 .call();
     }
