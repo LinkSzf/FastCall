@@ -17,6 +17,20 @@ fast-call:
   max-requests: 200
   max-requests-per-host: 20
   enable-memory-cache: true
+  easy-source:
+    - system:
+        code: t1
+        name: 测试系统1
+        enable: true
+        host: http://127.0.0.1:8080
+      auth:
+        type: BASIC
+        path: /auth/basic
+        content: |
+          {
+            "username": "admin",
+            "password": "123456"
+          }
 
 spring:
   application:

@@ -3,8 +3,11 @@ package priv.szf.fastcall.core.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import priv.szf.fastcall.core.common.AuthType;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @ConfigurationProperties(prefix = "fast-call")
 @Data
@@ -27,7 +30,58 @@ public class FastCallProperties {
     /** 是否启用内存缓存 */
     private boolean enableMemoryCache = true;
 
+    /** 快捷源配置 */
+    private List<EasySource> easySource = new ArrayList<>();
+
     private Retry retry = new Retry();
+
+    @Data
+    public static class EasySource {
+        /** 系统配置 */
+        private System system = new System();
+
+        /** 认证配置 */
+        private Auth auth = new Auth();
+
+        @Data
+        public static class System {
+            /** 系统名称 */
+            private String name;
+
+            /** 系统编码 */
+            private String code;
+
+            /** 是否启用 */
+            private boolean enable = true;
+
+            /** 系统访问地址 */
+            private String host;
+
+            /** 连接超时 */
+            private Integer connectTimeout;
+
+            /** 读取超时 */
+            private Integer readTimeout;
+
+            /** 写入超时 */
+            private Integer writeTimeout;
+        }
+
+        @Data
+        public static class Auth {
+            /** 认证方式 */
+            private AuthType type;
+
+            /** 认证路径 */
+            private String path;
+
+            /** 认证内容 */
+            private String content;
+
+            /** 特定主机认证 */
+            private String particularHost;
+        }
+    }
 
     @Data
     public static class Client {
