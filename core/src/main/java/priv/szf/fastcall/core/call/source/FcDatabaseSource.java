@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Component
 @RequiredArgsConstructor
-public class FcDatabaseSource implements IFcSource {
+public class FcDatabaseSource extends FcBaseSource implements IFcSource {
 
     private final FcSystemMapper systemMapper;
 
@@ -45,6 +45,9 @@ public class FcDatabaseSource implements IFcSource {
     @Override
     public FcSourcePak getSourcePak(String systemCode) {
         FcSystem systemEntity = getSystemByCode(systemCode);
+        if (Objects.isNull(systemEntity)) {
+            return getNextSource().getSourcePak(systemCode);
+        }
 
         FcSystemPak system = pakMapping.toSystemPak(systemEntity);
 
@@ -58,30 +61,36 @@ public class FcDatabaseSource implements IFcSource {
         return new FcSourcePak(system, auth, token, apis);
     }
 
-    private FcSystem getSystemByCode(String systemCode) {
-        LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
-                .eq(FcSystem::getCode, systemCode);
-        FcSystem systemEntity = systemMapper.selectOne(systemQw);
-        if (Objects.isNull(systemEntity)) {
-            throw new FcBizException(String.format("FastCall-未找到该系统[%s]的注册信息", systemCode));
-        }
-        return systemEntity;
-    }
-
-    @Override
-    public <T> FcTokenPak<T> getAccessToken(String systemCode) {
-        return (FcTokenPak<T>) getSourcePak(systemCode).getAccessToken();
-    }
-
     @Async
     @Override
     public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
+        getNextSource().updateAccessToken(systemCode, token);
+
+        doDbSave(systemCode, token);
+    }
+
+    private <T> void doDbSave(String systemCode, FcTokenPak<T> token) {
+        if (!(token.getToken() instanceof String)) {
+            return;
+        }
+
         FcToken accessToken = pakMapping.toToken((FcTokenPak<String>) token);
         FcSystem system = getSystemByCode(systemCode);
         Long systemId = system.getId();
         accessToken.setSysId(systemId);
         tokenMapper.delete(new LambdaQueryWrapper<FcToken>().eq(FcToken::getSysId, systemId));
         tokenMapper.insert(accessToken);
+    }
+
+    @Override
+    public int getWeight() {
+        return 1;
+    }
+
+    private FcSystem getSystemByCode(String systemCode) {
+        LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
+                .eq(FcSystem::getCode, systemCode);
+        return systemMapper.selectOne(systemQw);
     }
 
     private FcApiPak getApiBySysIdAndApiName(Long systemId, String apiName) {

@@ -9,4 +9,12 @@ public interface IFcSource {
     <T> FcTokenPak<T> getAccessToken(String systemCode);
 
     <T> void updateAccessToken(String systemCode, FcTokenPak<T> token);
+
+    int getWeight();
+
+    void setNextSource(IFcSource source);
+
+    IFcSource getNextSource();
+
+    default void init() {}
 }
