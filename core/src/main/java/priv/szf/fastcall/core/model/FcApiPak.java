@@ -1,6 +1,7 @@
 package priv.szf.fastcall.core.model;
 
 import lombok.Data;
+import priv.szf.fastcall.core.common.FcRequestMethod;
 
 @Data
 public class FcApiPak {
@@ -9,7 +10,7 @@ public class FcApiPak {
 
     private String path;
 
-    private String method;
+    private FcRequestMethod method;
 
     private String particularHost;
 

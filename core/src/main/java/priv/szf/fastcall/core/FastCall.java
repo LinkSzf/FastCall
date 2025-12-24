@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.FastCallClient;
@@ -14,15 +13,6 @@ public class FastCall {
 
     public FastCallClient getClient(String systemCode) {
         return clientFactory.getClient(systemCode);
-    }
-
-    public Builder to(String systemCode) {
-        return new Builder(systemCode);
-    }
-
-    @AllArgsConstructor
-    public class Builder {
-        private final String systemCode;
     }
 
 }

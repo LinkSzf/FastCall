@@ -70,7 +70,7 @@ public class FcController {
                 .newCall()
                 .uri(apiName)
                 .prepared()
-                .call();
+                .callIt();
     }
 
 }

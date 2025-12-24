@@ -20,6 +20,7 @@ import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
+import priv.szf.fastcall.core.model.FcApiPak;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -125,7 +126,20 @@ public class FastCallClient {
         return new Builder<>(this, (Class<T>)Object.class);
     }
 
-    public <T> FastCallResponse<T> call() {
+    public FastCallClient newApiCall(String apiName) {
+        Map<String, FcApiPak> apiMap = source.getApiMap();
+        FcApiPak apiPak = apiMap.get(apiName);
+        return newCall()
+                .host(apiPak.getParticularHost())
+                .uri(apiPak.getPath())
+                .method(apiPak.getMethod())
+//                .headers()
+//                .params()
+//                .body()
+                .prepared();
+    }
+
+    public <T> FastCallResponse<T> callIt() {
         Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
         try {
             return doCall(builder);
@@ -135,10 +149,20 @@ public class FastCallClient {
         }
     }
 
-    public <T> FastCallResponse<T> anonymousCall() {
+    public <T> FastCallResponse<T> anonymousCallIt() {
         Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
         builder.callType = FcCallType.ANONYMOUS;
-        return call();
+        return callIt();
+    }
+
+    public <T> T call() {
+        FastCallResponse<T> call = callIt();
+        return call.getData();
+    }
+
+    public <T> T anonymousCall() {
+        FastCallResponse<T> call = anonymousCallIt();
+        return call.getData();
     }
 
     public class Builder<T> {

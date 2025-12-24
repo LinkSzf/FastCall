@@ -90,7 +90,7 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
                 .headers(authProp.getHeaders())
                 .body(authProp.getBody())
                 .prepared()
-                .anonymousCall();
+                .anonymousCallIt();
 
         return authProvider.mapToToken(request, authResponse, authContent);
     }
