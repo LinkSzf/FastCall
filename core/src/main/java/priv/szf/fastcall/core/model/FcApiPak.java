@@ -16,4 +16,6 @@ public class FcApiPak {
 
     private FcClientSettingPak clientSetting;
 
+    private FcApiParamPak params;
+
 }

@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.config;
+package priv.szf.fastcall.test.controller;
 
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;

@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.call.FastCallResponse;
 import priv.szf.fastcall.core.model.dto.FcApiDTO;
+import priv.szf.fastcall.core.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
+import priv.szf.fastcall.core.model.vo.FcApiParamVO;
 import priv.szf.fastcall.core.model.vo.FcApiVO;
 import priv.szf.fastcall.core.model.vo.FcSystemVO;
+import priv.szf.fastcall.core.service.FcApiParamService;
 import priv.szf.fastcall.core.service.FcApiService;
 import priv.szf.fastcall.core.service.FcSystemService;
 
@@ -31,6 +34,8 @@ public class FcController {
     private final FcSystemService systemService;
 
     private final FcApiService apiService;
+
+    private final FcApiParamService apiParamService;
 
     private final FastCall fastCall;
 
@@ -62,6 +67,16 @@ public class FcController {
     @PostMapping("/{id}/api/save")
     public List<FcApiVO> saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
         return apiService.saveOrUpdate(id, apiList);
+    }
+
+    @GetMapping("/api/{id}/param/all")
+    public List<FcApiParamVO> listAllApiParamsOfApi(@PathVariable("id") Long id) {
+        return apiParamService.listAllByApiId(id);
+    }
+
+    @PostMapping("/api/{id}/param/save")
+    public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
+        return apiParamService.saveOrUpdate(id, apiParamList);
     }
 
     @GetMapping("/api/test")

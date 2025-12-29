@@ -21,6 +21,7 @@ import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcApiPak;
+import priv.szf.fastcall.core.model.FcApiParamPak;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -126,17 +127,28 @@ public class FastCallClient {
         return new Builder<>(this, (Class<T>)Object.class);
     }
 
-    public FastCallClient newApiCall(String apiName) {
+    public FastCallClient newApiCall(String apiName, FcApiParamPak params) {
         Map<String, FcApiPak> apiMap = source.getApiMap();
-        FcApiPak apiPak = apiMap.get(apiName);
+        FcApiPak api = apiMap.get(apiName);
+        if (Objects.isNull(api)) {
+            throw new FcUnexpectedException(String.format("FastCall-apiName[%s]不存在", apiName));
+        }
+
+        FcApiParamPak defaultParams = api.getParams();
+        FcApiParamPak finalParams = defaultParams.mergeBy(params);
+
         return newCall()
-                .host(apiPak.getParticularHost())
-                .uri(apiPak.getPath())
-                .method(apiPak.getMethod())
-//                .headers()
-//                .params()
-//                .body()
+                .host(api.getParticularHost())
+                .uri(api.getPath())
+                .method(api.getMethod())
+                .headers(finalParams.getHeaders())
+                .params(finalParams.getParams())
+                .body(finalParams.getBody())
                 .prepared();
+    }
+
+    public FastCallClient newApiCall(String apiName) {
+        return newApiCall(apiName, null);
     }
 
     public <T> FastCallResponse<T> callIt() {

@@ -18,7 +18,9 @@ import priv.szf.fastcall.core.model.vo.FcApiVO;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional
@@ -27,6 +29,8 @@ import java.util.Set;
 public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
 
     private final FcApiMapping apiMapping;
+
+    private final FcApiParamService apiParamService;
 
     public List<FcApiVO> listAllBySystemId(Long systemId) {
         LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
@@ -43,16 +47,21 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
 
         checkData(dtoList);
 
+        removeExtraData(dtoList);
+
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
         super.saveOrUpdateBatch(apiList);
 
-        return apiMapping.toVoList(apiList);
+        return listAllBySystemId(systemId);
     }
 
     public void removeBySystemId(Long systemId) {
         LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
                 .eq(FcApi::getSysId, systemId);
-        super.remove(qw);
+        List<FcApi> apiList = super.list(qw);
+        List<Long> apiIds = apiList.stream().map(FcApi::getId).collect(Collectors.toList());
+        apiParamService.removeByApiIds(apiIds);
+        super.removeBatchByIds(apiIds);
     }
 
     private void checkData(List<FcApiDTO> dtoList) {
@@ -71,6 +80,15 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
                     "发现重复的名称: " + String.join(", ", duplicateNames)
             );
         }
+    }
+
+    private void removeExtraData(List<FcApiDTO> dtoList) {
+        Set<Long> apiIdSet = dtoList.stream()
+                .filter(Objects::nonNull)
+                .map(FcApiDTO::getId).collect(Collectors.toSet());
+        LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
+                .notIn(FcApi::getId, apiIdSet);
+        super.remove(qw);
     }
 
 }
