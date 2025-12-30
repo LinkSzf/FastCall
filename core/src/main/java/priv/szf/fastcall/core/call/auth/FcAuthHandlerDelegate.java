@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.auth.handler.FcBaseTokenAuthHandler;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
@@ -87,12 +88,13 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return true;
     }
 
-    public boolean refreshTokenIfNecessary(Request request, Response response) {
+    public boolean refreshTokenIfNecessary(Response response) {
         int code = response.code();
-        if (code != 401) {
+        if (code != HttpStatus.UNAUTHORIZED.value()) {
             return false;
         }
 
+        Request request = response.request();
         FcBaseTokenAuthHandler<?, ?> handler = (FcBaseTokenAuthHandler<?, ?>) getHandler(request);
         handler.doBeforeRefreshToken(request, response);
         doRefreshToken(handler, request, response);

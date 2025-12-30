@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.call.FastCallResponse;
-import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
+import priv.szf.fastcall.core.model.auth.BaseDynAuthContent;
 import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcTokenPak;

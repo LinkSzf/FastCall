@@ -5,10 +5,9 @@ import okhttp3.Response;
 import priv.szf.fastcall.core.call.FastCallClient;
 import priv.szf.fastcall.core.call.FastCallClientFactory;
 import priv.szf.fastcall.core.call.FastCallResponse;
-import priv.szf.fastcall.core.call.auth.BaseDynAuthContent;
+import priv.szf.fastcall.core.model.auth.BaseDynAuthContent;
 import priv.szf.fastcall.core.call.auth.provider.FcDefaultFcAuthProvider;
 import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
-import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.call.source.IFcSource;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
@@ -75,11 +74,10 @@ public abstract class FcBaseTokenAuthHandler<C extends BaseDynAuthContent, T> ex
         IFcAuthProvider<C, T> authProvider = getAuthProvider(systemCode);
 
         FastCallClient client = FastCallClientFactory.getExistedClient(systemCode);
-        FcSourcePak sourceInfo = getSourceInfo(request);
         C authContent = getAuthContent(request);
         FcAuthPak authInfo = getAuthInfo(request);
 
-        FcAuthProp authProp = authContent.getProp();
+        FcAuthProp authProp = Optional.ofNullable(authContent.getProp()).orElse(new FcAuthProp());
         FastCallResponse<String> authResponse = client.newCall(String.class)
                 .host(authInfo.getParticularHost())
                 .uri(authInfo.getPath())

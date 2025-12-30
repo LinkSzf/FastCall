@@ -1,10 +1,12 @@
 package priv.szf.fastcall.core.call.auth.interceptor;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.auth.FcAuthHandlerDelegate;
+import priv.szf.fastcall.core.call.auth.FcRetryManager;
 
 import java.io.IOException;
 
@@ -12,18 +14,22 @@ import java.io.IOException;
 @Component
 public class FcAuthInterceptor extends FcBaseAuthInterceptor {
 
+    @Getter
     private final FcAuthHandlerDelegate authHandler;
 
+    private final FcRetryManager retryManager;
+
     @Override
-    public Response intercept(Chain chain) throws IOException {
-        Request originRequest = chain.request();
-
-        if (isNotAuthNeed(originRequest)) {
-            return chain.proceed(originRequest);
+    protected Response doAfterProceed(Chain chain, Response response) throws IOException {
+        if (!retryManager.isFlagAvailable()) {
+            return response;
         }
-
-        Request newRequest = authHandler.modifyRequest(originRequest);
-        return chain.proceed(newRequest);
+        response.close();
+        Request request = response.request();
+        Request finalRequest = super.modifyRequest(request);
+        Response finalResponse = chain.proceed(finalRequest);
+        retryManager.removeFlag();
+        return finalResponse;
     }
 
 }

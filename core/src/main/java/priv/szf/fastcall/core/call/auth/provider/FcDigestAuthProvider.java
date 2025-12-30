@@ -21,10 +21,8 @@ public class FcDigestAuthProvider extends FcDefaultFcAuthProvider<DigestAuth, Di
 
     @Override
     public FcTokenPak<DigestCredential> mapToToken(Request request, FastCallResponse<String> response, DigestAuth authContent) {
-        super.checkSuccess(response);
-
         String authenticateHeader = response.getHeader(FcHttpHeader.WWW_AUTHENTICATE.getName());
-        if (StringUtils.startsWith(authenticateHeader, "Digest")) {
+        if (!StringUtils.startsWith(authenticateHeader, "Digest")) {
             throw new FcUnexpectedException(
                     String.format("FastCall-系统[%s]刷新认证失败，未识别到Digest认证头，code[%s], message[%s], data[%s]",
                             getIdentity(), response.getCode(), response.getMessage(), response.getData())
