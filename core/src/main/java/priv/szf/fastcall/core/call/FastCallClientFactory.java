@@ -94,7 +94,7 @@ public class FastCallClientFactory {
                 .connectTimeout(connectTimeout, TimeUnit.SECONDS)
                 .readTimeout(readTimeout, TimeUnit.SECONDS)
                 .writeTimeout(writeTimeout, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(false)
+                .retryOnConnectionFailure(true)
                 .connectionPool(connectionPool)
                 .dispatcher(dispatcher)
                 .addInterceptor(authInceptor)

@@ -1,14 +1,12 @@
-package priv.szf.fastcall.core.call.auth;
+package priv.szf.fastcall.core.model.auth;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
-import priv.szf.fastcall.core.model.auth.FcAuthProp;
 
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseDynAuthContent extends BaseAuthContent {
+public abstract class BaseDynAuthContent extends BaseAuthContent {
 
     private FcAuthProp prop;
 

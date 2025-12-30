@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.call;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class FastCallResponse<T> {
 
     private final boolean isSuccessful;
 
+    @JsonIgnore
     private final Map<String, List<String>> headers;
 
     private final T data;

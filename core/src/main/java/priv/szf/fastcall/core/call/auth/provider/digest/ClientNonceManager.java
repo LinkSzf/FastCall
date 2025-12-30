@@ -1,6 +1,7 @@
 package priv.szf.fastcall.core.call.auth.provider.digest;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,8 +36,10 @@ public class ClientNonceManager {
 
     public void invalidNonce() {
         String nonce = CURRENT_NONCE.get();
-        this.nonceCounters.remove(nonce);
-        CURRENT_NONCE.remove();
+        if (Objects.nonNull(nonce)) {
+            this.nonceCounters.remove(nonce);
+            CURRENT_NONCE.remove();
+        }
     }
 
 }

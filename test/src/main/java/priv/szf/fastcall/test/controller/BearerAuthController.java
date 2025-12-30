@@ -2,6 +2,7 @@ package priv.szf.fastcall.test.controller;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.test.pojo.BearerAuthRequestBody;
 import priv.szf.fastcall.test.pojo.BearerAuthResponseBody;
 
@@ -17,22 +19,56 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/auth/bearer")
+@RequestMapping(BearerAuthController.AUTH_URI)
 public class BearerAuthController {
 
     private static final String TOKEN = "bearer_token_1234567890";
 
     private static final long EXPIRE = 60;
 
+    private static final String USERNAME = "link";
+
+    private static final String PASSWORD = "123456";
+
     private LocalDateTime lastAuthTime = LocalDateTime.now().minusSeconds(EXPIRE);
 
+    private static final String SYSTEM_CODE = "bearer-system";
 
-    @PostMapping
-    public BearerAuthResponseBody bearerAuth(@RequestBody BearerAuthRequestBody bearerAuthRequestBody) {
+    protected static final String AUTH_URI = "/auth/bearer";
+
+    private static final String RESOURCE_URI = "/resource";
+
+    @Autowired
+    private FastCall fastCall;
+
+    @GetMapping("/test")
+    public Object testAuth() {
+        return fastCall.getClient(SYSTEM_CODE)
+                .newCall()
+                .uri(AUTH_URI+RESOURCE_URI)
+                .prepared()
+                .callIt();
+    }
+
+
+    @PostMapping("/login")
+    public BearerAuthResponseBody login(@RequestBody BearerAuthRequestBody requestBody) {
+        // 校验用户名密码
+        String usr = requestBody.getUser();
+        String pwd = requestBody.getPwd();
+
+        if (!USERNAME.equals(usr) || !PASSWORD.equals(pwd)) {
+            throw new RuntimeException(String.format(
+                    "用户名或密码错误！期望值:[%s], 实际值:[%s]",
+                    USERNAME + "|" + PASSWORD,
+                    usr + "|" + pwd
+            ));
+        }
+
         System.out.printf(
-                "BearerAuthRequestBody: user=%s, pwd=%s%n",
-                bearerAuthRequestBody.getUser(),
-                bearerAuthRequestBody.getPwd()
+                "Token申请-校验通过：user:[%s], pwd[%s]%n",
+                usr,
+                pwd
         );
 
         // 通过这个检测在客户端持有的token失效且并发访问的情况下，客户端能否有效进行并发控制
@@ -52,16 +88,17 @@ public class BearerAuthController {
     }
 
 
-    @GetMapping("/resource")
-    public ResponseEntity<String> getResource(HttpServletRequest  request) {
+    @GetMapping(RESOURCE_URI)
+    public ResponseEntity<String> resource(HttpServletRequest  request) {
         System.out.println("资源被请求了！");
         String authorization = request.getHeader("Authorization");
         if (!StringUtils.endsWith(authorization, TOKEN)) {
+            System.out.println("拒绝访问资源：未认证！");
             return ResponseEntity.ok().body("拒绝访问资源：未认证！");
         }
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.SECONDS))
-                .body("Hello World!");
+                .body(String.format("Succeed!获取到资源，使用的BearerAuth:[%s]", authorization));
     }
 
 

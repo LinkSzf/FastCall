@@ -48,7 +48,7 @@ public class FastCallClient {
         RequestBody requestBody = (method == FcRequestMethod.GET) ? null :
                 RequestBody.create(
                         new JSONObject(builder.body).toString(),
-                        MediaType.parse(builder.mediaType.getName())
+                        MediaType.parse(builder.contentType.getName())
                 );
 
         String url = builder.fullUrl;
@@ -187,7 +187,7 @@ public class FastCallClient {
 
         private FcRequestMethod method = FcRequestMethod.GET;
 
-        private FcMediaType mediaType = FcMediaType.ALL;
+        private FcMediaType contentType = FcMediaType.APPLICATION_JSON;
 
         private FcCallType callType = FcCallType.NORMAL;
 
@@ -265,7 +265,7 @@ public class FastCallClient {
 
         public Builder<T> body(Object body, FcMediaType mediaType) {
             this.body = body;
-            this.mediaType = mediaType;
+            this.contentType = mediaType;
             return this;
         }
 
