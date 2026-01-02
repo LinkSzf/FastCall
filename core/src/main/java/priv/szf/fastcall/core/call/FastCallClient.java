@@ -14,8 +14,10 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
-import priv.szf.fastcall.core.call.auth.FcCallType;
-import priv.szf.fastcall.core.call.source.FcSourcePak;
+import priv.szf.fastcall.core.call.auth.FcRequestContext;
+import priv.szf.fastcall.core.call.source.IFcSource;
+import priv.szf.fastcall.core.common.AuthType;
+import priv.szf.fastcall.core.common.FcCallType;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
@@ -35,7 +37,11 @@ public class FastCallClient {
 
     private final OkHttpClient client;
 
-    private final FcSourcePak source;
+    private final String system;
+
+    private final AuthType authType;
+
+    private final IFcSource source;
 
     private static final ThreadLocal<Builder<?>> LOCAL_BUILDER = new ThreadLocal<>();
 
@@ -53,9 +59,14 @@ public class FastCallClient {
 
         String url = builder.fullUrl;
 
+        FcRequestContext requestContext = FcRequestContext.builder()
+                .system(system)
+                .authType(authType)
+                .callType(builder.callType)
+                .build();
+
         return new Request.Builder()
-                .tag(FcSourcePak.class, source)
-                .tag(FcCallType.class, builder.callType)
+                .tag(FcRequestContext.class, requestContext)
                 .url(url)
                 .headers(headers)
                 .method(method.getName(), requestBody)
@@ -128,7 +139,7 @@ public class FastCallClient {
     }
 
     public FastCallClient newApiCall(String apiName, FcApiParamPak params) {
-        Map<String, FcApiPak> apiMap = source.getApiMap();
+        Map<String, FcApiPak> apiMap = source.getSourcePak(system).getApiMap();
         FcApiPak api = apiMap.get(apiName);
         if (Objects.isNull(api)) {
             throw new FcUnexpectedException(String.format("FastCall-apiName[%s]不存在", apiName));
@@ -206,7 +217,7 @@ public class FastCallClient {
         private Builder(FastCallClient client, Class<T> dataType) {
             this.client = client;
             this.dataType = dataType;
-            this.host = source.getSystem().getHost();
+            this.host = source.getSourcePak(system).getSystem().getHost();
         }
 
         public Builder<T> url(String url) {

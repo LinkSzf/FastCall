@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.call.auth;
+package priv.szf.fastcall.core.common;
 
 public enum FcCallType {
 

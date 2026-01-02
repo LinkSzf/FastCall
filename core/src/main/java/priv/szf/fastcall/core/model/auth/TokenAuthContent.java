@@ -5,8 +5,6 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class BearerTokenAuth extends BaseDynAuthContent {
-
-    private String fixedToken;
+public class TokenAuthContent extends BaseDynAuthContent {
 
 }

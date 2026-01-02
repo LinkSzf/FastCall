@@ -1,16 +1,19 @@
-package priv.szf.fastcall.core.call.auth.provider.digest;
+package priv.szf.fastcall.core.model.auth.credential;
 
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.digest.Digester;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import priv.szf.fastcall.core.call.auth.provider.digest.ClientNonceManager;
+import priv.szf.fastcall.core.call.auth.provider.digest.DigestAlgorithm;
+import priv.szf.fastcall.core.call.auth.provider.digest.DigestChallenge;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
 import java.util.Objects;
 
 @Getter
-public class DigestCredential {
+public class DigestCredential implements ICredential {
 
     private String username;
 
@@ -42,45 +45,65 @@ public class DigestCredential {
 
     private String credentialStr;
 
+    private ClientNonceManager nonceManager;
+
     public static Builder builder() {
         return new Builder();
     }
 
-    public String buildCredentialStr() {
-        if (Objects.nonNull(credentialStr) && !existQop()) {
+    @Override
+    public String getAuthString() {
+        if (Objects.nonNull(this.credentialStr) && !existQop()) {
             return this.credentialStr;
         }
 
+        return buildCredentialStr();
+    }
+
+    @Override
+    public boolean isInvalid() {
+        String nonce = getNonce();
+        return !this.nonceManager.exist(nonce);
+    }
+
+    @Override
+    public void invalidate() {
+        this.nonceManager.remove(this.nonce);
+    }
+
+    private String buildCredentialStr() {
         if (existQop()) {
-            this.nc = ClientNonceManager.system(system).getNextNc(nonce);
+            this.nc = this.nonceManager.getNextNc(nonce);
         }
         this.cnonce = generateClientNonce();
         this.response = calculateResponse();
-        StringBuilder credential = new StringBuilder();
+        StringBuilder credentialBuilder = new StringBuilder();
 
-        credential.append("username=\"").append(username).append("\", ");
-        credential.append("realm=\"").append(realm).append("\", ");
-        credential.append("nonce=\"").append(nonce).append("\", ");
-        credential.append("uri=\"").append(uri).append("\", ");
+        credentialBuilder.append("username=\"").append(username).append("\", ");
+        credentialBuilder.append("realm=\"").append(realm).append("\", ");
+        credentialBuilder.append("nonce=\"").append(nonce).append("\", ");
+        credentialBuilder.append("uri=\"").append(uri).append("\", ");
 
         if (Objects.nonNull(algorithm)) {
-            credential.append("algorithm=").append(algorithm).append(", ");
+            credentialBuilder.append("algorithm=").append(algorithm).append(", ");
         }
 
         if (existQop()) {
             String ncString = String.format("%08x", nc);
-            credential.append("qop=").append(qop).append(", ");
-            credential.append("nc=").append(ncString).append(", ");
-            credential.append("cnonce=\"").append(cnonce).append("\", ");
+            credentialBuilder.append("qop=").append(qop).append(", ");
+            credentialBuilder.append("nc=").append(ncString).append(", ");
+            credentialBuilder.append("cnonce=\"").append(cnonce).append("\", ");
         }
 
-        credential.append("response=\"").append(response).append("\"");
+        credentialBuilder.append("response=\"").append(response).append("\"");
 
         if (StringUtils.isNotBlank(opaque)) {
-            credential.append(", opaque=\"").append(opaque).append("\"");
+            credentialBuilder.append(", opaque=\"").append(opaque).append("\"");
         }
-        this.credentialStr = credential.toString();
-        return this.credentialStr;
+
+        String credential = credentialBuilder.toString();
+        this.credentialStr = credential;
+        return credential;
     }
 
     private boolean existQop() {
@@ -189,6 +212,11 @@ public class DigestCredential {
 
         public Builder system(String system) {
             this.credential.system = system;
+            return this;
+        }
+
+        public Builder nonceManager(ClientNonceManager clientNonceManager) {
+            this.credential.nonceManager = clientNonceManager;
             return this;
         }
 

@@ -2,17 +2,18 @@ package priv.szf.fastcall.core.call.auth.interceptor;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.call.auth.FcAuthHandlerDelegate;
+import priv.szf.fastcall.core.call.auth.handler.FcAuthHandlerDelegate;
 import priv.szf.fastcall.core.call.auth.FcRetryManager;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
 @Component
-public class FcAuthInterceptor extends FcBaseAuthInterceptor {
+public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Interceptor {
 
     @Getter
     private final FcAuthHandlerDelegate authHandler;

@@ -3,9 +3,10 @@ package priv.szf.fastcall.core.call.source;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.model.FcTokenPak;
+import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ConditionalOnProperty(
@@ -16,21 +17,23 @@ import java.util.concurrent.ConcurrentHashMap;
 )
 @Component
 @RequiredArgsConstructor
-public class FcMemorySource extends FcBaseSource implements IFcSource {
+public class FcMemorySource extends FcBaseChainSource implements IFcSource {
 
     private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode) {
-        return cache.computeIfAbsent(systemCode, getNextSource()::getSourcePak);
+    protected FcSourcePak tryGetSourcePak(String systemCode) {
+        FcSourcePak sourcePak = cache.computeIfAbsent(systemCode, getNextSource()::getSourcePak);
+        if (Objects.isNull(sourcePak)) {
+            cache.remove(systemCode);
+        }
+        return sourcePak;
     }
 
     @Override
-    public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
-        FcSourcePak fcSourcePak = getSourcePak(systemCode);
-        fcSourcePak.setAccessToken(token);
-
-        getNextSource().updateAccessToken(systemCode, token);
+    protected void tryUpdateCredential(String system, ICredential credential) {
+        FcSourcePak sourcePak = getSourcePak(system);
+        sourcePak.setCredential(credential);
     }
 
     @Override

@@ -3,11 +3,14 @@ package priv.szf.fastcall.core.model.mapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import priv.szf.fastcall.core.config.FastCallProperties;
-import priv.szf.fastcall.core.model.*;
+import priv.szf.fastcall.core.model.AuthContentConverter;
+import priv.szf.fastcall.core.model.FcApiPak;
+import priv.szf.fastcall.core.model.FcAuthPak;
+import priv.szf.fastcall.core.model.FcClientSettingPak;
+import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.entity.FcApi;
 import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
-import priv.szf.fastcall.core.model.entity.FcToken;
 
 @Mapper(
         componentModel = "spring",
@@ -30,7 +33,4 @@ public interface FcPakMapping {
 
     FcClientSettingPak toClientSettingPak(FastCallProperties.Client clientSetting);
 
-    FcTokenPak<String> toTokenPak(FcToken token);
-
-    FcToken toToken(FcTokenPak<String> token);
 }

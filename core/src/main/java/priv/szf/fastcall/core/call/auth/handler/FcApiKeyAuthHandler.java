@@ -1,13 +1,22 @@
 package priv.szf.fastcall.core.call.auth.handler;
 
+import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
+import priv.szf.fastcall.core.call.auth.provider.FcApiKeyAuthProvider;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.model.auth.ApiKeyAuth;
+import priv.szf.fastcall.core.model.auth.ApiKeyAuthContent;
+import priv.szf.fastcall.core.model.auth.credential.ApiKeyCredential;
 
+import java.util.Objects;
+
+@RequiredArgsConstructor
 @Component
-public class FcApiKeyAuthHandler extends FcBaseAuthHandler<ApiKeyAuth> {
+public class FcApiKeyAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
+
+    private final FcApiKeyAuthProvider apiKeyAuthProvider;
 
     @Override
     public AuthType getAuthType() {
@@ -15,19 +24,29 @@ public class FcApiKeyAuthHandler extends FcBaseAuthHandler<ApiKeyAuth> {
     }
 
     @Override
-    public Request modifyRequest(Request request) {
-        ApiKeyAuth content = getAuthContent(request);
+    protected FcApiKeyAuthProvider getAuthProvider() {
+        return apiKeyAuthProvider;
+    }
 
-        String key = content.getKey();
-        String value = content.getValue();
-        ApiKeyAuth.In addTo = content.getAddTo();
+    @Override
+    public Request modifyRequest(Request request) {
+        String system = getSystem(request);
+        ApiKeyCredential credential = getCredential(system);
+
+        if (Objects.isNull(credential)) {
+            return request;
+        }
+
+        String key = credential.getKey();
+        String value = credential.getValue();
+        ApiKeyAuthContent.In addTo = credential.getAddTo();
         String url = request.url().toString();
 
         Request.Builder newRequestBuilder = request.newBuilder();
-        if (addTo == ApiKeyAuth.In.HEADER) {
+        if (addTo == ApiKeyAuthContent.In.HEADER) {
             newRequestBuilder.addHeader(key, value);
         }
-        else if (addTo == ApiKeyAuth.In.QUERY) {
+        else if (addTo == ApiKeyAuthContent.In.QUERY) {
             String newUrl = url + (url.contains("?") ? "&" : "?") +
                     key + "=" + value;
             newRequestBuilder.url(newUrl);

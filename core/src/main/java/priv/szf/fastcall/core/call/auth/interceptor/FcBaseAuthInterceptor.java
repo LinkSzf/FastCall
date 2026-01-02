@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.call.auth.interceptor;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import priv.szf.fastcall.core.call.auth.FcCallType;
 import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
 
 import java.io.IOException;
@@ -37,9 +36,7 @@ public abstract class FcBaseAuthInterceptor implements Interceptor {
         return false;
     }
 
-
     protected boolean isNotAuthNeed(Request request) {
-        FcCallType callType = request.tag(FcCallType.class);
-        return callType == FcCallType.ANONYMOUS;
+        return getAuthHandler().isNotAuthNeed(request);
     }
 }

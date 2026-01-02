@@ -2,15 +2,16 @@ package priv.szf.fastcall.core.call.auth.interceptor;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.call.auth.FcAuthHandlerDelegate;
+import priv.szf.fastcall.core.call.auth.handler.FcAuthHandlerDelegate;
 import priv.szf.fastcall.core.call.auth.FcRetryManager;
 
 @RequiredArgsConstructor
 @Component
-public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor {
+public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor implements Interceptor {
 
     @Getter
     private final FcAuthHandlerDelegate authHandler;
@@ -19,21 +20,21 @@ public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor {
 
     @Override
     protected Request modifyRequest(Request request) {
-        boolean isRefreshed = getAuthHandler().preRefreshTokenIfNecessary(request);
+        boolean isRefreshed = getAuthHandler().preRefresh(request);
         return isRefreshed ? super.modifyRequest(request) : request;
     }
 
     @Override
     protected Response doAfterProceed(Chain chain, Response response) {
-        boolean isRefreshedAfterResponse = getAuthHandler().refreshTokenIfNecessary(response);
+        boolean isRefreshedAfterResponse = getAuthHandler().refresh(response);
         if (isRefreshedAfterResponse) {
             retryManager.setFlag();
         }
         return response;
     }
     @Override
-    protected boolean shouldNotIntercept(Request originRequest) {
-        return !getAuthHandler().isAuthRefreshable(originRequest)
+    protected boolean shouldNotIntercept(Request request) {
+        return !getAuthHandler().isAuthRefreshable(request)
                 || retryManager.isFlagAvailable();
     }
 }

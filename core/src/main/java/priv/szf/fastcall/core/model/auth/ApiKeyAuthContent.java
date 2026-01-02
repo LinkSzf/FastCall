@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ApiKeyAuth extends BaseAuthContent {
+public class ApiKeyAuthContent extends BaseAuthContent {
 
     private String key;
 

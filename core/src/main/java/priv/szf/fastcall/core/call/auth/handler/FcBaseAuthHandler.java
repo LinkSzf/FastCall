@@ -1,59 +1,67 @@
 package priv.szf.fastcall.core.call.auth.handler;
 
 import okhttp3.Request;
+import org.apache.commons.lang3.StringUtils;
+import priv.szf.fastcall.core.common.FcCallType;
+import priv.szf.fastcall.core.call.auth.FcRequestContext;
 import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
-import priv.szf.fastcall.core.call.source.FcSourcePak;
+import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
+import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
-import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.Objects;
-import java.util.Optional;
 
-public abstract class FcBaseAuthHandler<C extends BaseAuthContent> implements IFcAuthHandler {
+public abstract class FcBaseAuthHandler implements IFcAuthHandler {
+
+
+    protected abstract IFcAuthProvider<?> getAuthProvider();
 
     @Override
-    public FcSourcePak getSourceInfo(Request request) {
-        FcSourcePak source = request.tag(FcSourcePak.class);
-        if (Objects.isNull(source)) {
-            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递源信息上下文", request.url()));
+    public String getSystem(Request request) {
+        String system = getRequestContext(request).getSystem();
+        if (Objects.isNull(system)) {
+            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()));
         }
-        return source;
+        return system;
     }
 
     @Override
-    public String getSystemCode(Request request) {
-        return Optional.of(getSystemInfo(request))
-                .map(FcSystemPak::getCode)
-                .orElseThrow(() ->
-                        new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()))
-                );
+    public boolean isNotAuthNeed(Request request) {
+        return FcCallType.ANONYMOUS == getRequestContext(request).getCallType();
     }
 
-    C getAuthContent(Request request) {
-        FcAuthPak authPak = getAuthInfo(request);
-        return (C) Optional.of(authPak)
-                .map(FcAuthPak::getContent)
-                .orElseThrow(() ->
-                        new FcUnexpectedException(String.format("FastCall-url[%s]未获取到设置的认证信息", request.url()))
-                );
+    @Override
+    public Request modifyRequest(Request request) {
+        String systemCode = getSystem(request);
+        ICredential credential = getCredential(systemCode);
+
+        if (Objects.isNull(credential)) {
+            return request;
+        }
+
+        String authStr = credential.getAuthString();
+        String authorization = StringUtils.prependIfMissing(authStr, getAuthType().getPrefix());
+        return request.newBuilder()
+                .tag(ICredential.class, credential)
+                .header(FcHttpHeader.AUTHORIZATION.getName(), authorization)
+                .build();
     }
 
-    FcSystemPak getSystemInfo(Request request)  {
-        return Optional.of(getSourceInfo(request))
-                .map(FcSourcePak::getSystem)
-                .orElseThrow(() ->
-                        new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()))
-                );
+    protected <T extends ICredential> T getCredential(String system) {
+        ICredential credential = getAuthProvider().getCredential(system);
+        if (Objects.isNull(credential)) {
+            return null;
+        }
+        return (T) credential;
     }
 
-    FcAuthPak getAuthInfo(Request request) {
-        return Optional.of(getSourceInfo(request))
-                .map(FcSourcePak::getAuth)
-                .orElseThrow(() ->
-                        new FcUnexpectedException(String.format("FastCall-url[%s]未传递认证信息上下文", request.url()))
-                );
+    protected FcRequestContext getRequestContext(Request request) {
+        FcRequestContext context = request.tag(FcRequestContext.class);
+        if (Objects.isNull(context)) {
+            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递请求信息上下文", request.url()));
+        }
+        return context;
     }
 
 

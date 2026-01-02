@@ -3,21 +3,19 @@ package priv.szf.fastcall.core.call.source;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.FcTokenPak;
 import priv.szf.fastcall.core.model.auth.BaseAuthContent;
+import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
-public class FcPropertySource extends FcBaseSource implements IFcSource {
+public class FcPropertySource extends FcBaseChainSource implements IFcSource {
 
     private final FastCallProperties properties;
 
@@ -36,21 +34,12 @@ public class FcPropertySource extends FcBaseSource implements IFcSource {
     }
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode) {
-        FcSourcePak sourcePak = pakMap.get(systemCode);
-        if (Objects.nonNull(sourcePak)) {
-            return sourcePak;
-        }
-        return getNextSource().getSourcePak(systemCode);
+    protected FcSourcePak tryGetSourcePak(String systemCode) {
+        return pakMap.get(systemCode);
     }
 
     @Override
-    public IFcSource getNextSource() {
-        throw new FcBizException("FastCall-未找到该系统的注册信息");
-    }
-
-    @Override
-    public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
+    protected void tryUpdateCredential(String system, ICredential credential) {
     }
 
     @Override

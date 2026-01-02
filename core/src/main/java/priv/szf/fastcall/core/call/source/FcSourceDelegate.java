@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.model.FcTokenPak;
+import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,16 +13,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Primary
 @Component
-public class FcSourceDelegate extends FcBaseSource implements IFcSource {
+public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
 
     @Autowired
-    public FcSourceDelegate(List<IFcSource> availableSources) {
-        List<IFcSource> sortedSources = availableSources.stream()
-                .sorted(Comparator.comparingInt(IFcSource::getWeight))
+    public FcSourceDelegate(List<IFcChainSource> availableSources) {
+        List<IFcChainSource> sortedSources = availableSources.stream()
+                .sorted(Comparator.comparingInt(IFcChainSource::getWeight))
                 .collect(Collectors.toList());
 
-        IFcSource previous = null;
-        for (IFcSource sortedSource : sortedSources) {
+        IFcChainSource previous = null;
+        for (IFcChainSource sortedSource : sortedSources) {
             sortedSource.setNextSource(previous);
             previous = sortedSource;
             sortedSource.init();
@@ -31,13 +31,12 @@ public class FcSourceDelegate extends FcBaseSource implements IFcSource {
     }
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode) {
-        return getNextSource().getSourcePak(systemCode);
+    protected FcSourcePak tryGetSourcePak(String systemCode) {
+        return null;
     }
 
     @Override
-    public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
-        getNextSource().updateAccessToken(systemCode, token);
+    protected void tryUpdateCredential(String system, ICredential credential) {
     }
 
     @Override

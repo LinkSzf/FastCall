@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.auth.interceptor.FcAuthInterceptor;
 import priv.szf.fastcall.core.call.auth.interceptor.FcTokenRefreshInterceptor;
+import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.common.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
@@ -65,9 +66,11 @@ public class FastCallClientFactory {
             throw new FcBizException(String.format("系统[%s]未配置启用，无法发起访问", systemCode));
         }
 
+        AuthType authType = sourcePak.getAuth().getType();
+
         FcClientSettingPak clientSetting = getClientSetting(system);
         OkHttpClient okHttpClient = initCoreClient(clientSetting);
-        return new FastCallClient(okHttpClient, sourcePak);
+        return new FastCallClient(okHttpClient, systemCode, authType, source);
     }
 
     private FcClientSettingPak getClientSetting(FcSystemPak system) {

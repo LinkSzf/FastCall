@@ -1,31 +1,25 @@
 package priv.szf.fastcall.core.call.auth.handler;
 
-import okhttp3.Credentials;
-import okhttp3.Request;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
+import priv.szf.fastcall.core.call.auth.provider.FcBasicAuthProvider;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.model.auth.BasicAuth;
 
+@RequiredArgsConstructor
 @Component
-public class FcBasicAuthHandler extends FcBaseAuthHandler<BasicAuth> {
+public class FcBasicAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
-    public final
+    private final FcBasicAuthProvider basicAuthProvider;
 
     @Override
-    AuthType getAuthType() {
+    public AuthType getAuthType() {
         return AuthType.BASIC;
     }
 
     @Override
-    public Request modifyRequest(Request request) {
-        BasicAuth content = getAuthContent(request);
-        String authorization = genAuthorization(content);
-        return request.newBuilder()
-                .header("Authorization", authorization)
-                .build();
+    protected FcBasicAuthProvider getAuthProvider() {
+        return basicAuthProvider;
     }
 
-    private String genAuthorization (BasicAuth content) {
-        return Credentials.basic(content.getUsername(), content.getPassword());
-    }
 }

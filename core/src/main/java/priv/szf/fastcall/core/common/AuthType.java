@@ -8,15 +8,15 @@ import priv.szf.fastcall.core.model.auth.*;
 @AllArgsConstructor
 public enum AuthType {
 
-    NONE(NoneAuth.class),
+    NONE(NoneAuthContent.class),
 
-    APIKEY(ApiKeyAuth.class),
+    APIKEY(ApiKeyAuthContent.class),
 
-    BASIC(BasicAuth.class, "Basic "),
+    BASIC(BasicAuthContent.class, "Basic "),
 
-    DIGEST(DigestAuth.class, "Digest "),
+    DIGEST(DigestAuthContent.class, "Digest "),
 
-    BEARER(BearerTokenAuth.class, "Bearer ");
+    BEARER(TokenAuthContent.class, "Bearer ");
 
     AuthType(Class<? extends BaseAuthContent> clazz) {
         this(clazz, null);

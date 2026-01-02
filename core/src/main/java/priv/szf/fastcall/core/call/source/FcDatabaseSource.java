@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.common.FcBizException;
@@ -12,17 +11,15 @@ import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.mapper.FcApiParamMapper;
 import priv.szf.fastcall.core.mapper.FcAuthMapper;
 import priv.szf.fastcall.core.mapper.FcSystemMapper;
-import priv.szf.fastcall.core.mapper.FcTokenMapper;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.FcTokenPak;
+import priv.szf.fastcall.core.model.auth.credential.ICredential;
 import priv.szf.fastcall.core.model.entity.FcApi;
 import priv.szf.fastcall.core.model.entity.FcApiParam;
 import priv.szf.fastcall.core.model.entity.FcAuth;
 import priv.szf.fastcall.core.model.entity.FcSystem;
-import priv.szf.fastcall.core.model.entity.FcToken;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
 import java.util.Collections;
@@ -35,13 +32,11 @@ import java.util.stream.Collectors;
 @Transactional
 @Component
 @RequiredArgsConstructor
-public class FcDatabaseSource extends FcBaseSource implements IFcSource {
+public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
     private final FcSystemMapper systemMapper;
 
     private final FcAuthMapper authMapper;
-
-    private final FcTokenMapper tokenMapper;
 
     private final FcApiMapper apiMapper;
 
@@ -50,10 +45,10 @@ public class FcDatabaseSource extends FcBaseSource implements IFcSource {
     private final FcApiParamMapper apiParamMapper;
 
     @Override
-    public FcSourcePak getSourcePak(String systemCode) {
+    protected FcSourcePak tryGetSourcePak(String systemCode) {
         FcSystem systemEntity = getSystemByCode(systemCode);
         if (Objects.isNull(systemEntity)) {
-            return getNextSource().getSourcePak(systemCode);
+            return null;
         }
 
         FcSystemPak system = pakMapping.toSystemPak(systemEntity);
@@ -61,32 +56,13 @@ public class FcDatabaseSource extends FcBaseSource implements IFcSource {
         Long systemId = systemEntity.getId();
         FcAuthPak auth = getAuthBySysId(systemId);
 
-        FcTokenPak<?> token = getAccessTokenBySysId(systemId);
-
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
-        return new FcSourcePak(system, auth, token, apis);
+        return new FcSourcePak(system, auth, null, apis);
     }
 
-    @Async
     @Override
-    public <T> void updateAccessToken(String systemCode, FcTokenPak<T> token) {
-        getNextSource().updateAccessToken(systemCode, token);
-
-        doDbSave(systemCode, token);
-    }
-
-    private <T> void doDbSave(String systemCode, FcTokenPak<T> token) {
-        if (!(token.getToken() instanceof String)) {
-            return;
-        }
-
-        FcToken accessToken = pakMapping.toToken((FcTokenPak<String>) token);
-        FcSystem system = getSystemByCode(systemCode);
-        Long systemId = system.getId();
-        accessToken.setSysId(systemId);
-        tokenMapper.delete(new LambdaQueryWrapper<FcToken>().eq(FcToken::getSysId, systemId));
-        tokenMapper.insert(accessToken);
+    public void tryUpdateCredential(String systemCode, ICredential credential) {
     }
 
     @Override
@@ -100,14 +76,6 @@ public class FcDatabaseSource extends FcBaseSource implements IFcSource {
         return systemMapper.selectOne(systemQw);
     }
 
-    private FcApiPak getApiBySysIdAndApiName(Long systemId, String apiName) {
-        LambdaQueryWrapper<FcApi> apiQw = Wrappers.<FcApi>lambdaQuery()
-                .eq(FcApi::getSysId, systemId)
-                .eq(FcApi::getName, apiName);
-        FcApi api = apiMapper.selectOne(apiQw);
-        return pakMapping.toApiPak(api);
-    }
-
     private FcAuthPak getAuthBySysId(Long sysId) {
         LambdaQueryWrapper<FcAuth> authQw = Wrappers.<FcAuth>lambdaQuery()
                 .eq(FcAuth::getSysId, sysId);
@@ -117,13 +85,6 @@ public class FcDatabaseSource extends FcBaseSource implements IFcSource {
         }
 
         return pakMapping.toAuthPak(auth);
-    }
-
-    private FcTokenPak<?> getAccessTokenBySysId(Long systemId) {
-        LambdaQueryWrapper<FcToken> tokenQw = Wrappers.<FcToken>lambdaQuery()
-                .eq(FcToken::getSysId, systemId);
-        FcToken accessToken = tokenMapper.selectOne(tokenQw);
-        return pakMapping.toTokenPak(accessToken);
     }
 
     private Map<String, FcApiPak> getApisBySysId(Long sysId) {
