@@ -31,6 +31,11 @@ public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
     }
 
     @Override
+    public int getWeight() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
         return null;
     }
@@ -39,9 +44,5 @@ public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
     protected void tryUpdateCredential(String system, ICredential credential) {
     }
 
-    @Override
-    public int getWeight() {
-        return Integer.MAX_VALUE;
-    }
 
 }

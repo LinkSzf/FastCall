@@ -3,7 +3,7 @@ package priv.szf.fastcall.core;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FcUnexpectedException;
 
 import java.io.IOException;
 import java.lang.reflect.Field;

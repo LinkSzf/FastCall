@@ -19,7 +19,8 @@ import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
 import priv.szf.fastcall.core.common.FcRequestMethod;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
+import priv.szf.fastcall.core.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.auth.FcAuthProp;
 import priv.szf.fastcall.core.model.auth.credential.TokenCredential;
@@ -73,9 +74,9 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
 
         String data = response.getData();
         if (Objects.isNull(data)) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统刷新认证失败，响应体为空，code[%s], message[%s]",
-                            response.getCode(), response.getMessage())
+            throw new FastCallException(
+                            "系统刷新认证失败，响应体为空，code[%s], message[%s]",
+                            response.getCode(), response.getMessage()
             );
         }
 
@@ -94,9 +95,8 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
 
     private void checkSuccess(FastCallResponse<String> response) {
         if (!response.isSuccessful()) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统刷新认证失败，code[%s], message[%s], data[%s]",
-                            response.getCode(), response.getMessage(), response.getData())
+            throw new FastCallException("系统刷新认证失败，code[%s], message[%s], data[%s]",
+                            response.getCode(), response.getMessage(), response.getData()
             );
         }
     }
@@ -122,10 +122,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
     private String getToken(JSONObject jsonData, String fieldPath) {
         String token = jsonData.getByPath(fieldPath, String.class);
         if (StringUtils.isBlank(token)) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统刷新认证失败，响应体[%s]中路径[%s]未找到token字段",
-                            jsonData, fieldPath)
-            );
+            throw new FastCallException("响应体[%s]中路径[%s]未找到token字段", jsonData, fieldPath);
         }
         return token;
     }

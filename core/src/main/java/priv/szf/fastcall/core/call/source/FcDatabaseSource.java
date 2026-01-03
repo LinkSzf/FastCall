@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import priv.szf.fastcall.core.common.FcBizException;
 import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.mapper.FcApiParamMapper;
 import priv.szf.fastcall.core.mapper.FcAuthMapper;
@@ -58,7 +57,11 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
-        return new FcSourcePak(system, auth, null, apis);
+        return FcSourcePak.builder()
+                .system(system)
+                .auth(auth)
+                .apiMap(apis)
+                .build();
     }
 
     @Override
@@ -81,7 +84,7 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
                 .eq(FcAuth::getSysId, sysId);
         FcAuth auth = authMapper.selectOne(authQw);
         if (Objects.isNull(auth)) {
-            throw new FcBizException("未找到该系统认证配置信息");
+            return null;
         }
 
         return pakMapping.toAuthPak(auth);

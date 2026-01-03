@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import priv.szf.fastcall.core.common.FcDataDuplicatedException;
-import priv.szf.fastcall.core.common.FcDataNotFoundException;
+import priv.szf.fastcall.core.common.exception.FcDataDuplicatedException;
+import priv.szf.fastcall.core.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.core.mapper.FcSystemMapper;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
 import priv.szf.fastcall.core.model.entity.FcSystem;
@@ -41,7 +41,7 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
                     i.setAuth(authService.getBySystemId(i.getId()));
                     return systemMapping.toVo(i);
                 })
-                .orElseThrow(FcDataNotFoundException::new);
+                .orElseThrow(() -> new FcDataNotFoundException("系统[%s]不存在",  id));
     }
 
     public FcSystemVO saveOrUpdate(FcSystemDTO dto) {
@@ -67,7 +67,7 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
         qw = Objects.isNull(dto.getId()) ? qw : qw.ne(FcSystem::getId, dto.getId());
         long count = super.count(qw);
         if (count > 0) {
-            throw new FcDataDuplicatedException("该系统编码已存在");
+            throw new FcDataDuplicatedException("系统编码[%s]已存在", dto.getCode());
         }
     }
 }

@@ -7,7 +7,7 @@ import priv.szf.fastcall.core.call.auth.FcRequestContext;
 import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.common.FcHttpHeader;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
 import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.Objects;
@@ -19,11 +19,7 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
     @Override
     public String getSystem(Request request) {
-        String system = getRequestContext(request).getSystem();
-        if (Objects.isNull(system)) {
-            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递系统信息上下文", request.url()));
-        }
-        return system;
+        return getRequestContext(request).getSystem();
     }
 
     @Override
@@ -59,7 +55,7 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
     protected FcRequestContext getRequestContext(Request request) {
         FcRequestContext context = request.tag(FcRequestContext.class);
         if (Objects.isNull(context)) {
-            throw new FcUnexpectedException(String.format("FastCall-url[%s]未传递请求信息上下文", request.url()));
+            throw new FastCallException("url[%s]未传递请求信息上下文", request.url());
         }
         return context;
     }

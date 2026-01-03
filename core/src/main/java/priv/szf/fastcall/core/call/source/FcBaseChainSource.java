@@ -1,5 +1,6 @@
 package priv.szf.fastcall.core.call.source;
 
+import priv.szf.fastcall.core.model.IEssentialCheck;
 import priv.szf.fastcall.core.model.auth.credential.ICredential;
 
 import java.util.Objects;
@@ -32,13 +33,15 @@ public abstract class FcBaseChainSource implements IFcChainSource {
 
         return Optional.ofNullable(getNextSource())
                 .map(s -> s.getSourcePak(system))
+                .map(IEssentialCheck::check)
                 .orElse(null);
     }
 
     @Override
     public void updateCredential(String systemCode, ICredential credential) {
         tryUpdateCredential(systemCode, credential);
-        getNextSource().updateCredential(systemCode, credential);
+        Optional.ofNullable(getNextSource())
+                .ifPresent(s -> s.updateCredential(systemCode, credential));
     }
 
 

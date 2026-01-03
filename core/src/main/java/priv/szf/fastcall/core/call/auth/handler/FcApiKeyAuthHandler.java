@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.call.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.call.auth.provider.FcApiKeyAuthProvider;
 import priv.szf.fastcall.core.common.AuthType;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
 import priv.szf.fastcall.core.model.auth.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.auth.credential.ApiKeyCredential;
 
@@ -51,7 +51,7 @@ public class FcApiKeyAuthHandler extends FcBaseAuthHandler implements IFcAuthHan
                     key + "=" + value;
             newRequestBuilder.url(newUrl);
         } else {
-            throw new FcUnexpectedException(String.format("ApiKey认证-url[%s]不支持的添加位置[%s]", url, addTo));
+            throw new FastCallException("ApiKey认证-url[%s]不支持的添加位置[%s]", url, addTo);
         }
 
         return newRequestBuilder.build();

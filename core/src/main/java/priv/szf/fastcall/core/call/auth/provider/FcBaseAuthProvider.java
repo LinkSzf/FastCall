@@ -5,7 +5,7 @@ import lombok.NonNull;
 import priv.szf.fastcall.core.call.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.call.source.FcSourcePak;
 import priv.szf.fastcall.core.call.source.IFcSource;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.auth.BaseAuthContent;
 import priv.szf.fastcall.core.model.auth.credential.ICredential;
@@ -26,7 +26,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
     public ICredential getCredential(String system) {
         FcSourcePak sourcePak = getSource().getSourcePak(system);
         if (Objects.isNull(sourcePak)) {
-            throw new FcUnexpectedException(String.format("FastCall-系统[%s]未在配置中找到", system));
+            throw new FastCallException("系统[%s]配置未找到", system);
         }
         ICredential credential = sourcePak.getCredential();
         return (Objects.nonNull(credential)) ? credential
@@ -37,7 +37,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
         BaseAuthContent content = Optional.ofNullable(getSource().getSourcePak(system))
                 .map(FcSourcePak::getAuth)
                 .map(FcAuthPak::getContent)
-                .orElseThrow(() -> new FcUnexpectedException("FastCall-未获取到认证信息"));
+                .orElseThrow(() -> new FastCallException("系统[%s]认证配置未找到", system));
 
         return contentClazz.cast(content);
     }

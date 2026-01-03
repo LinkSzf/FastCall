@@ -12,7 +12,8 @@ import priv.szf.fastcall.core.call.auth.provider.digest.DigestChallenge;
 import priv.szf.fastcall.core.call.source.IFcSource;
 import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcHttpHeader;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
+import priv.szf.fastcall.core.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.model.auth.DigestAuthContent;
 import priv.szf.fastcall.core.model.auth.credential.DigestCredential;
 
@@ -40,9 +41,9 @@ public class FcDigestAuthProvider extends FcBaseInteractiveAuthProvider<DigestAu
                                                String system) {
         String authenticateHeader = response.header(FcHttpHeader.WWW_AUTHENTICATE.getName());
         if (!StringUtils.startsWith(authenticateHeader, AuthType.DIGEST.getPrefix())) {
-            throw new FcUnexpectedException(
-                    String.format("FastCall-系统刷新认证失败，未识别到Digest认证头，code[%s], message[%s], data[%s]",
-                            response.code(), response.message(), response.body())
+            throw new FastCallException(
+                            "未识别到Digest认证头，code[%s], message[%s], data[%s]",
+                            response.code(), response.message(), response.body()
             );
         }
 

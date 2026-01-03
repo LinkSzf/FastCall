@@ -22,10 +22,10 @@ public class FcMemorySource extends FcBaseChainSource implements IFcSource {
     private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
 
     @Override
-    protected FcSourcePak tryGetSourcePak(String systemCode) {
-        FcSourcePak sourcePak = cache.computeIfAbsent(systemCode, getNextSource()::getSourcePak);
+    protected FcSourcePak tryGetSourcePak(String system) {
+        FcSourcePak sourcePak = cache.computeIfAbsent(system, getNextSource()::getSourcePak);
         if (Objects.isNull(sourcePak)) {
-            cache.remove(systemCode);
+            cache.remove(system);
         }
         return sourcePak;
     }

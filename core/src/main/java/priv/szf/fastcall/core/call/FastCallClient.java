@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -20,7 +20,8 @@ import priv.szf.fastcall.core.common.AuthType;
 import priv.szf.fastcall.core.common.FcCallType;
 import priv.szf.fastcall.core.common.FcHttpHeader;
 import priv.szf.fastcall.core.common.FcMediaType;
-import priv.szf.fastcall.core.common.FcUnexpectedException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
+import priv.szf.fastcall.core.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@AllArgsConstructor
+@Builder
 public class FastCallClient {
 
     private final OkHttpClient client;
@@ -63,7 +64,8 @@ public class FastCallClient {
                 .system(system)
                 .authType(authType)
                 .callType(builder.callType)
-                .build();
+                .build()
+                .check();
 
         return new Request.Builder()
                 .tag(FcRequestContext.class, requestContext)
@@ -100,7 +102,7 @@ public class FastCallClient {
         try (Response response = call.execute()) {
             return buildStandardResponse(builder, response);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，IO异常", builder.fullUrl));
+            throw new FcUnexpectedException(e, "url[%s]请求失败，IO异常", builder.fullUrl);
         }
     }
 
@@ -119,13 +121,13 @@ public class FastCallClient {
                 data = JSONUtil.toBean(bodyStr, dataType);
             }
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, String.format("FastCall-url[%s]请求失败，读取响应体字符串时IO异常", url));
+            throw new FcUnexpectedException(e, "url[%s]请求失败，读取响应体字符串时IO异常", url);
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
-                    String.format("FastCall-url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
+                            "url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
                             url,
                             bodyStr,
-                            dataType.getName()));
+                            dataType.getName());
         }
         return data;
     }
@@ -142,7 +144,7 @@ public class FastCallClient {
         Map<String, FcApiPak> apiMap = source.getSourcePak(system).getApiMap();
         FcApiPak api = apiMap.get(apiName);
         if (Objects.isNull(api)) {
-            throw new FcUnexpectedException(String.format("FastCall-apiName[%s]不存在", apiName));
+            throw new FastCallException("apiName[%s]不存在", apiName);
         }
 
         FcApiParamPak defaultParams = api.getParams();

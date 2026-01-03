@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import priv.szf.fastcall.core.common.FcBizException;
+import priv.szf.fastcall.core.common.exception.FastCallException;
 import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.model.dto.FcApiDTO;
 import priv.szf.fastcall.core.model.entity.FcApi;
@@ -76,7 +76,7 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
         }
 
         if (!duplicateNames.isEmpty()) {
-            throw new FcBizException(
+            throw new FastCallException(
                     "发现重复的名称: " + String.join(", ", duplicateNames)
             );
         }
