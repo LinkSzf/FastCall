@@ -19,13 +19,13 @@ fast-call:
   enable-memory-cache: true
   easy-source:
     - system:
-        code: t1
-        name: 测试系统1
+        code: none-system
+        name: 测试无认证的系统
         enable: true
         host: http://127.0.0.1:8080
       auth:
-        type: BASIC
-        path: /auth/basic
+        type: NONE
+        path: /
         content: |
           {
             "username": "admin",
