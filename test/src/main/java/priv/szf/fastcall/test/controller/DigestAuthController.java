@@ -1,6 +1,7 @@
 package priv.szf.fastcall.test.controller;
 
 
+import cn.hutool.core.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RestController
-@RequestMapping(DigestAuthController.AUTH_URI)
+@RequestMapping(DigestAuthController.BASE_URI)
 public class DigestAuthController {
 
     private static final String SYSTEM_CODE = "digest-system";
 
-    protected static final String AUTH_URI = "/auth/digest";
+    protected static final String BASE_URI = "/auth/digest";
 
     private static final String RESOURCE_URI = "/resource";
 
@@ -42,7 +43,7 @@ public class DigestAuthController {
     public Object testAuth() {
         return fastCall.getClient(SYSTEM_CODE)
                 .newCall()
-                .uri(AUTH_URI+RESOURCE_URI)
+                .uri(BASE_URI + RESOURCE_URI)
                 .prepared()
                 .callIt();
     }
@@ -56,11 +57,13 @@ public class DigestAuthController {
                     "Digest realm=\"%s\", qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=MD5",
                     REALM, NONCE, OPAQUE
             );
-
+            System.out.println("Test-DigestAuth: 尚未认证，先返回认证凭证");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .header("WWW-Authenticate", authHeader)
                     .body("资源未认证，请先行认证!");
         }
+
+        System.out.println("Test-DigestAuth: 已携带认证信息，开始核对凭证");
 
         // 解析Authorization头
         Map<String, String> authParams = parseAuthorizationHeader(authorization.substring(7));
@@ -105,7 +108,14 @@ public class DigestAuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("response整体校验失败！");
         }
 
-        return ResponseEntity.ok(String.format("Succeed!获取到资源，使用的DigestAuth:[%s]", authorization));
+        System.out.println("Test-DigestAuth: 认证通过。成功请求到资源");
+
+        return ResponseEntity.ok()
+                .body(String.format(
+                        "Succeed!获取到资源，使用的DigestAuth:[%s], 随机数:[%s]",
+                        authorization,
+                        RandomUtil.randomChinese()
+                ));
     }
 
     // 解析Authorization头为键值对

@@ -12,7 +12,7 @@ fast-call:
     read-timeout: 45
     write-timeout: 45
   cache:
-    enable: true
+    enable: false
     max-size: 10485760
   max-requests: 200
   max-requests-per-host: 20

@@ -1,5 +1,6 @@
 package priv.szf.fastcall.test.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,12 +10,12 @@ import priv.szf.fastcall.core.FastCall;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping(NoneAuthController.AUTH_URI)
+@RequestMapping(NoneAuthController.BASE_URI)
 public class NoneAuthController {
 
     private static final String SYSTEM_CODE = "none-system";
 
-    protected static final String AUTH_URI = "/auth/none";
+    protected static final String BASE_URI = "/auth/none";
 
     private static final String RESOURCE_URI = "/resource";
 
@@ -25,13 +26,13 @@ public class NoneAuthController {
     public Object testAuth() {
         return fastCall.getClient(SYSTEM_CODE)
                 .newCall()
-                .uri(AUTH_URI + RESOURCE_URI)
+                .uri(BASE_URI + RESOURCE_URI)
                 .prepared()
                 .callIt();
     }
 
     @GetMapping(RESOURCE_URI)
     public String resource(HttpServletRequest request) {
-        return "Hello World!";
+        return "Hello World!" + RandomUtil.randomChinese();
     }
 }
