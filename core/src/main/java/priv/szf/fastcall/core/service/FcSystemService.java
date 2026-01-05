@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.common.exception.FcDataDuplicatedException;
 import priv.szf.fastcall.core.common.exception.FcDataNotFoundException;
+import priv.szf.fastcall.core.event.source.FcSourceEventPublisher;
+import priv.szf.fastcall.core.event.source.FcSourceEvent;
 import priv.szf.fastcall.core.mapper.FcSystemMapper;
 import priv.szf.fastcall.core.model.dto.FcSystemDTO;
 import priv.szf.fastcall.core.model.entity.FcSystem;
@@ -31,6 +33,8 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
 
     private final FcSystemMapping systemMapping;
 
+    private final FcSourceEventPublisher sourceEventPublisher;
+
     public List<FcSystemVO> listAll() {
         List<FcSystem> list = super.list();
         return systemMapping.toVoList(list);
@@ -50,7 +54,10 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
         FcSystem system = systemMapping.toEntity(dto);
         super.saveOrUpdate(system);
 
-        authService.saveOrUpdate(system.getAuth(), system.getId());
+        Long systemId = system.getId();
+        authService.saveOrUpdate(system.getAuth(), systemId);
+
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
 
         return systemMapping.toVo(system);
     }
@@ -59,6 +66,7 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
         authService.removeBySystemId(id);
         apiService.removeBySystemId(id);
         super.removeById(id);
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(id));
     }
 
     private void checkData(FcSystemDTO dto) {

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import priv.szf.fastcall.core.event.source.FcSourceEventPublisher;
+import priv.szf.fastcall.core.event.source.FcSourceEvent;
 import priv.szf.fastcall.core.mapper.FcApiParamMapper;
 import priv.szf.fastcall.core.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.core.model.entity.FcApiParam;
@@ -28,6 +30,8 @@ public class FcApiParamService extends ServiceImpl<FcApiParamMapper, FcApiParam>
 
     private final FcApiParamMapping apiParamMapping;
 
+    private final FcSourceEventPublisher sourceEventPublisher;
+
     public List<FcApiParamVO> listAllByApiId(Long apiId) {
         LambdaQueryWrapper<FcApiParam> qw = Wrappers.<FcApiParam>lambdaQuery()
                 .eq(FcApiParam::getApiId, apiId);
@@ -46,10 +50,15 @@ public class FcApiParamService extends ServiceImpl<FcApiParamMapper, FcApiParam>
         List<FcApiParam> apiParamList = apiParamMapping.toEntityList(dtoList);
         super.saveOrUpdateBatch(apiParamList);
 
+        sourceEventPublisher.publish(new FcSourceEvent<FcApiParam>(apiId));
+
         return listAllByApiId(apiId);
     }
 
     public void removeByApiIds(List<Long> apiIds) {
+        if (CollectionUtils.isEmpty(apiIds)) {
+            return;
+        }
         LambdaQueryWrapper<FcApiParam> qw = Wrappers.<FcApiParam>lambdaQuery()
                 .in(FcApiParam::getApiId, apiIds);
         super.remove(qw);

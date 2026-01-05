@@ -17,15 +17,15 @@ import java.util.concurrent.ConcurrentHashMap;
 )
 @Component
 @RequiredArgsConstructor
-public class FcMemorySource extends FcBaseChainSource implements IFcSource {
+public class FcMemorySource extends FcBaseChainSource implements IFcSource, IFcCacheSource {
 
     private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
-        FcSourcePak sourcePak = cache.computeIfAbsent(system, getNextSource()::getSourcePak);
+        FcSourcePak sourcePak = this.cache.computeIfAbsent(system, getNextSource()::getSourcePak);
         if (Objects.isNull(sourcePak)) {
-            cache.remove(system);
+            this.cache.remove(system);
         }
         return sourcePak;
     }
@@ -41,4 +41,10 @@ public class FcMemorySource extends FcBaseChainSource implements IFcSource {
         return 2;
     }
 
+    @Override
+    public void invalidate(String system) {
+        if (Objects.nonNull(system)) {
+            this.cache.remove(system);
+        }
+    }
 }

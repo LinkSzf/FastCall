@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.core.common.exception.FastCallException;
+import priv.szf.fastcall.core.event.source.FcSourceEventPublisher;
+import priv.szf.fastcall.core.event.source.FcSourceEvent;
 import priv.szf.fastcall.core.mapper.FcApiMapper;
 import priv.szf.fastcall.core.model.dto.FcApiDTO;
 import priv.szf.fastcall.core.model.entity.FcApi;
+import priv.szf.fastcall.core.model.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcApiMapping;
 import priv.szf.fastcall.core.model.vo.FcApiVO;
 
@@ -31,6 +34,8 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
     private final FcApiMapping apiMapping;
 
     private final FcApiParamService apiParamService;
+
+    private final FcSourceEventPublisher sourceEventPublisher;
 
     public List<FcApiVO> listAllBySystemId(Long systemId) {
         LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
@@ -52,6 +57,8 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
         super.saveOrUpdateBatch(apiList);
 
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
+
         return listAllBySystemId(systemId);
     }
 
@@ -62,6 +69,8 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
         List<Long> apiIds = apiList.stream().map(FcApi::getId).collect(Collectors.toList());
         apiParamService.removeByApiIds(apiIds);
         super.removeBatchByIds(apiIds);
+
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 
     private void checkData(List<FcApiDTO> dtoList) {

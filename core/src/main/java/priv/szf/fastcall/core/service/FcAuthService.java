@@ -7,8 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.core.event.source.FcSourceEventPublisher;
+import priv.szf.fastcall.core.event.source.FcSourceEvent;
 import priv.szf.fastcall.core.mapper.FcAuthMapper;
 import priv.szf.fastcall.core.model.entity.FcAuth;
+import priv.szf.fastcall.core.model.entity.FcSystem;
 
 import java.util.Objects;
 
@@ -17,6 +20,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class FcAuthService extends ServiceImpl<FcAuthMapper, FcAuth> {
+
+    private final FcSourceEventPublisher sourceEventPublisher;
 
     public FcAuth getBySystemId(Long systemId) {
         LambdaQueryWrapper<FcAuth> qw = Wrappers.<FcAuth>lambdaQuery()
@@ -36,12 +41,15 @@ public class FcAuthService extends ServiceImpl<FcAuthMapper, FcAuth> {
 
         auth.setSysId(systemId);
         super.saveOrUpdate(auth);
+
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 
     public void removeBySystemId(Long systemId) {
         LambdaQueryWrapper<FcAuth> qw = Wrappers.<FcAuth>lambdaQuery()
                 .eq(FcAuth::getSysId, systemId);
         super.remove(qw);
+        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 
 }
