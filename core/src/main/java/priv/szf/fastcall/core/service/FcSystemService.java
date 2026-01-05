@@ -17,6 +17,7 @@ import priv.szf.fastcall.core.model.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.core.model.vo.FcSystemVO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +53,7 @@ public class FcSystemService extends ServiceImpl<FcSystemMapper, FcSystem> {
         checkData(dto);
 
         FcSystem system = systemMapping.toEntity(dto);
+        system.setUpdateAt(LocalDateTime.now());
         super.saveOrUpdate(system);
 
         Long systemId = system.getId();

@@ -28,7 +28,6 @@ public class FcSystem {
 
     private String description;
 
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateAt;
 
     @TableField(exist = false)
