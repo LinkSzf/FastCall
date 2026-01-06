@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import priv.szf.fastcall.common.event.source.FcSourceEvent;
-import priv.szf.fastcall.data.mapper.FcApiMapper;
-import priv.szf.fastcall.data.mapper.FcApiParamMapper;
-import priv.szf.fastcall.data.mapper.FcAuthMapper;
-import priv.szf.fastcall.data.mapper.FcSystemMapper;
+import priv.szf.fastcall.data.mapper.FcApiDao;
+import priv.szf.fastcall.data.mapper.FcApiParamDao;
+import priv.szf.fastcall.data.mapper.FcAuthDao;
+import priv.szf.fastcall.data.mapper.FcSystemDao;
 import priv.szf.fastcall.core.source.IFcCacheSource;
 import priv.szf.fastcall.core.config.FcAsyncConfig;
 import priv.szf.fastcall.common.event.IFcEventLister;
@@ -28,13 +28,13 @@ import java.util.Optional;
 @Component
 public class FcSourceEventListener implements IFcEventLister<FcSourceEvent<?>> {
 
-    private final FcSystemMapper systemMapper;
+    private final FcSystemDao systemDao;
 
-    private final FcAuthMapper authMapper;
+    private final FcAuthDao authDao;
 
-    private final FcApiMapper apiMapper;
+    private final FcApiDao apiDao;
 
-    private final FcApiParamMapper apiParamMapper;
+    private final FcApiParamDao apiParamDao;
 
     private final List<IFcCacheSource> sources;
 
@@ -70,14 +70,14 @@ public class FcSourceEventListener implements IFcEventLister<FcSourceEvent<?>> {
     }
 
     private String getSystemCodeBySystemId(Long id) {
-        FcSystem system = systemMapper.selectById(id);
+        FcSystem system = systemDao.getOneById(id);
         return Optional.ofNullable(system)
                 .map(FcSystem::getCode)
                 .orElse(null);
     }
 
     private String getSystemCodeByAuthId(Long id) {
-        FcAuth auth = authMapper.selectById(id);
+        FcAuth auth = authDao.getOneById(id);
         return Optional.ofNullable(auth)
                 .map(FcAuth::getSysId)
                 .map(this::getSystemCodeBySystemId)
@@ -85,7 +85,7 @@ public class FcSourceEventListener implements IFcEventLister<FcSourceEvent<?>> {
     }
 
     private String getSystemCodeByApiId(Long id) {
-        FcApi api = apiMapper.selectById(id);
+        FcApi api = apiDao.getOneById(id);
         return Optional.ofNullable(api)
                 .map(FcApi::getSysId)
                 .map(this::getSystemCodeBySystemId)
@@ -93,7 +93,7 @@ public class FcSourceEventListener implements IFcEventLister<FcSourceEvent<?>> {
     }
 
     private String getSystemCodeByApiParamId(Long id) {
-        FcApiParam apiParam = apiParamMapper.selectById(id);
+        FcApiParam apiParam = apiParamDao.getOneById(id);
         return Optional.ofNullable(apiParam)
                 .map(FcApiParam::getApiId)
                 .map(this::getSystemCodeByApiId)

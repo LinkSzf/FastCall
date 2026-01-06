@@ -8,8 +8,8 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 
 @EnableTransactionManagement
 @EnableConfigurationProperties(FastCallProperties.class)
-@Configuration
 @ComponentScan(basePackageClasses = FastCallCoreAutoConfiguration.class)
+@Configuration
 public class FastCallCoreAutoConfiguration {
 
 }

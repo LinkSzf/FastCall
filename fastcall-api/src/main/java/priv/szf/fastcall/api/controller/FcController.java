@@ -46,7 +46,7 @@ public class FcController {
 
     @PostMapping("/save")
     public FcSystemVO saveOne(@Valid @RequestBody FcSystemDTO dto){
-        return systemService.saveOrUpdate(dto);
+        return systemService.save(dto);
     }
 
     @DeleteMapping("/{id}")
@@ -61,7 +61,7 @@ public class FcController {
 
     @PostMapping("/{id}/api/save")
     public List<FcApiVO> saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
-        return apiService.saveOrUpdate(id, apiList);
+        return apiService.save(id, apiList);
     }
 
     @GetMapping("/api/{id}/param/all")
@@ -71,7 +71,7 @@ public class FcController {
 
     @PostMapping("/api/{id}/param/save")
     public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
-        return apiParamService.saveOrUpdate(id, apiParamList);
+        return apiParamService.save(id, apiParamList);
     }
 
 }

@@ -41,11 +41,22 @@ spring:
     username: root
     password: 123456
 
+  jpa:
+    show-sql: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+
   mybatis-plus:
     configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
       map-underscore-to-camel-case: true
-    global-config:
-      db-config:
-        id-type: ASSIGN_ID
-    # mapper-locations: classpath*:/mapper/**/*.xml
+
+
+
+

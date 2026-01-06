@@ -1,8 +1,5 @@
 package priv.szf.fastcall.api.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,7 +10,7 @@ import priv.szf.fastcall.api.model.mapping.FcApiMapping;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
 import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.data.mapper.FcApiMapper;
+import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcSystem;
 
@@ -28,7 +25,9 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
+public class FcApiService {
+
+    private final FcApiDao apiDao;
 
     private final FcApiMapping apiMapping;
 
@@ -37,13 +36,11 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
     private final FcSourceEventPublisher sourceEventPublisher;
 
     public List<FcApiVO> listAllBySystemId(Long systemId) {
-        LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
-                .eq(FcApi::getSysId, systemId);
-        List<FcApi> list = super.list(qw);
+        List<FcApi> list = apiDao.listBySystemId(systemId);
         return apiMapping.toVoList(list);
     }
 
-    public List<FcApiVO> saveOrUpdate(Long systemId, List<FcApiDTO> dtoList) {
+    public List<FcApiVO> save(Long systemId, List<FcApiDTO> dtoList) {
         if (CollectionUtils.isEmpty(dtoList)) {
             removeBySystemId(systemId);
             return Collections.emptyList();
@@ -51,23 +48,21 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
 
         checkData(dtoList);
 
-        removeExtraData(dtoList);
+        shrinkApisToThis(dtoList);
 
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
-        super.saveOrUpdateBatch(apiList);
+        List<FcApi> savedApiList = apiDao.insertOrUpdateBatch(apiList);
 
         sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
 
-        return listAllBySystemId(systemId);
+        return apiMapping.toVoList(savedApiList);
     }
 
     public void removeBySystemId(Long systemId) {
-        LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
-                .eq(FcApi::getSysId, systemId);
-        List<FcApi> apiList = super.list(qw);
-        List<Long> apiIds = apiList.stream().map(FcApi::getId).collect(Collectors.toList());
+        List<FcApi> apiList = apiDao.listBySystemId(systemId);
+        List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
         apiParamService.removeByApiIds(apiIds);
-        super.removeBatchByIds(apiIds);
+        apiDao.removeBatchByIds(apiIds);
 
         sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
@@ -90,13 +85,14 @@ public class FcApiService extends ServiceImpl<FcApiMapper, FcApi> {
         }
     }
 
-    private void removeExtraData(List<FcApiDTO> dtoList) {
-        Set<Long> apiIdSet = dtoList.stream()
+    private void shrinkApisToThis(List<FcApiDTO> dtoList) {
+        List<Long> apiIds = dtoList.stream()
                 .filter(Objects::nonNull)
-                .map(FcApiDTO::getId).collect(Collectors.toSet());
-        LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
-                .notIn(FcApi::getId, apiIdSet);
-        super.remove(qw);
+                .map(FcApiDTO::getId)
+                .distinct()
+                .collect(Collectors.toList());
+        apiParamService.removeByApiIds(apiIds);
+        apiDao.removeBatchNotInIds(apiIds);
     }
 
 }

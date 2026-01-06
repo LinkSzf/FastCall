@@ -1,16 +1,15 @@
 package priv.szf.fastcall.api.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.api.model.mapping.FcAuthMapping;
+import priv.szf.fastcall.api.model.vo.FcAuthVO;
 import priv.szf.fastcall.common.event.source.FcSourceEvent;
-import priv.szf.fastcall.data.mapper.FcAuthMapper;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
+import priv.szf.fastcall.data.mapper.FcAuthDao;
 
 import java.util.Objects;
 
@@ -18,20 +17,23 @@ import java.util.Objects;
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class FcAuthService extends ServiceImpl<FcAuthMapper, FcAuth> {
+public class FcAuthService {
+
+    private final FcAuthDao authDao;
+
+    private final FcAuthMapping authMapping;
 
     private final FcSourceEventPublisher sourceEventPublisher;
 
-    public FcAuth getBySystemId(Long systemId) {
-        LambdaQueryWrapper<FcAuth> qw = Wrappers.<FcAuth>lambdaQuery()
-                .eq(FcAuth::getSysId, systemId);
-        return super.getOne(qw);
+    public FcAuthVO getBySystemId(Long systemId) {
+        FcAuth auth = authDao.getBySystemId(systemId);
+        return authMapping.toVo(auth);
     }
 
-    public void saveOrUpdate(FcAuth auth, Long systemId) {
+    public FcAuthVO save(FcAuth auth, Long systemId) {
         if (Objects.isNull(auth)) {
             removeBySystemId(systemId);
-            return;
+            return null;
         }
 
         if (Objects.isNull(auth.getId())) {
@@ -39,15 +41,22 @@ public class FcAuthService extends ServiceImpl<FcAuthMapper, FcAuth> {
         }
 
         auth.setSysId(systemId);
-        super.saveOrUpdate(auth);
+        FcAuth savedAuth = authDao.insertOrUpdate(auth);
 
         sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
+
+        return authMapping.toVo(savedAuth);
     }
 
     public void removeBySystemId(Long systemId) {
-        LambdaQueryWrapper<FcAuth> qw = Wrappers.<FcAuth>lambdaQuery()
-                .eq(FcAuth::getSysId, systemId);
-        super.remove(qw);
+        FcAuthVO authVO = getBySystemId(systemId);
+
+        if (Objects.isNull(authVO)) {
+            return;
+        }
+
+        authDao.removeById(authVO.getId());
+
         sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 

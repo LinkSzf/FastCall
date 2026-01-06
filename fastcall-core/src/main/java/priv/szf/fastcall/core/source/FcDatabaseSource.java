@@ -1,15 +1,9 @@
 package priv.szf.fastcall.core.source;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import priv.szf.fastcall.data.mapper.FcApiMapper;
-import priv.szf.fastcall.data.mapper.FcApiParamMapper;
-import priv.szf.fastcall.data.mapper.FcAuthMapper;
-import priv.szf.fastcall.data.mapper.FcSystemMapper;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
@@ -20,6 +14,10 @@ import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
+import priv.szf.fastcall.data.mapper.FcApiDao;
+import priv.szf.fastcall.data.mapper.FcApiParamDao;
+import priv.szf.fastcall.data.mapper.FcAuthDao;
+import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,15 +31,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
-    private final FcSystemMapper systemMapper;
+    private final FcSystemDao systemDao;
 
-    private final FcAuthMapper authMapper;
+    private final FcAuthDao authDao;
 
-    private final FcApiMapper apiMapper;
+    private final FcApiDao apiDao;
+
+    private final FcApiParamDao apiParamDao;
 
     private final FcPakMapping pakMapping;
 
-    private final FcApiParamMapper apiParamMapper;
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
@@ -74,26 +73,16 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
     }
 
     private FcSystem getSystemByCode(String systemCode) {
-        LambdaQueryWrapper<FcSystem> systemQw = Wrappers.<FcSystem>lambdaQuery()
-                .eq(FcSystem::getCode, systemCode);
-        return systemMapper.selectOne(systemQw);
+        return systemDao.getByCode(systemCode);
     }
 
     private FcAuthPak getAuthBySysId(Long sysId) {
-        LambdaQueryWrapper<FcAuth> authQw = Wrappers.<FcAuth>lambdaQuery()
-                .eq(FcAuth::getSysId, sysId);
-        FcAuth auth = authMapper.selectOne(authQw);
-        if (Objects.isNull(auth)) {
-            return null;
-        }
-
+        FcAuth auth = authDao.getBySystemId(sysId);
         return pakMapping.toAuthPak(auth);
     }
 
     private Map<String, FcApiPak> getApisBySysId(Long sysId) {
-        LambdaQueryWrapper<FcApi> apiQw = Wrappers.<FcApi>lambdaQuery()
-                .eq(FcApi::getSysId, sysId);
-        List<FcApi> apiList = apiMapper.selectList(apiQw);
+        List<FcApi> apiList = apiDao.listBySystemId(sysId);
         if (CollectionUtil.isEmpty(apiList)) {
             return Collections.emptyMap();
         }
@@ -102,9 +91,8 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
     }
 
     private Map<String, FcApiPak> fillWithApiParams(List<FcApi> apiList) {
-        List<Long> apiIds = apiList.stream().map(FcApi::getId).collect(Collectors.toList());
-        LambdaQueryWrapper<FcApiParam> inApiIdQw = Wrappers.<FcApiParam>lambdaQuery().in(FcApiParam::getApiId, apiIds);
-        List<FcApiParam> apiParamList = apiParamMapper.selectList(inApiIdQw);
+        List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
+        List<FcApiParam> apiParamList = apiParamDao.listByApiIds(apiIds);
         Map<Long, List<FcApiParam>> apiParamMap = apiParamList.stream().collect(Collectors.groupingBy(FcApiParam::getApiId));
 
         return apiList.stream()
