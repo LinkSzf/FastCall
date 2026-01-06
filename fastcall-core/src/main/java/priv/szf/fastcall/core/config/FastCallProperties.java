@@ -18,17 +18,17 @@ public class FastCallProperties {
     /** 连接池配置 */
     private Pool pool = new Pool();
 
-    /** 缓存配置 */
+    /** 请求缓存配置 */
     private Cache cache = new Cache();
+
+    /** 数据源缓存配置 */
+    private SourceCache sourceCache = new SourceCache();
 
     /** 最大并发请求数 */
     private int maxRequests = 200;
 
     /** 每主机最大并发请求数 */
     private int maxRequestsPerHost = 30;
-
-    /** 是否启用内存缓存 */
-    private boolean enableMemoryCache = true;
 
     /** 快捷源配置 */
     private List<EasySource> easySource = new ArrayList<>();
@@ -123,5 +123,25 @@ public class FastCallProperties {
                                         System.getProperty("java.io.tmpdir"),
                                         "fast-call-cache"
                                 ).toString();
+    }
+
+    @Data
+    public static class SourceCache {
+        /** 启用数据源缓存*/
+        private boolean enable = true;
+
+        /** 缓存引擎*/
+        private Engine engine = Engine.memory;
+
+        /** 缓存过期时间（分钟）*/
+        private int expire = 60;
+
+        /** 缓存过期时刷新*/
+        private boolean refreshWhenExpire = true;
+
+        public enum Engine {
+            redis,
+            memory
+        }
     }
 }

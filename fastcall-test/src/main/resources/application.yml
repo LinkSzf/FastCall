@@ -14,9 +14,13 @@ fast-call:
   cache:
     enable: false
     max-size: 10485760
+  source-cache:
+    enable: true
+    engine: redis
+    expire: 60
+    refresh-when-expire: true
   max-requests: 200
   max-requests-per-host: 20
-  enable-memory-cache: true
   easy-source:
     - system:
         code: none-system
@@ -40,6 +44,12 @@ spring:
     url: jdbc:mysql://localhost:3306/fastcall-test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
     password: 123456
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
 
   jpa:
     show-sql: false
