@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.api.event.FcSourceEventCut;
+import priv.szf.fastcall.api.event.IdLevel;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
@@ -44,11 +46,13 @@ public class FcController {
         return systemService.getById(id);
     }
 
+    @FcSourceEventCut(entity = FcSystemDTO.class)
     @PostMapping("/save")
     public FcSystemVO saveOne(@Valid @RequestBody FcSystemDTO dto){
         return systemService.save(dto);
     }
 
+    @FcSourceEventCut(entity = Long.class)
     @DeleteMapping("/{id}")
     public void deleteOne(@PathVariable("id") Long id){
         systemService.removeById(id);
@@ -59,6 +63,7 @@ public class FcController {
         return apiService.listAllBySystemId(id);
     }
 
+    @FcSourceEventCut(entity = Long.class)
     @PostMapping("/{id}/api/save")
     public List<FcApiVO> saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
         return apiService.save(id, apiList);
@@ -69,6 +74,7 @@ public class FcController {
         return apiParamService.listAllByApiId(id);
     }
 
+    @FcSourceEventCut(entity = Long.class, level = IdLevel.API)
     @PostMapping("/api/{id}/param/save")
     public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
         return apiParamService.save(id, apiParamList);

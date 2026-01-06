@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.source;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.model.FcApiPak;
@@ -14,6 +15,7 @@ import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
+import priv.szf.fastcall.data.mapper.FastCallDao;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
@@ -26,6 +28,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@ConditionalOnBean(FastCallDao.class)
 @Transactional
 @Component
 @RequiredArgsConstructor

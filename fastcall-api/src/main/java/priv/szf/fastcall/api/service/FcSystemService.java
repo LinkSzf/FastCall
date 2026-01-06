@@ -9,7 +9,6 @@ import priv.szf.fastcall.api.model.mapping.FcAuthMapping;
 import priv.szf.fastcall.api.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.api.model.vo.FcAuthVO;
 import priv.szf.fastcall.api.model.vo.FcSystemVO;
-import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.common.exception.FcDataDuplicatedException;
 import priv.szf.fastcall.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.data.entity.FcAuth;
@@ -33,8 +32,6 @@ public class FcSystemService {
     private final FcSystemMapping systemMapping;
 
     private final FcAuthMapping authMapping;
-
-    private final FcSourceEventPublisher sourceEventPublisher;
 
     private final FcSystemDao systemDao;
 
@@ -64,8 +61,6 @@ public class FcSystemService {
         Long systemId = savedSystem.getId();
         FcAuthVO savedAuth = authService.save(auth, systemId);
 
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
-
         FcSystemVO systemVO = systemMapping.toVo(savedSystem);
         systemVO.setAuth(savedAuth);
         return systemVO;
@@ -75,7 +70,6 @@ public class FcSystemService {
         authService.removeBySystemId(id);
         apiService.removeBySystemId(id);
         systemDao.removeById(id);
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(id));
     }
 
     private void checkData(FcSystemDTO dto) {

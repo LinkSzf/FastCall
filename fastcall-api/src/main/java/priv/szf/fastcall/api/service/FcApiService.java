@@ -8,11 +8,9 @@ import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiMapping;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
-import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.entity.FcApi;
-import priv.szf.fastcall.data.entity.FcSystem;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,8 +31,6 @@ public class FcApiService {
 
     private final FcApiParamService apiParamService;
 
-    private final FcSourceEventPublisher sourceEventPublisher;
-
     public List<FcApiVO> listAllBySystemId(Long systemId) {
         List<FcApi> list = apiDao.listBySystemId(systemId);
         return apiMapping.toVoList(list);
@@ -53,8 +49,6 @@ public class FcApiService {
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
         List<FcApi> savedApiList = apiDao.insertOrUpdateBatch(apiList);
 
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
-
         return apiMapping.toVoList(savedApiList);
     }
 
@@ -63,8 +57,6 @@ public class FcApiService {
         List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
         apiParamService.removeByApiIds(apiIds);
         apiDao.removeBatchByIds(apiIds);
-
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 
     private void checkData(List<FcApiDTO> dtoList) {

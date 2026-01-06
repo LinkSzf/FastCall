@@ -1,4 +1,4 @@
-package priv.szf.fastcall.api.service;
+package priv.szf.fastcall.api.event;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;

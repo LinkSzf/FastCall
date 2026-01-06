@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.api.model.mapping.FcAuthMapping;
 import priv.szf.fastcall.api.model.vo.FcAuthVO;
-import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.data.entity.FcAuth;
-import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 
 import java.util.Objects;
@@ -22,8 +20,6 @@ public class FcAuthService {
     private final FcAuthDao authDao;
 
     private final FcAuthMapping authMapping;
-
-    private final FcSourceEventPublisher sourceEventPublisher;
 
     public FcAuthVO getBySystemId(Long systemId) {
         FcAuth auth = authDao.getBySystemId(systemId);
@@ -43,8 +39,6 @@ public class FcAuthService {
         auth.setSysId(systemId);
         FcAuth savedAuth = authDao.insertOrUpdate(auth);
 
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
-
         return authMapping.toVo(savedAuth);
     }
 
@@ -56,8 +50,6 @@ public class FcAuthService {
         }
 
         authDao.removeById(authVO.getId());
-
-        sourceEventPublisher.publish(new FcSourceEvent<FcSystem>(systemId));
     }
 
 }

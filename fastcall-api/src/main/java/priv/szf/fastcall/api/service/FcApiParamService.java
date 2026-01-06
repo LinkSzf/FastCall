@@ -8,7 +8,6 @@ import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiParamMapping;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
-import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.entity.FcApiParam;
 
@@ -27,8 +26,6 @@ public class FcApiParamService {
 
     private final FcApiParamMapping apiParamMapping;
 
-    private final FcSourceEventPublisher sourceEventPublisher;
-
     public List<FcApiParamVO> listAllByApiId(Long apiId) {
         List<FcApiParam> list = apiParamDao.listByApiId(apiId);
         return apiParamMapping.toVoList(list);
@@ -44,8 +41,6 @@ public class FcApiParamService {
 
         List<FcApiParam> apiParamList = apiParamMapping.toEntityList(dtoList);
         List<FcApiParam> savedApiParamList = apiParamDao.insertOrUpdateBatch(apiParamList);
-
-        sourceEventPublisher.publish(new FcSourceEvent<FcApiParam>(apiId));
 
         return apiParamMapping.toVoList(savedApiParamList);
     }
