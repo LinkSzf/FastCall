@@ -1,0 +1,111 @@
+package priv.szf.fastcall.core.auth.handler;
+
+import lombok.RequiredArgsConstructor;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.core.auth.FcRequestContext;
+import priv.szf.fastcall.core.auth.IFcAuthHandler;
+import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
+import priv.szf.fastcall.common.FcAuthType;
+import priv.szf.fastcall.core.model.credential.ICredential;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+@Component
+public class FcAuthHandlerDelegate implements IFcAuthHandler {
+
+    private final Map<FcAuthType, IFcAuthHandler> handlerMap;
+
+    @Autowired
+    public FcAuthHandlerDelegate(List<IFcAuthHandler> handlers) {
+        this.handlerMap = handlers.stream()
+                .collect(Collectors.toMap(IFcAuthHandler::getAuthType, Function.identity()));
+    }
+
+    @Override
+    public FcAuthType getAuthType() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getSystem(Request request) {
+        return getHandler(request).getSystem(request);
+    }
+
+    @Override
+    public Request modifyRequest(Request request) {
+        return getHandler(request).modifyRequest(request);
+    }
+
+    @Override
+    public boolean isNotAuthNeed(Request request) {
+        return getHandler(request).isNotAuthNeed(request);
+    }
+
+    public boolean isAuthRefreshable(Request request) {
+        IFcAuthHandler handler = getHandler(request);
+        return isRefreshableHandler(handler);
+    }
+
+    public boolean preRefresh(Request request) {
+        IFcAuthHandler handler = getHandler(request);
+
+        if (!isRefreshableHandler(handler)) {
+            return false;
+        }
+
+        ((IFcRefreshableAuthHandler) handler).preRefresh(request);
+        return true;
+    }
+
+    public boolean refresh(Response response) {
+        int code = response.code();
+        if (code != 401) {
+            return false;
+        }
+
+        Request request = response.request();
+        doExtraForRequest(request);
+
+        IFcAuthHandler handler = getHandler(request);
+        if (!isRefreshableHandler(handler)) {
+            return false;
+        }
+
+        ((IFcRefreshableAuthHandler) handler).refresh(response);
+        return true;
+    }
+
+    protected void doExtraForRequest(Request request) {
+        ICredential credential = request.tag(ICredential.class);
+        if (Objects.nonNull(credential)) {
+            credential.invalidate();
+        }
+    }
+
+    private IFcAuthHandler getHandler(Request request) {
+        FcAuthType authType = Optional.ofNullable(request.tag(FcRequestContext.class))
+                .map(FcRequestContext::getAuthType)
+                .orElseThrow(() -> new FastCallException("url[%s]未传递认证类型上下文", request.url()));
+
+        IFcAuthHandler handler = handlerMap.get(authType);
+        if (Objects.isNull(handler)) {{
+            throw new FastCallException("url[%s]未找到认证类型[%s]对应的的认证处理器", request.url(), authType);
+        }}
+
+        return handler;
+    }
+
+    private boolean isRefreshableHandler(IFcAuthHandler handler) {
+        return handler instanceof IFcRefreshableAuthHandler;
+    }
+}

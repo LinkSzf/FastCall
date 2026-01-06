@@ -1,0 +1,51 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+fast-call:
+  pool:
+    max-idle-connections: 50
+    keep-alive-minutes: 5
+  client:
+    connect-timeout: 15
+    read-timeout: 45
+    write-timeout: 45
+  cache:
+    enable: false
+    max-size: 10485760
+  max-requests: 200
+  max-requests-per-host: 20
+  enable-memory-cache: true
+  easy-source:
+    - system:
+        code: none-system
+        name: 测试无认证的系统
+        enable: true
+        host: http://127.0.0.1:8080
+      auth:
+        type: NONE
+        path: /
+        content: |
+          {
+            "username": "admin",
+            "password": "123456"
+          }
+
+spring:
+  application:
+    name: test-application
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fastcall-test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456
+
+  mybatis-plus:
+    configuration:
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+      map-underscore-to-camel-case: true
+    global-config:
+      db-config:
+        id-type: ASSIGN_ID
+    # mapper-locations: classpath*:/mapper/**/*.xml
