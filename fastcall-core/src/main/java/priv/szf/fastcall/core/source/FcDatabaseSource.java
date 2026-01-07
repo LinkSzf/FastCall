@@ -16,12 +16,13 @@ import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
-import priv.szf.fastcall.data.mapper.FastCallDao;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@ConditionalOnBean(FastCallDao.class)
+@ConditionalOnBean(DataSource.class)
 @Transactional
 @Component
 @RequiredArgsConstructor
@@ -45,6 +46,10 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
     private final FcPakMapping pakMapping;
 
+    @PostConstruct
+    public void init2() {
+        System.out.println();
+    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {

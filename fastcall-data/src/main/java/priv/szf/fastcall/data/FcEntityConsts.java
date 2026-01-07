@@ -1,6 +1,6 @@
 package priv.szf.fastcall.data;
 
-public class EntityConsts {
+public class FcEntityConsts {
 
     private static final String TABLE_PREFIX = "fastcall_";
 

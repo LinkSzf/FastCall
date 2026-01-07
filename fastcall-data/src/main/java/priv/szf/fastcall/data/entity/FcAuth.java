@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.data.EntityConsts;
+import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,8 +19,8 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = EntityConsts.AUTH_TABLE)
-@TableName(EntityConsts.AUTH_TABLE)
+@Table(name = FcEntityConsts.AUTH_TABLE)
+@TableName(FcEntityConsts.AUTH_TABLE)
 @Data
 public class FcAuth {
 

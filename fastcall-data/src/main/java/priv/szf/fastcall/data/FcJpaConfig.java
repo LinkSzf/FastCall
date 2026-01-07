@@ -17,6 +17,5 @@ import javax.sql.DataSource;
 @EntityScan(basePackageClasses = EntityMarker.class)
 @EnableJpaRepositories(basePackageClasses = FcBaseRepository.class)
 @Configuration
-public class JpaConfig {
-
+public class FcJpaConfig {
 }

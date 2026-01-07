@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import priv.szf.fastcall.common.FcParamPos;
-import priv.szf.fastcall.data.EntityConsts;
+import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,8 +18,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = EntityConsts.API_PARAM_TABLE)
-@TableName(EntityConsts.API_PARAM_TABLE)
+@Table(name = FcEntityConsts.API_PARAM_TABLE)
+@TableName(FcEntityConsts.API_PARAM_TABLE)
 @Data
 public class FcApiParam {
 

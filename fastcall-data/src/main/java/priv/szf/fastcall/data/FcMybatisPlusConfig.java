@@ -13,6 +13,6 @@ import javax.sql.DataSource;
 @ConditionalOnBean(DataSource.class)
 @MapperScan(basePackageClasses = FcBaseMapper.class)
 @Configuration
-public class MybatisPlusConfig {
+public class FcMybatisPlusConfig {
 
 }
