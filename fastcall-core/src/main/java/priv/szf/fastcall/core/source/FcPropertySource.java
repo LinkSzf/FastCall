@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.common.model.BaseAuthContent;
 import priv.szf.fastcall.core.model.credential.ICredential;
@@ -24,12 +25,11 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
     @Override
     public void init() {
         properties.getEasySource().stream()
-                .map(es -> new FcSourcePak(
-                        getFcSystemPak(es),
-                        getFcAuthPak(es),
-                        null,
-                        null
-                ))
+                .map(es -> FcSourcePak.builder()
+                        .system(getFcSystemPak(es))
+                        .auth(getFcAuthPak(es))
+                        .build()
+                )
                 .forEach(pak -> pakMap.put(pak.getSystem().getCode(), pak));
     }
 

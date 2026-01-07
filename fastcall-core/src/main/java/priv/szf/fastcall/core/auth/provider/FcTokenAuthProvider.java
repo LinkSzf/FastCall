@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.FastCallClient;
 import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.FastCallResponse;
-import priv.szf.fastcall.core.source.FcSourcePak;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.source.IFcSource;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.FcHttpHeader;

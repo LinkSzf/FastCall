@@ -6,6 +6,7 @@ import lombok.Data;
 import priv.szf.fastcall.common.FcParamPos;
 import priv.szf.fastcall.data.entity.FcApiParam;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,9 @@ import java.util.Map;
 import java.util.Objects;
 
 @Data
-public class FcApiParamPak {
+public class FcApiParamPak implements Serializable {
+
+    private static final long serialVersionUID = -2201090540519752028L;
 
     private Map<String, String> headers;
 

@@ -14,7 +14,7 @@ import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.source.IFcSource;
-import priv.szf.fastcall.core.source.FcSourcePak;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
@@ -59,6 +59,9 @@ public class FastCallClientFactory {
 
     private FastCallClient createNewClient(String systemCode) {
         FcSourcePak sourcePak = source.getSourcePak(systemCode);
+        if (Objects.isNull(sourcePak)) {
+            throw new FastCallException("系统[%s]未配置中找到", systemCode);
+        }
 
         FcSystemPak system = sourcePak.getSystem();
         if (!system.isEnable()) {

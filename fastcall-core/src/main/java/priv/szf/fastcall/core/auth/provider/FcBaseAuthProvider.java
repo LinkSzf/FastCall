@@ -3,7 +3,7 @@ package priv.szf.fastcall.core.auth.provider;
 import cn.hutool.core.util.TypeUtil;
 import lombok.NonNull;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
-import priv.szf.fastcall.core.source.FcSourcePak;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.source.IFcSource;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.core.model.FcAuthPak;

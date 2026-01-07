@@ -3,8 +3,12 @@ package priv.szf.fastcall.core.model;
 import lombok.Data;
 import priv.szf.fastcall.common.FcRequestMethod;
 
+import java.io.Serializable;
+
 @Data
-public class FcApiPak {
+public class FcApiPak implements Serializable {
+
+    private static final long serialVersionUID = -3294588741274820809L;
 
     private String name;
 

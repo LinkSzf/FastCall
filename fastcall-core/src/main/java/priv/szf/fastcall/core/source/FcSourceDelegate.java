@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.model.credential.ICredential;
 
 import java.util.Comparator;

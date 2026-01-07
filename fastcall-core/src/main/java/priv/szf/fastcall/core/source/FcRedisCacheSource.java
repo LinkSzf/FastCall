@@ -1,23 +1,15 @@
 package priv.szf.fastcall.core.source;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.config.FastCallProperties;
+import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.model.credential.ICredential;
 
-import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-@ConditionalOnExpression(
-        "'${fast-call.source-cache.enable:true}' == 'true' and " +
-                "'${fast-call.source-cache.engine:redis}' == 'redis'"
-)
-@ConditionalOnBean(RedisTemplate.class)
-@Component
+
 @RequiredArgsConstructor
 public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, IFcCacheSource {
 
@@ -27,11 +19,6 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, 
 
     private final FastCallProperties properties;
 
-    @PostConstruct
-    public void init2() {
-        System.out.println("初始化redis内存缓存源");
-    }
-
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
         String redisKey = buildRedisKey(system);
@@ -40,6 +27,8 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, 
             sourcePak = getNextSource().getSourcePak(system);
             if (Objects.nonNull(sourcePak)) {
                 this.redisTemplate.opsForValue().set(redisKey, sourcePak, getExpire(), TimeUnit.MINUTES);
+            } else {
+                this.redisTemplate.delete(redisKey);
             }
         }
 
