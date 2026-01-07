@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.data.FcEntityConsts;
 
@@ -13,7 +14,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
@@ -25,7 +25,9 @@ import java.time.LocalDateTime;
 public class FcAuth {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "snowflake")
+    @GenericGenerator(name = "snowflake",
+            strategy = "priv.szf.fastcall.data.entity.SnowflakeIdGenerator")
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 

@@ -2,12 +2,12 @@ package priv.szf.fastcall.data.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
@@ -19,7 +19,9 @@ import java.time.LocalDateTime;
 public class FcSystem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "snowflake")
+    @GenericGenerator(name = "snowflake",
+            strategy = "priv.szf.fastcall.data.entity.SnowflakeIdGenerator")
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 

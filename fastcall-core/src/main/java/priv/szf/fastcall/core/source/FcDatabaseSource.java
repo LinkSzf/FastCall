@@ -21,7 +21,6 @@ import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.util.Collections;
 import java.util.List;
@@ -45,11 +44,6 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
     private final FcApiParamDao apiParamDao;
 
     private final FcPakMapping pakMapping;
-
-    @PostConstruct
-    public void init2() {
-        System.out.println();
-    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
