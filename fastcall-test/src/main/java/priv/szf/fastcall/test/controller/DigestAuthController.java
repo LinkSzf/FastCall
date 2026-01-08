@@ -1,14 +1,11 @@
 package priv.szf.fastcall.test.controller;
 
 
-import cn.hutool.core.util.RandomUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import priv.szf.fastcall.core.FastCall;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
@@ -21,13 +18,9 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping(DigestAuthController.BASE_URI)
-public class DigestAuthController {
-
-    private static final String SYSTEM_CODE = "digest-system";
+public class DigestAuthController extends BaseAuthController {
 
     protected static final String BASE_URI = "/auth/digest";
-
-    private static final String RESOURCE_URI = "/resource";
 
     // 预定义的合法用户凭据
     private static final String VALID_USERNAME = "link";
@@ -36,34 +29,34 @@ public class DigestAuthController {
     private static final String NONCE = "dcd98b7102dd2f0e8b11d0f600bfb0c093";
     private static final String OPAQUE = "5ccc069c403ebaf9f0171e9517f40e41";
 
-    @Autowired
-    private FastCall fastCall;
 
-    @GetMapping("/test")
-    public Object testAuth() {
-        return fastCall.getClient(SYSTEM_CODE)
-                .newCall()
-                .uri(BASE_URI + RESOURCE_URI)
-                .prepared()
-                .callIt();
+    @Override
+    protected String getBaseUri() {
+        return BASE_URI;
     }
 
-    @GetMapping(RESOURCE_URI)
-    public ResponseEntity<String> resource(HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
+    @Override
+    protected String getSystemCode() {
+        return "digest-system";
+    }
 
-        if (authorization == null || !authorization.startsWith("Digest ")) {
-            String authHeader = String.format(
-                    "Digest realm=\"%s\", qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=MD5",
-                    REALM, NONCE, OPAQUE
-            );
-            System.out.println("Test-DigestAuth: 尚未认证，先返回认证凭证");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .header("WWW-Authenticate", authHeader)
-                    .body("资源未认证，请先行认证!");
+    @Override
+    protected ResponseEntity<?> unauthorizedResponse() {
+        String authHeader = String.format(
+                "Digest realm=\"%s\", qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=MD5",
+                REALM, NONCE, OPAQUE
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header("WWW-Authenticate", authHeader)
+                .body("Failure!请先获得认证！");
+    }
+
+    @Override
+    protected boolean checkAuth(HttpServletRequest request) {
+        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorization == null) {
+            return false;
         }
-
-        System.out.println("Test-DigestAuth: 已携带认证信息，开始核对凭证");
 
         // 解析Authorization头
         Map<String, String> authParams = parseAuthorizationHeader(authorization.substring(7));
@@ -73,22 +66,22 @@ public class DigestAuthController {
                 !authParams.containsKey("nonce") || !authParams.containsKey("uri") ||
                 !authParams.containsKey("response") || !authParams.containsKey("qop") ||
                 !authParams.containsKey("nc") || !authParams.containsKey("cnonce")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("认证相关参数不完整！");
+            return false;
         }
 
         // 验证用户名
         if (!VALID_USERNAME.equals(authParams.get("username"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("用户名不正确！！");
+            return false;
         }
 
         // 验证realm和nonce
         if (!REALM.equals(authParams.get("realm")) || !NONCE.equals(authParams.get("nonce"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("realm或nonce不正确");
+            return false;
         }
 
         // 验证opaque
         if (!OPAQUE.equals(authParams.get("opaque"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("opaque不正确");
+            return false;
         }
 
         // 计算正确的response并验证
@@ -105,17 +98,10 @@ public class DigestAuthController {
         );
 
         if (!validResponse.equals(authParams.get("response"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("response整体校验失败！");
+            return false;
         }
 
-        System.out.println("Test-DigestAuth: 认证通过。成功请求到资源");
-
-        return ResponseEntity.ok()
-                .body(String.format(
-                        "Succeed!获取到资源，使用的DigestAuth:[%s], 随机数:[%s]",
-                        authorization,
-                        RandomUtil.randomChinese()
-                ));
+        return true;
     }
 
     // 解析Authorization头为键值对

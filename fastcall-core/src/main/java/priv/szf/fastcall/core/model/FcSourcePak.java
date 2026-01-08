@@ -27,7 +27,7 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
     private Map<String, FcApiPak> apiMap;
 
     @Override
-    public List<Function<FcSourcePak, ?>> checkThese() {
+    public List<Function<FcSourcePak, ?>> requireNonNull() {
         return Arrays.asList(
                 FcSourcePak::getSystem,
                 FcSourcePak::getAuth

@@ -23,7 +23,7 @@ public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
     private FcClientSettingPak clientSetting;
 
     @Override
-    public List<Function<FcSystemPak, ?>> checkThese() {
+    public List<Function<FcSystemPak, ?>> requireNonNull() {
         return Arrays.asList(
                 FcSystemPak::getName,
                 FcSystemPak::getCode,

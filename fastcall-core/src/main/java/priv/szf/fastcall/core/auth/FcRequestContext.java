@@ -21,7 +21,7 @@ public class FcRequestContext implements IEssentialCheck<FcRequestContext> {
     private final FcCallType callType;
 
     @Override
-    public List<Function<FcRequestContext, ?>> checkThese() {
+    public List<Function<FcRequestContext, ?>> requireNonNull() {
         return Arrays.asList(
                 FcRequestContext::getSystem,
                 FcRequestContext::getAuthType,

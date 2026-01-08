@@ -26,11 +26,10 @@ public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
 
     @Override
-    public List<Function<FcAuthPak, ?>> checkThese() {
+    public List<Function<FcAuthPak, ?>> requireNonNull() {
         return Arrays.asList(
                 FcAuthPak::getType,
-                FcAuthPak::getContent,
-                FcAuthPak::getPath
+                FcAuthPak::getContent
         );
     }
 }
