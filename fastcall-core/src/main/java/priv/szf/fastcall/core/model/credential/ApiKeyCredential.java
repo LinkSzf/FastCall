@@ -1,7 +1,7 @@
 package priv.szf.fastcall.core.model.credential;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.common.model.ApiKeyAuthContent;
 
 @Getter
@@ -24,7 +24,7 @@ public class ApiKeyCredential implements ICredential {
 
     @Override
     public String getAuthString() {
-        return StringUtils.EMPTY;
+        return StrUtil.EMPTY;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package priv.szf.fastcall.core.auth.provider;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
@@ -41,7 +41,7 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
                                                @NonNull String system
     ) {
         String authenticateHeader = response.header(FcHttpHeader.WWW_AUTHENTICATE.getName());
-        if (!StringUtils.startsWith(authenticateHeader, FcAuthType.DIGEST.getPrefix())) {
+        if (!StrUtil.startWithIgnoreCase(authenticateHeader, FcAuthType.DIGEST.getPrefix())) {
             throw new FastCallException(
                             "未识别到Digest认证头，code[%s], message[%s], data[%s]",
                             response.code(), response.message(), response.body()

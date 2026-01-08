@@ -1,6 +1,7 @@
 package priv.szf.fastcall.core;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -13,7 +14,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
@@ -228,7 +228,7 @@ public class FastCallClient {
         }
 
         public Builder<T> host(String host) {
-            if (StringUtils.isNotBlank(host)) {
+            if (StrUtil.isNotBlank(host)) {
                 this.host = host;
             }
             return this;
@@ -283,7 +283,7 @@ public class FastCallClient {
         }
 
         public FastCallClient prepared() {
-            this.fullUrl = (StringUtils.isNotBlank(this.url)) ? this.url
+            this.fullUrl = (StrUtil.isNotBlank(this.url)) ? this.url
                     : URLUtil.completeUrl(host, uri);
 
             if (CollectionUtil.isNotEmpty(params)) {

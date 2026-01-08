@@ -1,8 +1,8 @@
 package priv.szf.fastcall.core.auth.provider.digest;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.common.FcAuthType;
 
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class DigestChallenge {
     private final Map<String, String> otherParams;
 
     public static DigestChallenge parse(String authenticateHeader) {
-        String headerValue = StringUtils.removeStart(authenticateHeader, FcAuthType.DIGEST.getPrefix());
+        String headerValue = StrUtil.removePrefix(authenticateHeader, FcAuthType.DIGEST.getPrefix());
         String[] params = headerValue.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         Map<String, String> paramMap = new HashMap<>();
         for (String param : params) {

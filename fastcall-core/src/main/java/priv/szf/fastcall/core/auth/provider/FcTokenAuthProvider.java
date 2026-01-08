@@ -3,11 +3,11 @@ package priv.szf.fastcall.core.auth.provider;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.model.credential.TokenCredential;
@@ -65,7 +65,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
 
     private LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {
         String issuance = jsonData.getByPath(fieldPath, String.class);
-        if (StringUtils.isNotBlank(issuance)) {
+        if (StrUtil.isNotBlank(issuance)) {
             if (NumberUtil.isLong(issuance)) {
                 long issuanceLong = NumberUtil.parseLong(issuance);
                 return DateUtil.date(issuanceLong).toLocalDateTime();
@@ -77,7 +77,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
 
     private String getToken(JSONObject jsonData, String fieldPath) {
         String token = jsonData.getByPath(fieldPath, String.class);
-        if (StringUtils.isBlank(token)) {
+        if (StrUtil.isBlank(token)) {
             throw new FastCallException("响应体[%s]中路径[%s]未找到token字段", jsonData, fieldPath);
         }
         return token;

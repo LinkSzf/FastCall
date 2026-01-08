@@ -2,7 +2,6 @@ package priv.szf.fastcall.test.controller;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +48,7 @@ public class CookieAuthController {
         String username = loginBody.getUsername();
         String password = loginBody.getPassword();
 
-        if (!StringUtils.equals(username, USERNAME) || !StringUtils.equals(password, PASSWORD)) {
+        if (!StrUtil.equals(username, USERNAME) || !StrUtil.equals(password, PASSWORD)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body("认证失败！");
         }
