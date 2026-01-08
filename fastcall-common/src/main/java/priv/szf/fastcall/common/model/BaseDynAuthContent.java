@@ -10,10 +10,4 @@ public abstract class BaseDynAuthContent extends BaseAuthContent {
 
     private FcAuthProp prop;
 
-    private String tokenField;
-
-    private String expiredInField;
-
-    private String issuanceField;
-
 }

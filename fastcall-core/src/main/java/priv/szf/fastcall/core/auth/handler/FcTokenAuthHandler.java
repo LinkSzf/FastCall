@@ -8,7 +8,7 @@ import priv.szf.fastcall.common.FcAuthType;
 
 @RequiredArgsConstructor
 @Component
-public class FcBearerTokenAuthHandler extends FcBaseTokenAuthHandler
+public class FcTokenAuthHandler extends FcBaseRefreshableAuthHandler
         implements IFcRefreshableAuthHandler {
 
     private final FcTokenAuthProvider tokenAuthProvider;

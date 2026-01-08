@@ -7,11 +7,13 @@ import priv.szf.fastcall.api.model.dto.auth.ApiKeyAuthDTO;
 import priv.szf.fastcall.api.model.dto.auth.BaseAuthContentDTO;
 import priv.szf.fastcall.api.model.dto.auth.BasicAuthDTO;
 import priv.szf.fastcall.api.model.dto.auth.BearerAuthDTO;
+import priv.szf.fastcall.api.model.dto.auth.CookieAuthDTO;
 import priv.szf.fastcall.api.model.dto.auth.DigestAuthDTO;
 import priv.szf.fastcall.api.model.dto.auth.NoneAuthDTO;
 import priv.szf.fastcall.common.model.ApiKeyAuthContent;
 import priv.szf.fastcall.common.model.BaseAuthContent;
 import priv.szf.fastcall.common.model.BasicAuthContent;
+import priv.szf.fastcall.common.model.CookieAuthContent;
 import priv.szf.fastcall.common.model.TokenAuthContent;
 import priv.szf.fastcall.common.model.DigestAuthContent;
 import priv.szf.fastcall.common.model.NoneAuthContent;
@@ -29,6 +31,7 @@ public class FcAuthContentConverter {
             .put(BasicAuthContent.class, BasicAuthDTO.class)
             .put(TokenAuthContent.class, BearerAuthDTO.class)
             .put(DigestAuthContent.class, DigestAuthDTO.class)
+            .put(CookieAuthContent.class, CookieAuthDTO.class)
             .build();
 
     public BaseAuthContentDTO toBean(FcAuth entity){

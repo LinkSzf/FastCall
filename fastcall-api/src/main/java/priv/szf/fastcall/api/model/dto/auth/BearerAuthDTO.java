@@ -9,7 +9,11 @@ import lombok.EqualsAndHashCode;
 @Data
 public class BearerAuthDTO extends BaseDynAuthContentDTO {
 
-    private String fixedToken;
+    private String tokenField;
+
+    private String expiredInField;
+
+    private String issuanceField;
 
 
 }

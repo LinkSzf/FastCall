@@ -5,6 +5,7 @@ import lombok.Getter;
 import priv.szf.fastcall.common.model.ApiKeyAuthContent;
 import priv.szf.fastcall.common.model.BaseAuthContent;
 import priv.szf.fastcall.common.model.BasicAuthContent;
+import priv.szf.fastcall.common.model.CookieAuthContent;
 import priv.szf.fastcall.common.model.DigestAuthContent;
 import priv.szf.fastcall.common.model.NoneAuthContent;
 import priv.szf.fastcall.common.model.TokenAuthContent;
@@ -21,7 +22,9 @@ public enum FcAuthType {
 
     DIGEST(DigestAuthContent.class, "Digest "),
 
-    BEARER(TokenAuthContent.class, "Bearer ");
+    BEARER(TokenAuthContent.class, "Bearer "),
+
+    COOKIE(CookieAuthContent.class);
 
     FcAuthType(Class<? extends BaseAuthContent> clazz) {
         this(clazz, null);

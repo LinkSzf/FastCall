@@ -1,7 +1,8 @@
 package priv.szf.fastcall.core.auth.handler;
 
+import cn.hutool.core.util.StrUtil;
+import lombok.NonNull;
 import okhttp3.Request;
-import org.apache.commons.lang3.StringUtils;
 import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
@@ -36,8 +37,12 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
             return request;
         }
 
+        return doModifyRequest(request, credential);
+    }
+
+    protected Request doModifyRequest(@NonNull Request request, @NonNull ICredential credential) {
         String authStr = credential.getAuthString();
-        String authorization = StringUtils.prependIfMissing(authStr, getAuthType().getPrefix());
+        String authorization = StrUtil.prependIfMissingIgnoreCase(authStr, getAuthType().getPrefix());
         return request.newBuilder()
                 .tag(ICredential.class, credential)
                 .header(FcHttpHeader.AUTHORIZATION.getName(), authorization)

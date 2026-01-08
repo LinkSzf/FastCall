@@ -20,7 +20,8 @@ import javax.validation.constraints.NotNull;
         @JsonSubTypes.Type(value = ApiKeyAuthDTO.class, name = "APIKEY"),
         @JsonSubTypes.Type(value = DigestAuthDTO.class, name = "DIGEST"),
         @JsonSubTypes.Type(value = BasicAuthDTO.class, name = "BASIC"),
-        @JsonSubTypes.Type(value = BearerAuthDTO.class, name = "BEARER")
+        @JsonSubTypes.Type(value = BearerAuthDTO.class, name = "BEARER"),
+        @JsonSubTypes.Type(value = BearerAuthDTO.class, name = "COOKIE")
 })
 @EqualsAndHashCode(callSuper = true)
 @Data

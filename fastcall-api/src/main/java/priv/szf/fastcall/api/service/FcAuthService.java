@@ -49,7 +49,8 @@ public class FcAuthService {
             return;
         }
 
-        authDao.removeById(authVO.getId());
+        Long authId = Long.parseLong(authVO.getId());
+        authDao.removeById(authId);
     }
 
 }

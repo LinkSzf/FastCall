@@ -9,7 +9,7 @@ import priv.szf.fastcall.common.FcAuthType;
 
 @RequiredArgsConstructor
 @Component
-public class FcDigestAuthHandler extends FcBaseTokenAuthHandler
+public class FcDigestAuthHandler extends FcBaseRefreshableAuthHandler
         implements IFcRefreshableAuthHandler {
 
     private final FcDigestAuthProvider authProvider;

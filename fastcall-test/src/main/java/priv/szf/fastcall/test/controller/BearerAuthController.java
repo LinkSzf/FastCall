@@ -2,9 +2,10 @@ package priv.szf.fastcall.test.controller;
 
 
 import cn.hutool.core.util.RandomUtil;
-import org.apache.commons.lang3.StringUtils;
+import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -93,9 +94,10 @@ public class BearerAuthController {
     public ResponseEntity<String> resource(HttpServletRequest  request) {
         System.out.println("Test-BearerTokenAuth:请求到资源。");
         String authorization = request.getHeader("Authorization");
-        if (!StringUtils.endsWith(authorization, TOKEN)) {
+        if (!StrUtil.endWith(authorization, TOKEN)) {
             System.out.println("Test-BearerTokenAuth:拒绝访问资源：未认证！");
-            return ResponseEntity.ok().body("拒绝访问资源：未认证！");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("拒绝访问资源：未认证！");
         }
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.SECONDS))

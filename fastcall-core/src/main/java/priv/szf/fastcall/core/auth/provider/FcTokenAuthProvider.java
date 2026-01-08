@@ -5,33 +5,23 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.core.FastCallClient;
-import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.FastCallResponse;
-import priv.szf.fastcall.core.model.FcSourcePak;
+import priv.szf.fastcall.core.model.credential.TokenCredential;
 import priv.szf.fastcall.core.source.IFcSource;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
-import priv.szf.fastcall.common.FcHttpHeader;
-import priv.szf.fastcall.common.FcMediaType;
-import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.common.model.FcAuthProp;
-import priv.szf.fastcall.core.model.credential.TokenCredential;
 import priv.szf.fastcall.common.model.TokenAuthContent;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuthContent>
+public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuthContent, String>
         implements IFcAuthProvider<TokenAuthContent> {
 
     private static final long DEFAULT_EXPIRED_IN = 3600 * 24 * 7;
@@ -44,33 +34,9 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
     }
 
     @Override
-    protected TokenCredential buildCredential(TokenAuthContent authContent,
-                                              Request request,
-                                              Response response,
-                                              String system) {
-        FcSourcePak sourcePak = getSource().getSourcePak(system);
-        FcAuthPak authPak = sourcePak.getAuth();
-
-        FcAuthProp authProp = Optional.ofNullable(authContent.getProp()).orElse(new FcAuthProp());
-        FastCallClient client = FastCallClientFactory.getExistedClient(system);
-        FastCallResponse<String> authResponse = client.newCall(String.class)
-                .host(authPak.getParticularHost())
-                .uri(authPak.getPath())
-                .params(authProp.getParams())
-                .method(FcRequestMethod.POST)
-                .header(FcHttpHeader.CONTENT_TYPE, FcMediaType.APPLICATION_JSON)
-                .header(FcHttpHeader.ACCEPT, FcMediaType.APPLICATION_JSON)
-                .headers(authProp.getHeaders())
-                .body(authProp.getBody())
-                .prepared()
-                .anonymousCallIt();
-
-        return mapToToken(authResponse, authContent);
-    }
-
-    private TokenCredential mapToToken(FastCallResponse<String> response, TokenAuthContent authContent) {
-        checkSuccess(response);
-
+    protected TokenCredential buildCredential(@NonNull FastCallResponse<String> response,
+                                              @NonNull TokenAuthContent authContent
+    ) {
         String data = response.getData();
         if (Objects.isNull(data)) {
             throw new FastCallException(
@@ -78,7 +44,6 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
                             response.getCode(), response.getMessage()
             );
         }
-
 
         JSONObject jsonData = JSONUtil.parseObj(data);
 
@@ -90,14 +55,6 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
                 .issuance(issuance)
                 .estimatedExpiration(estimatedExpiration)
                 .build();
-    }
-
-    private void checkSuccess(FastCallResponse<String> response) {
-        if (!response.isSuccessful()) {
-            throw new FastCallException("系统刷新认证失败，code[%s], message[%s], data[%s]",
-                            response.getCode(), response.getMessage(), response.getData()
-            );
-        }
     }
 
     private LocalDateTime getEstimatedExpiration(JSONObject jsonData, String fieldPath, LocalDateTime issuance) {

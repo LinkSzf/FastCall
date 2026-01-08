@@ -3,13 +3,13 @@ package priv.szf.fastcall.core.auth.handler;
 import okhttp3.Request;
 import okhttp3.Response;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
-import priv.szf.fastcall.core.auth.IFcInteractiveAuthProvider;
+import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 
-public abstract class FcBaseTokenAuthHandler extends FcBaseAuthHandler
+public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
         implements IFcRefreshableAuthHandler {
 
-    protected abstract IFcInteractiveAuthProvider<?> getInteractiveAuthProvider();
+    protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
 
     @Override
     protected IFcAuthProvider<?> getAuthProvider() {

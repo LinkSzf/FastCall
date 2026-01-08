@@ -1,12 +1,13 @@
 package priv.szf.fastcall.core.auth.provider;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.FcUtils;
-import priv.szf.fastcall.core.auth.IFcInteractiveAuthProvider;
+import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.auth.provider.digest.DigestChallenge;
 import priv.szf.fastcall.core.source.IFcSource;
@@ -21,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 @Component
-public class FcDigestAuthProvider extends FcBaseInteractiveAuthProvider<DigestAuthContent>
-    implements IFcInteractiveAuthProvider<DigestAuthContent> {
+public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthContent>
+    implements IFcDynAuthProvider<DigestAuthContent> {
 
     private final Map<String, ClientNonceManager> systemNonceManagerMap = new ConcurrentHashMap<>();
 
@@ -34,10 +35,11 @@ public class FcDigestAuthProvider extends FcBaseInteractiveAuthProvider<DigestAu
     }
 
     @Override
-    protected DigestCredential buildCredential(DigestAuthContent authContent,
-                                               Request request,
-                                               Response response,
-                                               String system) {
+    protected DigestCredential buildCredential(@NonNull DigestAuthContent authContent,
+                                               @NonNull Request request,
+                                               @NonNull Response response,
+                                               @NonNull String system
+    ) {
         String authenticateHeader = response.header(FcHttpHeader.WWW_AUTHENTICATE.getName());
         if (!StringUtils.startsWith(authenticateHeader, FcAuthType.DIGEST.getPrefix())) {
             throw new FastCallException(
