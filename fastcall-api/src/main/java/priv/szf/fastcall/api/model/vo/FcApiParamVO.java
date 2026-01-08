@@ -6,9 +6,9 @@ import priv.szf.fastcall.common.FcParamPos;
 @Data
 public class FcApiParamVO {
 
-    private Long id;
+    private String id;
 
-    private Long apiId;
+    private String apiId;
 
     private String name;
 

@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 @Data
 public class FcAuthVO {
 
-    private Long id;
+    private String id;
 
-    private Long sysId;
+    private String sysId;
 
     private FcAuthType type;
 
