@@ -28,11 +28,13 @@ import priv.szf.fastcall.core.model.FcApiParamPak;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("all")
 @Builder
 public class FastCallClient {
 
@@ -48,7 +50,9 @@ public class FastCallClient {
 
     private <T> Request createRequest(Builder<T> builder) {
         Headers.Builder headerBuilder = new Headers.Builder();
-        builder.headers.forEach(headerBuilder::add);
+        builder.headers.forEach((key, values) ->
+                values.forEach(value -> headerBuilder.add(key, value))
+        );
         Headers headers = headerBuilder.build();
 
         FcRequestMethod method = builder.method;
@@ -192,7 +196,7 @@ public class FastCallClient {
 
     public class Builder<T> {
 
-        private final Map<String, String> headers = new HashMap<>();
+        private final Map<String, List<String>> headers = new HashMap<>();
 
         private final FastCallClient client;
 
@@ -250,7 +254,14 @@ public class FastCallClient {
         }
 
         public Builder<T> header(String key, String value) {
-            headers.put(key, value);
+            List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
+            values.add(value);
+            return this;
+        }
+
+        public Builder<T> header(String key, List<String> value) {
+            List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
+            values.addAll(value);
             return this;
         }
 
@@ -263,7 +274,14 @@ public class FastCallClient {
 
         public Builder<T> headers(Map<String, String> headers) {
             if (CollectionUtil.isNotEmpty(headers)) {
-                this.headers.putAll(headers);
+                headers.forEach(this::header);
+            }
+            return this;
+        }
+
+        public Builder<T> allHeaders(Map<String, List<String>> headers) {
+            if (CollectionUtil.isNotEmpty(headers)) {
+                headers.forEach(this::header);
             }
             return this;
         }

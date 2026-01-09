@@ -39,7 +39,7 @@ public class CookieAuthController extends BaseAuthController {
     @Override
     protected boolean checkAuth(HttpServletRequest request) {
         String cookie = request.getHeader(HttpHeaders.COOKIE);
-        return COOKIE.equals(cookie);
+        return StrUtil.contains(cookie, COOKIE);
     }
 
     @PostMapping("/login")
@@ -57,7 +57,7 @@ public class CookieAuthController extends BaseAuthController {
         log.info("[TEST-({})-登录]用户校验通过！", getSystemCode());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, COOKIE)
+                .header(HttpHeaders.SET_COOKIE, COOKIE, "path=/", "httpOnly", "secure")
                 .body("认证成功！");
     }
 

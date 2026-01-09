@@ -4,6 +4,7 @@ package priv.szf.fastcall.core;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,11 +23,17 @@ public class FastCallResponse<T> {
 
     private final T data;
 
-    public String getHeader(String name) {
+    public String getSingleHeader(String name) {
         return Optional.ofNullable(headers)
                 .map(map -> map.get(name))
                 .map(list -> list.get(0))
                 .orElse(null);
+    }
+
+    public List<String> getHeaders(String name) {
+        return Optional.ofNullable(headers)
+                .map(map -> map.get(name))
+                .orElse(Collections.emptyList());
     }
 
 }
