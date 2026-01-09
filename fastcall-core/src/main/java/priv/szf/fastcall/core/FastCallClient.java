@@ -1,9 +1,9 @@
 package priv.szf.fastcall.core;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.Builder;
 import okhttp3.Call;
@@ -26,13 +26,17 @@ import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings("all")
 @Builder
@@ -56,11 +60,21 @@ public class FastCallClient {
         Headers headers = headerBuilder.build();
 
         FcRequestMethod method = builder.method;
-        RequestBody requestBody = (method == FcRequestMethod.GET) ? null :
-                RequestBody.create(
-                        new JSONObject(builder.body).toString(),
-                        MediaType.parse(builder.contentType.getName())
-                );
+        RequestBody requestBody = Optional.ofNullable(builder.body)
+                .filter(ArrayUtil::isNotEmpty)
+                .map(body -> {
+                    MediaType mediaType = MediaType.parse(builder.contentType.getName());
+
+                    if (body instanceof byte[]) {
+                        return RequestBody.create((byte[]) body, mediaType);
+                    }
+                    if (body instanceof File) {
+                        return RequestBody.create((File) body, mediaType);
+                    }
+                    String jsonStr = JSONUtil.toJsonStr(body);
+                    return RequestBody.create(jsonStr, mediaType);
+                })
+                .orElse(null);
 
         String url = builder.fullUrl;
 
@@ -85,6 +99,10 @@ public class FastCallClient {
         boolean isSuccessful = response.isSuccessful();
         ResponseBody body = response.body();
         T data = readResponseBodyData(builder.dataType, body, builder.fullUrl);
+        String mediaType = Optional.ofNullable(body)
+                .map(b -> b.contentType())
+                .map(t -> t.toString())
+                .orElse(null);
         Headers headers = response.headers();
         Map<String, List<String>> headersMap = headers.toMultimap();
 
@@ -94,6 +112,7 @@ public class FastCallClient {
                 .message(message)
                 .isSuccessful(isSuccessful)
                 .data(data)
+                .mediaType(mediaType)
                 .headers(headersMap)
                 .build();
     }
@@ -115,25 +134,33 @@ public class FastCallClient {
             return null;
         }
 
-        T data = null;
-        String bodyStr = null;
         try {
-            bodyStr = body.string();
+            if (dataType == byte[].class) {
+                return (T) body.bytes();
+            }
+
+            if (dataType == InputStream.class) {
+                return (T) new ByteArrayInputStream(body.bytes());
+            }
+
+            String bodyStr = body.string();
             if (String.class == dataType || Object.class == dataType) {
-                data = (T) bodyStr;
-            } else if (JSONUtil.isTypeJSON(bodyStr)) {
-                data = JSONUtil.toBean(bodyStr, dataType);
+                return (T) bodyStr;
+            }
+
+            if (JSONUtil.isTypeJSON(bodyStr)) {
+                return JSONUtil.toBean(bodyStr, dataType);
             }
         } catch (IOException e) {
             throw new FcUnexpectedException(e, "url[%s]请求失败，读取响应体字符串时IO异常", url);
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
-                            "url[%s]请求失败，类型转换失败，无法将[%s]转换为类型[%s]",
+                            "url[%s]请求失败，类型转换失败，无法将响应体转换为类型[%s]",
                             url,
-                            bodyStr,
                             dataType.getName());
         }
-        return data;
+
+        return null;
     }
 
     public <T> Builder<T> newCall(Class<T> dataType) {
@@ -290,8 +317,7 @@ public class FastCallClient {
             if (Objects.isNull(body)) {
                 return this;
             }
-            String bodyStr = JSONUtil.toJsonStr(body);
-            return body(bodyStr, FcMediaType.APPLICATION_JSON);
+            return body(body, FcMediaType.APPLICATION_JSON);
         }
 
         public Builder<T> body(Object body, FcMediaType mediaType) {

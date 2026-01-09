@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.FastCallResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/a")
 public class AController {
@@ -16,7 +18,7 @@ public class AController {
     private FastCall fastCall;
 
     @RequestMapping("/hello")
-    public String hello(){
+    public String hello(HttpServletRequest request){
         return "hello world!";
     }
 

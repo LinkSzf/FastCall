@@ -19,6 +19,11 @@ fast-call:
     engine: memory
     expire: 60
     refresh-when-expire: true
+  forward-proxy:
+    enable: true
+    add-forward-header: true
+    prefix: /fc_forward_proxy
+    system-property: Fc-Forward-Proxy-System
   max-requests: 200
   max-requests-per-host: 20
   easy-source:

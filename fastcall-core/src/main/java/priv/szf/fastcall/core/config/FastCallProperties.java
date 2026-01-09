@@ -24,6 +24,9 @@ public class FastCallProperties {
     /** 数据源缓存配置 */
     private SourceCache sourceCache = new SourceCache();
 
+    /** 转发代理配置 */
+    private ForwardProxy forwardProxy = new ForwardProxy();
+
     /** 最大并发请求数 */
     private int maxRequests = 200;
 
@@ -34,6 +37,22 @@ public class FastCallProperties {
     private List<EasySource> easySource = new ArrayList<>();
 
     private Retry retry = new Retry();
+
+    @Data
+    public static class ForwardProxy {
+        /** 是否启用转发代理 */
+        private boolean enable = false;
+
+        /** 过滤前缀 */
+        private String prefix = "/fc_forward_proxy";
+
+        /** 标识被代理系统*/
+        private String systemProperty = "Fc-Forward-Proxy-System";
+
+        /** 是否自动添加转发请求头 */
+        private boolean addForwardHeader = true;
+
+    }
 
     @Data
     public static class EasySource {

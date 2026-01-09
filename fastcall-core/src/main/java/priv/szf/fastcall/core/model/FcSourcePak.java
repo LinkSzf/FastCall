@@ -26,6 +26,8 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
 
     private Map<String, FcApiPak> apiMap;
 
+    private List<FcHeaderAssignPak> headerAssigns;
+
     @Override
     public List<Function<FcSourcePak, ?>> requireNonNull() {
         return Arrays.asList(

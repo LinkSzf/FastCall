@@ -12,6 +12,8 @@ public class FcEntityConsts {
 
     public static final String API_PARAM_TABLE = TABLE_PREFIX + "api_param";
 
+    public static final String HEADER_ASSIGN_TABLE = TABLE_PREFIX + "header_assign";
+
 
 
 }

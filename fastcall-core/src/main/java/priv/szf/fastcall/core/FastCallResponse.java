@@ -23,6 +23,8 @@ public class FastCallResponse<T> {
 
     private final T data;
 
+    private final String mediaType;
+
     public String getSingleHeader(String name) {
         return Optional.ofNullable(headers)
                 .map(map -> map.get(name))
