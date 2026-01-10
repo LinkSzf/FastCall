@@ -8,4 +8,5 @@ public interface FcHeaderAssignDao extends FastCallDao<FcHeaderAssign> {
 
     List<FcHeaderAssign> listBySystemId(Long systemId);
 
+    void removeBatchBySystemId(Long systemId);
 }

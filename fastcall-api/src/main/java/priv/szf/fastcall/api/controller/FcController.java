@@ -13,12 +13,15 @@ import priv.szf.fastcall.api.event.FcSourceEventCut;
 import priv.szf.fastcall.api.event.IdLevel;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
+import priv.szf.fastcall.api.model.dto.FcHeaderAssignDTO;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
+import priv.szf.fastcall.api.model.vo.FcHeaderAssignVO;
 import priv.szf.fastcall.api.model.vo.FcSystemVO;
 import priv.szf.fastcall.api.service.FcApiParamService;
 import priv.szf.fastcall.api.service.FcApiService;
+import priv.szf.fastcall.api.service.FcHeaderAssignService;
 import priv.szf.fastcall.api.service.FcSystemService;
 
 import javax.validation.Valid;
@@ -35,6 +38,8 @@ public class FcController {
     private final FcApiService apiService;
 
     private final FcApiParamService apiParamService;
+
+    private final FcHeaderAssignService headerAssignService;
 
     @GetMapping("/all")
     public List<FcSystemVO> listAll(){
@@ -79,5 +84,18 @@ public class FcController {
     public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
         return apiParamService.save(id, apiParamList);
     }
+
+    @GetMapping("/{id}/header_assign/all")
+    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable("id") Long id) {
+        return headerAssignService.listAllHeaderAssignBySystemId(id);
+    }
+
+    @FcSourceEventCut(entity = Long.class, level = IdLevel.SYSTEM)
+    @PostMapping("/{id}/header_assign/save")
+    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
+        return headerAssignService.save(id, headerAssignList);
+    }
+
+
 
 }

@@ -1,10 +1,10 @@
 package priv.szf.fastcall.api.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiParamMapping;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
@@ -32,7 +32,7 @@ public class FcApiParamService {
     }
 
     public List<FcApiParamVO> save(Long apiId, List<FcApiParamDTO> dtoList) {
-        if (CollectionUtils.isEmpty(dtoList)) {
+        if (CollectionUtil.isEmpty(dtoList)) {
             removeByApiIds(Collections.singletonList(apiId));
             return Collections.emptyList();
         }
@@ -46,7 +46,7 @@ public class FcApiParamService {
     }
 
     public void removeByApiIds(List<Long> apiIds) {
-        if (CollectionUtils.isEmpty(apiIds)) {
+        if (CollectionUtil.isEmpty(apiIds)) {
             return;
         }
 

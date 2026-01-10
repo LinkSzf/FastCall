@@ -17,4 +17,11 @@ public interface FcHeaderAssignMapper extends FcBaseMapper<FcHeaderAssign>, FcHe
                 .eq(FcHeaderAssign::getSysId, systemId);
         return selectList(qw);
     }
+
+    @Override
+    default void removeBatchBySystemId(Long systemId) {
+        LambdaQueryWrapper<FcHeaderAssign> qw = Wrappers.<FcHeaderAssign>lambdaQuery()
+                .eq(FcHeaderAssign::getSysId, systemId);
+        delete(qw);
+    }
 }

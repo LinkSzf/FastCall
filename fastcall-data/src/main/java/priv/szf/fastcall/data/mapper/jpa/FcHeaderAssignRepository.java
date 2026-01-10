@@ -17,4 +17,11 @@ public interface FcHeaderAssignRepository extends FcBaseRepository<FcHeaderAssig
     }
 
     List<FcHeaderAssign> findAllBySysId(Long systemId);
+
+    @Override
+    default void removeBatchBySystemId(Long systemId) {
+        deleteAllBySysId(systemId);
+    }
+
+    void deleteAllBySysId(Long systemId);
 }
