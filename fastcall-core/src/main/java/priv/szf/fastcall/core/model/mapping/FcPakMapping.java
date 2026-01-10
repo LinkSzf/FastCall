@@ -2,14 +2,18 @@ package priv.szf.fastcall.core.model.mapping;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import priv.szf.fastcall.core.model.FcHeaderAssignPak;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcAuth;
+import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
 import priv.szf.fastcall.core.model.FcClientSettingPak;
 import priv.szf.fastcall.core.model.FcSystemPak;
+
+import java.util.List;
 
 @Mapper(
         componentModel = "spring",
@@ -29,6 +33,8 @@ public interface FcPakMapping {
     @Mapping(target = "clientSetting.readTimeout", source = "readTimeout")
     @Mapping(target = "clientSetting.writeTimeout", source = "writeTimeout")
     FcApiPak toApiPak(FcApi api);
+
+    List<FcHeaderAssignPak> toHeaderAssignPak(List<FcHeaderAssign> headerAssign);
 
     FcClientSettingPak toClientSettingPak(FastCallProperties.Client clientSetting);
 

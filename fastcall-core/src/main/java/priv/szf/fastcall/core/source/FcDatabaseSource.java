@@ -8,17 +8,20 @@ import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
+import priv.szf.fastcall.core.model.FcHeaderAssignPak;
 import priv.szf.fastcall.core.model.FcSourcePak;
 import priv.szf.fastcall.core.model.FcSystemPak;
 import priv.szf.fastcall.core.model.credential.ICredential;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
+import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
+import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import javax.sql.DataSource;
@@ -43,6 +46,8 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
     private final FcApiParamDao apiParamDao;
 
+    private final FcHeaderAssignDao headerAssignDao;
+
     private final FcPakMapping pakMapping;
 
     @Override
@@ -59,10 +64,13 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
         Map<String, FcApiPak> apis = getApisBySysId(systemId);
 
+        List<FcHeaderAssignPak> headerAssigns = getHeaderAssignsBySysId(systemId);
+
         return FcSourcePak.builder()
                 .system(system)
                 .auth(auth)
                 .apiMap(apis)
+                .headerAssigns(headerAssigns)
                 .build();
     }
 
@@ -107,6 +115,11 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
                     return apiPak;
                 })
                 .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
+    }
+
+    private List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
+        List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
+        return pakMapping.toHeaderAssignPak(headerAssignList);
     }
 
 }
