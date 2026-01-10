@@ -1,5 +1,6 @@
 package priv.szf.fastcall.core.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,6 +15,7 @@ public class FcAsyncConfig {
 
     public static final String EVENT_EXECUTOR = "FastCall-event-executor";
 
+    @ConditionalOnMissingBean(name = EVENT_EXECUTOR)
     @Bean(EVENT_EXECUTOR)
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
