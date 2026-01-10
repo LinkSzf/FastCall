@@ -45,6 +45,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @ConditionalOnProperty(prefix = "fastcall.forward-proxy", name = "enable", havingValue = "true")
@@ -96,17 +97,19 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                 .prepared()
                 .callIt();
 
-        writeToResponse(sourcePak, fcResponse, response);
+        writeToResponse(sourcePak, fcResponse, response, request.getRequestURI());
     }
 
     private void writeToResponse(FcSourcePak sourcePak,
                                  FastCallResponse<InputStream> fcResponse,
-                                 HttpServletResponse response
+                                 HttpServletResponse response,
+                                 String requestUri
     ) {
         response.setStatus(fcResponse.getCode());
 
         Map<String, List<String>> headers = fcResponse.getHeaders();
-        customHeaders(sourcePak.getHeaderAssigns(), headers, FcHeaderType.RESPONSE);
+        List<FcHeaderAssignPak> headerAssigns = sourcePak.getHeaderAssigns(FcHeaderType.RESPONSE);
+        customHeaders(headers, headerAssigns, requestUri);
 
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             String header = entry.getKey();
@@ -178,43 +181,41 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
 
         addForwardHeader(request, headers);
 
-        customHeaders(sourcePak.getHeaderAssigns(), headers, FcHeaderType.REQUEST);
+        customHeaders(headers, sourcePak.getHeaderAssigns(FcHeaderType.REQUEST), request.getRequestURI());
 
         return headers;
     }
 
-    private void customHeaders(List<FcHeaderAssignPak> headerAssigns,
-                               Map<String, List<String>> headers,
-                               FcHeaderType type
+    private void customHeaders(Map<String, List<String>> headers,
+                               List<FcHeaderAssignPak> headerAssigns,
+                               String requestUri
     ) {
         if (CollectionUtil.isEmpty(headerAssigns)) {
             return;
         }
 
-        for (FcHeaderAssignPak headerAssign : headerAssigns) {
-            if (type != headerAssign.getType() && headerAssign.getType() != FcHeaderType.REQUEST_RESPONSE) {
-                continue;
-            }
+        headerAssigns.stream()
+                .filter(h -> Objects.isNull(h.getPath()) || StrUtil.containsIgnoreCase(requestUri, h.getPath()))
+                .forEach(h -> {
+                    h.check();
 
-            headerAssign.check();
-
-            String name = headerAssign.getName().toLowerCase();
-            FcHeaderOperation operation = headerAssign.getOperation();
-            switch (operation) {
-                case SET:
-                    headers.put(name, Collections.singletonList(headerAssign.getValue()));
-                    break;
-                case ADD:
-                    headers.computeIfAbsent(name, k -> new ArrayList<>())
-                            .add(headerAssign.getValue());
-                    break;
-                case REMOVE:
-                    headers.remove(name);
-                    break;
-                default:
-                    throw new FcUnexpectedException("未知的Header操作[%s]", operation);
-            }
-        }
+                    String name = h.getName().toLowerCase();
+                    FcHeaderOperation operation = h.getOperation();
+                    switch (operation) {
+                        case SET:
+                            headers.put(name, Collections.singletonList(h.getValue()));
+                            break;
+                        case ADD:
+                            headers.computeIfAbsent(name, k -> new ArrayList<>())
+                                    .add(h.getValue());
+                            break;
+                        case REMOVE:
+                            headers.remove(name);
+                            break;
+                        default:
+                            throw new FcUnexpectedException("未知的Header操作[%s]", operation);
+                    }
+                });
     }
 
     private void changeHostHeader(FcSourcePak sourcePak, Map<String, List<String>> headers) {

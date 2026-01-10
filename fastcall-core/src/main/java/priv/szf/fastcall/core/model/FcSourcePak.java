@@ -3,13 +3,16 @@ package priv.szf.fastcall.core.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import priv.szf.fastcall.common.FcHeaderType;
 import priv.szf.fastcall.core.model.credential.ICredential;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -27,6 +30,16 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
     private Map<String, FcApiPak> apiMap;
 
     private List<FcHeaderAssignPak> headerAssigns;
+
+
+    public List<FcHeaderAssignPak> getHeaderAssigns(FcHeaderType type) {
+        if (headerAssigns == null) {
+            return Collections.emptyList();
+        }
+        return headerAssigns.stream()
+                .filter(f -> f.getType() == type || f.getType() == FcHeaderType.REQUEST_RESPONSE)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<Function<FcSourcePak, ?>> requireNonNull() {
