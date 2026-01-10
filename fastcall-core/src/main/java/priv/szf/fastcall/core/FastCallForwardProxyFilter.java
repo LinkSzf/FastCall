@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,6 +34,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -216,17 +218,14 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
     }
 
     private void changeHostHeader(FcSourcePak sourcePak, Map<String, List<String>> headers) {
-        String urlStr = sourcePak.getSystem().getHost();
-        URL url = URLUtil.toUrlForHttp(urlStr);
-        String protocol = url.getProtocol();
-        String host = url.getHost();
-        int port = url.getPort();
-        boolean isStandardPort =
-                (StrUtil.equals(protocol, "http") && port == 80) ||
-                        (StrUtil.equals(protocol, "https") && port == 443);
-
-        String finalHost = isStandardPort ? host : (host + ":" + port);
-        headers.put("host", Collections.singletonList(finalHost));
+        String host = sourcePak.getSystem().getHost();
+        Optional.of(host)
+                .map(h -> StrUtil.removePrefixIgnoreCase(h, "http://"))
+                .map(h -> StrUtil.removePrefixIgnoreCase(h, "https://"))
+                .map(h -> StrUtil.subBefore(h, "/", false))
+                .ifPresent(h -> {
+                    headers.put("host", Collections.singletonList(h));
+                });
     }
 
     private void addForwardHeader(HttpServletRequest request, Map<String, List<String>> headers) {
@@ -236,22 +235,22 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
 
         String clientIp = request.getRemoteAddr();
         // X-Forwarded-For: 追加客户端IP
-        String xff = Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+        String xff = Optional.ofNullable(request.getHeader("x-forwarded-for"))
                 .map(s -> s + ", " + clientIp)
                 .orElse(clientIp);
-        headers.put("X-Forwarded-For", Collections.singletonList(xff));
+        headers.put("x-forwarded-for", Collections.singletonList(xff));
 
         // X-Forwarded-Proto: 原始协议
-        headers.putIfAbsent("X-Forwarded-Proto", Collections.singletonList(request.getScheme()));
+        headers.putIfAbsent("x-forwarded-proto", Collections.singletonList(request.getScheme()));
 
         // X-Forwarded-Host: 原始Host
-        headers.computeIfAbsent("X-Forwarded-Host", k -> {
-            String host = request.getHeader("Host");
-            return Collections.singletonList(host);
-        });
+        Optional.ofNullable(request.getHeader("host"))
+                .ifPresent(host -> {
+                        headers.putIfAbsent("x-forwarded-host", Collections.singletonList(host));
+                });
 
         // X-Real-IP: 真实客户端IP
-        headers.putIfAbsent("X-Real-IP", Collections.singletonList(clientIp));
+        headers.putIfAbsent("x-real-ip", Collections.singletonList(clientIp));
     }
 
     private String buildUrl(HttpServletRequest request, FcSourcePak sourcePak) {

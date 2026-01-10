@@ -18,7 +18,7 @@ public class AController {
     private FastCall fastCall;
 
     @RequestMapping("/hello")
-    public String hello(HttpServletRequest request){
+    public String hello(){
         return "hello world!";
     }
 
@@ -29,6 +29,14 @@ public class AController {
                 .uri(apiName)
                 .prepared()
                 .callIt();
+    }
+
+    @GetMapping("/forward/test")
+    public String forwardTest(HttpServletRequest request) {
+        String header = request.getHeader("X-test-1");
+        String header2 = request.getHeader("X-test-2");
+        String header3 = request.getHeader("host");
+        return header3;
     }
 
 }
