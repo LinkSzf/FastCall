@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.common.FcFuncScope;
 import priv.szf.fastcall.core.model.FcApiPak;
 import priv.szf.fastcall.core.model.FcApiParamPak;
 import priv.szf.fastcall.core.model.FcAuthPak;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,13 +60,14 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
         }
 
         FcSystemPak system = pakMapping.toSystemPak(systemEntity);
+        Set<FcFuncScope> scopes = system.getScope();
 
         Long systemId = systemEntity.getId();
-        FcAuthPak auth = getAuthBySysId(systemId);
+        FcAuthPak auth = (scopes.contains(FcFuncScope.AUTH)) ? getAuthBySysId(systemId) : null;
 
-        Map<String, FcApiPak> apis = getApisBySysId(systemId);
+        Map<String, FcApiPak> apis = (scopes.contains(FcFuncScope.API)) ? getApisBySysId(systemId) : null;
 
-        List<FcHeaderAssignPak> headerAssigns = getHeaderAssignsBySysId(systemId);
+        List<FcHeaderAssignPak> headerAssigns = (scopes.contains(FcFuncScope.HEADER_ASSIGN)) ? getHeaderAssignsBySysId(systemId) : null;
 
         return FcSourcePak.builder()
                 .system(system)

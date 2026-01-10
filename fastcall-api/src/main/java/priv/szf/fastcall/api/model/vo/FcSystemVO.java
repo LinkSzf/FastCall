@@ -1,6 +1,9 @@
 package priv.szf.fastcall.api.model.vo;
 
 import lombok.Data;
+import priv.szf.fastcall.common.FcFuncScope;
+
+import java.util.Set;
 
 
 @Data
@@ -13,6 +16,8 @@ public class FcSystemVO {
     private String code;
 
     private Boolean enable;
+
+    private Set<FcFuncScope> scope;
 
     private String host;
 
