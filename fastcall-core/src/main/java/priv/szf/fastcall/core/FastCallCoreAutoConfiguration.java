@@ -1,10 +1,13 @@
 package priv.szf.fastcall.core;
 
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import priv.szf.fastcall.common.FastCallConts;
 import priv.szf.fastcall.core.config.FastCallProperties;
 
+@AutoConfigureOrder(FastCallConts.AUTO_CONFIGURATION_CORE_ORDER)
 @EnableConfigurationProperties(FastCallProperties.class)
 @ComponentScan(basePackageClasses = FastCallCoreAutoConfiguration.class)
 @Configuration

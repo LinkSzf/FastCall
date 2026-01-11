@@ -1,10 +1,10 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.common.model;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import priv.szf.fastcall.common.FcHeaderType;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.io.Serializable;
 import java.util.Arrays;

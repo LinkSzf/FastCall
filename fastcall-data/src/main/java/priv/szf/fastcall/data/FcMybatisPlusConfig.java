@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 
-@ConditionalOnClass(name = "com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration")
 @ConditionalOnBean(DataSource.class)
+@ConditionalOnClass(name = "com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration")
 @MapperScan(basePackageClasses = FcBaseMapper.class)
 @Configuration
 public class FcMybatisPlusConfig {

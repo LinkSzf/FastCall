@@ -1,8 +1,10 @@
 package priv.szf.fastcall.core.source;
 
 import lombok.RequiredArgsConstructor;
-import priv.szf.fastcall.core.model.FcSourcePak;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.FcSourcePak;
+import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.common.source.IFcCacheSource;
+import priv.szf.fastcall.common.source.IFcSource;
 
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +33,7 @@ public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcSourc
 
     @Override
     public int getWeight() {
-        return 2;
+        return 200;
     }
 
     @Override

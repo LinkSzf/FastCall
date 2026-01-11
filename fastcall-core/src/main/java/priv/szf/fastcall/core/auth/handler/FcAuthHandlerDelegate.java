@@ -10,7 +10,7 @@ import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.List;
 import java.util.Map;

@@ -15,7 +15,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import priv.szf.fastcall.core.auth.FcRequestContext;
-import priv.szf.fastcall.core.source.IFcSource;
+import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcHttpHeader;
@@ -23,9 +23,10 @@ import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.FcRequestMethod;
-import priv.szf.fastcall.core.model.FcApiPak;
-import priv.szf.fastcall.core.model.FcApiParamPak;
+import priv.szf.fastcall.common.model.FcApiPak;
+import priv.szf.fastcall.common.model.FcApiParamPak;
 
+import javax.swing.text.html.Option;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -179,7 +180,8 @@ public class FastCallClient {
         }
 
         FcApiParamPak defaultParams = api.getParams();
-        FcApiParamPak finalParams = defaultParams.mergeBy(params);
+        FcApiParamPak finalParams = (Objects.nonNull(params)) ? params
+                : Optional.ofNullable(defaultParams).orElse(FcApiParamPak.empty());
 
         return newCall()
                 .host(api.getParticularHost())

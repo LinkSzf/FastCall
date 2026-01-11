@@ -2,13 +2,13 @@ package priv.szf.fastcall.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import priv.szf.fastcall.common.model.ApiKeyAuthContent;
-import priv.szf.fastcall.common.model.BaseAuthContent;
-import priv.szf.fastcall.common.model.BasicAuthContent;
-import priv.szf.fastcall.common.model.CookieAuthContent;
-import priv.szf.fastcall.common.model.DigestAuthContent;
-import priv.szf.fastcall.common.model.NoneAuthContent;
-import priv.szf.fastcall.common.model.TokenAuthContent;
+import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
+import priv.szf.fastcall.common.model.content.BaseAuthContent;
+import priv.szf.fastcall.common.model.content.BasicAuthContent;
+import priv.szf.fastcall.common.model.content.CookieAuthContent;
+import priv.szf.fastcall.common.model.content.DigestAuthContent;
+import priv.szf.fastcall.common.model.content.NoneAuthContent;
+import priv.szf.fastcall.common.model.content.TokenAuthContent;
 
 @Getter
 @AllArgsConstructor

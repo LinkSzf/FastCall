@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.common.model;
 
 import lombok.Data;
 import priv.szf.fastcall.common.FcHeaderOperation;

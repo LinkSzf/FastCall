@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
-import priv.szf.fastcall.core.model.IEssentialCheck;
+import priv.szf.fastcall.common.model.IEssentialCheck;
 
 import java.util.Arrays;
 import java.util.List;

@@ -5,11 +5,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcHttpHeader;
-import priv.szf.fastcall.common.model.CookieAuthContent;
+import priv.szf.fastcall.common.model.content.CookieAuthContent;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.model.credential.CookieCredential;
-import priv.szf.fastcall.core.source.IFcSource;
+import priv.szf.fastcall.common.source.IFcSource;
 
 import java.util.List;
 import java.util.Optional;

@@ -4,8 +4,8 @@ import lombok.NonNull;
 import okhttp3.Request;
 import okhttp3.Response;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
-import priv.szf.fastcall.common.model.BaseDynAuthContent;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.content.BaseDynAuthContent;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Map;
 import java.util.Objects;

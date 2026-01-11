@@ -7,15 +7,15 @@ import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.common.model.BaseDynAuthContent;
-import priv.szf.fastcall.common.model.FcAuthProp;
+import priv.szf.fastcall.common.model.content.BaseDynAuthContent;
+import priv.szf.fastcall.common.model.content.FcAuthProp;
 import priv.szf.fastcall.core.FastCallClient;
 import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
-import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.core.model.FcSourcePak;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.FcAuthPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Optional;
 

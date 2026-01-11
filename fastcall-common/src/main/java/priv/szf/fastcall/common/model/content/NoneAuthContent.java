@@ -1,4 +1,4 @@
-package priv.szf.fastcall.common.model;
+package priv.szf.fastcall.common.model.content;
 
 import java.io.Serializable;
 

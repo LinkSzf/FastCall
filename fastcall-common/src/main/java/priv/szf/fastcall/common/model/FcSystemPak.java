@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.common.model;
 
 import lombok.Data;
 import priv.szf.fastcall.common.FcFuncScope;
@@ -13,6 +13,8 @@ import java.util.function.Function;
 public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
 
     private static final long serialVersionUID = -3705370467972208682L;
+
+    private Long id;
 
     private String name;
 

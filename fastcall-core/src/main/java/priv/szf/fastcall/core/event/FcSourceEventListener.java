@@ -9,7 +9,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import priv.szf.fastcall.common.event.source.FcSourceEvent;
 import priv.szf.fastcall.common.event.source.FcSourceTransactionEvent;
-import priv.szf.fastcall.core.source.IFcCacheSource;
+import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.config.FcAsyncConfig;
 import priv.szf.fastcall.common.event.IFcEventLister;
 

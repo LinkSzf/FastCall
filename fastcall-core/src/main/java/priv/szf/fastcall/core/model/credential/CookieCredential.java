@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.model.credential;
 
 
 import lombok.Getter;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 @Getter
 public class CookieCredential implements ICredential {

@@ -10,10 +10,8 @@ import priv.szf.fastcall.data.mapper.jpa.FcBaseRepository;
 
 import javax.sql.DataSource;
 
-@ConditionalOnClass(name = {
-        "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-})
 @ConditionalOnBean(DataSource.class)
+@ConditionalOnClass(name = "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean")
 @EntityScan(basePackageClasses = EntityMarker.class)
 @EnableJpaRepositories(basePackageClasses = FcBaseRepository.class)
 @Configuration

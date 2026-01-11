@@ -1,26 +1,30 @@
-package priv.szf.fastcall.core.model.mapping;
+package priv.szf.fastcall.data.pak;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import priv.szf.fastcall.common.FcFuncScope;
-import priv.szf.fastcall.common.model.BaseAuthContent;
-import priv.szf.fastcall.core.model.FcHeaderAssignPak;
+import priv.szf.fastcall.common.FcParamPos;
+import priv.szf.fastcall.common.model.FcApiPak;
+import priv.szf.fastcall.common.model.FcApiParamPak;
+import priv.szf.fastcall.common.model.FcAuthPak;
+import priv.szf.fastcall.common.model.FcHeaderAssignPak;
+import priv.szf.fastcall.common.model.FcSystemPak;
+import priv.szf.fastcall.common.model.content.BaseAuthContent;
 import priv.szf.fastcall.data.FcDataConsts;
 import priv.szf.fastcall.data.entity.FcApi;
+import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcSystem;
-import priv.szf.fastcall.core.config.FastCallProperties;
-import priv.szf.fastcall.core.model.FcApiPak;
-import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.core.model.FcClientSettingPak;
-import priv.szf.fastcall.core.model.FcSystemPak;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,8 +48,6 @@ public interface FcPakMapping {
 
     List<FcHeaderAssignPak> toHeaderAssignPak(List<FcHeaderAssign> headerAssign);
 
-    FcClientSettingPak toClientSettingPak(FastCallProperties.Client clientSetting);
-
     default BaseAuthContent toBean(FcAuth entity){
         return JSONUtil.toBean(entity.getContent(), entity.getType().getClazz());
     }
@@ -60,4 +62,35 @@ public interface FcPakMapping {
                 .collect(Collectors.toSet());
     }
 
+    default FcApiParamPak toApiParamPak(List<FcApiParam> apiParams) {
+        if (CollectionUtil.isEmpty(apiParams)) {
+            return FcApiParamPak.empty();
+        }
+
+        FcApiParamPak paramPak = FcApiParamPak.builder()
+                .headers(new HashMap<>())
+                .params(new HashMap<>())
+                .build();
+
+        apiParams.stream()
+                .filter(Objects::nonNull)
+                .forEach(param -> {
+                    FcParamPos position = param.getPosition();
+                    String name = param.getName();
+                    String defaultValue = param.getDefaultValue();
+                    if (position == FcParamPos.HEADER) {
+                        paramPak.addHeader(name, defaultValue);
+                    } else if (position == FcParamPos.QUERY) {
+                        paramPak.addParam(name, defaultValue);
+                    } else if (position == FcParamPos.BODY) {
+                        Object body = defaultValue;
+                        if (Boolean.TRUE.equals(param.getJsonObj())) {
+                            body = JSONUtil.parse(defaultValue);
+                        }
+                        paramPak.setBody(body);
+                    }
+                });
+
+        return paramPak;
+    }
 }

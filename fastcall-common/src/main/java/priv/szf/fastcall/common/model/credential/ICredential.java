@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model.credential;
+package priv.szf.fastcall.common.model.credential;
 
 public interface ICredential {
 

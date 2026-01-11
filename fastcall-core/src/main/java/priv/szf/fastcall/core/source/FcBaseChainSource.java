@@ -1,8 +1,10 @@
 package priv.szf.fastcall.core.source;
 
-import priv.szf.fastcall.core.model.FcSourcePak;
-import priv.szf.fastcall.core.model.IEssentialCheck;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.FcSourcePak;
+import priv.szf.fastcall.common.model.IEssentialCheck;
+import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.common.source.IFcChainSource;
+import priv.szf.fastcall.common.source.IFcSource;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -7,7 +7,7 @@ import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.provider.FcApiKeyAuthProvider;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.common.model.ApiKeyAuthContent;
+import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
 
 import java.util.Objects;

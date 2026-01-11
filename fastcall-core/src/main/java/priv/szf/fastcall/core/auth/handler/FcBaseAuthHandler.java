@@ -9,7 +9,7 @@ import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Objects;
 

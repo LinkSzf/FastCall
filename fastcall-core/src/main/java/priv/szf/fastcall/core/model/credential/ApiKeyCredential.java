@@ -2,7 +2,8 @@ package priv.szf.fastcall.core.model.credential;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
-import priv.szf.fastcall.common.model.ApiKeyAuthContent;
+import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 @Getter
 public class ApiKeyCredential implements ICredential {

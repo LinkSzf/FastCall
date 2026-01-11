@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.common.model;
 
 import cn.hutool.core.collection.CollectionUtil;
 import priv.szf.fastcall.common.exception.FcSourceAbsenceException;

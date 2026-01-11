@@ -1,8 +1,8 @@
-package priv.szf.fastcall.core.model;
+package priv.szf.fastcall.common.model;
 
 import lombok.Data;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.model.BaseAuthContent;
+import priv.szf.fastcall.common.model.content.BaseAuthContent;
 
 import java.io.Serializable;
 import java.util.Arrays;

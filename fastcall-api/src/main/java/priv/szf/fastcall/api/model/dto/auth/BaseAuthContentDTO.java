@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.model.BaseAuthContent;
+import priv.szf.fastcall.common.model.content.BaseAuthContent;
 
 import javax.validation.constraints.NotNull;
 

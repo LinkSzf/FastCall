@@ -11,12 +11,11 @@ import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
 import priv.szf.fastcall.core.auth.interceptor.FcTokenRefreshInterceptor;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.core.model.FcClientSettingPak;
-import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.source.IFcSource;
-import priv.szf.fastcall.core.model.FcSourcePak;
+import priv.szf.fastcall.common.model.FcClientSettingPak;
+import priv.szf.fastcall.common.model.FcSystemPak;
+import priv.szf.fastcall.common.source.IFcSource;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.config.FastCallProperties;
-import priv.szf.fastcall.core.model.mapping.FcPakMapping;
 
 import java.io.File;
 import java.util.Map;
@@ -42,8 +41,6 @@ public class FastCallClientFactory {
     private final FcAuthInterceptor authInceptor;
 
     private final FcTokenRefreshInterceptor tokenRefreshInterceptor;
-
-    private final FcPakMapping fcPakMapping;
 
     public static FastCallClient getExistedClient(String systemCode) {
         FastCallClient client = CLIENT_MAP.get(systemCode);
@@ -82,9 +79,19 @@ public class FastCallClientFactory {
 
     private FcClientSettingPak getClientSetting(FcSystemPak system) {
         FcClientSettingPak systemSetting = system.getClientSetting();
-        FcClientSettingPak globalSetting = fcPakMapping.toClientSettingPak(properties.getClient());
-        systemSetting.completeWith(globalSetting);
-        return systemSetting;
+        FastCallProperties.Client globalSetting = properties.getClient();
+
+        FcClientSettingPak unifiedSetting = new FcClientSettingPak();
+        unifiedSetting.setConnectTimeout(Optional.ofNullable(systemSetting)
+                .map(FcClientSettingPak::getConnectTimeout)
+                .orElse(globalSetting.getConnectTimeout()));
+        unifiedSetting.setReadTimeout(Optional.ofNullable(systemSetting)
+                .map(FcClientSettingPak::getReadTimeout)
+                .orElse(globalSetting.getReadTimeout()));
+        unifiedSetting.setWriteTimeout(Optional.ofNullable(systemSetting)
+                .map(FcClientSettingPak::getWriteTimeout)
+                .orElse(globalSetting.getWriteTimeout()));
+        return unifiedSetting;
     }
 
     private OkHttpClient initCoreClient(FcClientSettingPak settingPak) {

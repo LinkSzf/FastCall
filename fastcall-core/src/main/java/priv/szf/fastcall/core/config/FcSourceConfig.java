@@ -7,11 +7,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import priv.szf.fastcall.common.source.IFcPakProvider;
+import priv.szf.fastcall.core.source.FcDatabaseSource;
 import priv.szf.fastcall.core.source.FcInMemoryCacheSource;
 import priv.szf.fastcall.core.source.FcRedisCacheSource;
 
 @Configuration
-public class FcCacheSourceConfig {
+public class FcSourceConfig {
 
     @ConditionalOnExpression(
             "'${fast-call.source-cache.enable:true}' == 'true' and " +
@@ -38,7 +40,11 @@ public class FcCacheSourceConfig {
         return new FcInMemoryCacheSource();
     }
 
-
+    @ConditionalOnBean(IFcPakProvider.class)
+    @Bean
+    public FcDatabaseSource fcDatabaseSource(IFcPakProvider pakProvider) {
+         return new FcDatabaseSource(pakProvider);
+    }
 
 
 }

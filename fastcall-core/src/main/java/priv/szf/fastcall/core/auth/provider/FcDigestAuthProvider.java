@@ -10,11 +10,11 @@ import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.auth.provider.digest.DigestChallenge;
-import priv.szf.fastcall.core.source.IFcSource;
+import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.common.model.DigestAuthContent;
+import priv.szf.fastcall.common.model.content.DigestAuthContent;
 import priv.szf.fastcall.core.model.credential.DigestCredential;
 
 import java.util.Map;

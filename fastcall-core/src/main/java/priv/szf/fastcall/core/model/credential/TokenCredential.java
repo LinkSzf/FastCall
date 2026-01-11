@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.model.credential;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

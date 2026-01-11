@@ -1,4 +1,4 @@
-package priv.szf.fastcall.core.source;
+package priv.szf.fastcall.common.source;
 
 public interface IFcChainSource extends IFcSource {
 

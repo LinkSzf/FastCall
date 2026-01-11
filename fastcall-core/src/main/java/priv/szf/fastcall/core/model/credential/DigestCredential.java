@@ -4,6 +4,7 @@ import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.Digester;
 import lombok.Getter;
+import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.auth.provider.digest.DigestAlgorithm;
 import priv.szf.fastcall.core.auth.provider.digest.DigestChallenge;

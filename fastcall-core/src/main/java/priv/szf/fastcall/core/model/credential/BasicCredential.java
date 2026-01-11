@@ -1,6 +1,7 @@
 package priv.szf.fastcall.core.model.credential;
 
 import okhttp3.Credentials;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 public class BasicCredential implements ICredential {
 

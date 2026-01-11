@@ -1,73 +1,47 @@
 package priv.szf.fastcall.core.source;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.common.FcFuncScope;
-import priv.szf.fastcall.core.model.FcApiPak;
-import priv.szf.fastcall.core.model.FcApiParamPak;
-import priv.szf.fastcall.core.model.FcAuthPak;
-import priv.szf.fastcall.core.model.FcHeaderAssignPak;
-import priv.szf.fastcall.core.model.FcSourcePak;
-import priv.szf.fastcall.core.model.FcSystemPak;
-import priv.szf.fastcall.core.model.credential.ICredential;
-import priv.szf.fastcall.data.entity.FcApi;
-import priv.szf.fastcall.data.entity.FcApiParam;
-import priv.szf.fastcall.data.entity.FcAuth;
-import priv.szf.fastcall.data.entity.FcHeaderAssign;
-import priv.szf.fastcall.data.entity.FcSystem;
-import priv.szf.fastcall.core.model.mapping.FcPakMapping;
-import priv.szf.fastcall.data.mapper.FcApiDao;
-import priv.szf.fastcall.data.mapper.FcApiParamDao;
-import priv.szf.fastcall.data.mapper.FcAuthDao;
-import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
-import priv.szf.fastcall.data.mapper.FcSystemDao;
+import priv.szf.fastcall.common.model.FcApiPak;
+import priv.szf.fastcall.common.model.FcAuthPak;
+import priv.szf.fastcall.common.model.FcHeaderAssignPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
+import priv.szf.fastcall.common.model.FcSystemPak;
+import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.common.source.IFcDatabaseSource;
+import priv.szf.fastcall.common.source.IFcPakProvider;
+import priv.szf.fastcall.common.source.IFcSource;
 
-import javax.sql.DataSource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@ConditionalOnBean(DataSource.class)
 @Transactional
-@Component
 @RequiredArgsConstructor
-public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
+public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSource, IFcSource {
 
-    private final FcSystemDao systemDao;
-
-    private final FcAuthDao authDao;
-
-    private final FcApiDao apiDao;
-
-    private final FcApiParamDao apiParamDao;
-
-    private final FcHeaderAssignDao headerAssignDao;
-
-    private final FcPakMapping pakMapping;
+    private final IFcPakProvider pakProvider;
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
-        FcSystem systemEntity = getSystemByCode(systemCode);
-        if (Objects.isNull(systemEntity)) {
+        FcSystemPak system = pakProvider.getSystemByCode(systemCode);
+        if (Objects.isNull(system)) {
             return null;
         }
 
-        FcSystemPak system = pakMapping.toSystemPak(systemEntity);
         Set<FcFuncScope> scopes = system.getScope();
 
-        Long systemId = systemEntity.getId();
-        FcAuthPak auth = (scopes.contains(FcFuncScope.AUTH)) ? getAuthBySysId(systemId) : null;
+        Long systemId = system.getId();
+        FcAuthPak auth = (scopes.contains(FcFuncScope.AUTH)) ?
+                pakProvider.getAuthBySysId(systemId) : null;
 
-        Map<String, FcApiPak> apis = (scopes.contains(FcFuncScope.API)) ? getApisBySysId(systemId) : null;
+        Map<String, FcApiPak> apis = (scopes.contains(FcFuncScope.API)) ?
+                pakProvider.getApisBySysId(systemId) : null;
 
-        List<FcHeaderAssignPak> headerAssigns = (scopes.contains(FcFuncScope.HEADER_ASSIGN)) ? getHeaderAssignsBySysId(systemId) : null;
+        List<FcHeaderAssignPak> headerAssigns = (scopes.contains(FcFuncScope.HEADER_ASSIGN)) ?
+                pakProvider.getHeaderAssignsBySysId(systemId) : null;
 
         return FcSourcePak.builder()
                 .system(system)
@@ -83,46 +57,7 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcSource {
 
     @Override
     public int getWeight() {
-        return 1;
-    }
-
-    private FcSystem getSystemByCode(String systemCode) {
-        return systemDao.getByCode(systemCode);
-    }
-
-    private FcAuthPak getAuthBySysId(Long sysId) {
-        FcAuth auth = authDao.getBySystemId(sysId);
-        return pakMapping.toAuthPak(auth);
-    }
-
-    private Map<String, FcApiPak> getApisBySysId(Long sysId) {
-        List<FcApi> apiList = apiDao.listBySystemId(sysId);
-        if (CollectionUtil.isEmpty(apiList)) {
-            return Collections.emptyMap();
-        }
-
-        return fillWithApiParams(apiList);
-    }
-
-    private Map<String, FcApiPak> fillWithApiParams(List<FcApi> apiList) {
-        List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
-        List<FcApiParam> apiParamList = apiParamDao.listByApiIds(apiIds);
-        Map<Long, List<FcApiParam>> apiParamMap = apiParamList.stream().collect(Collectors.groupingBy(FcApiParam::getApiId));
-
-        return apiList.stream()
-                .map(api -> {
-                    FcApiPak apiPak = pakMapping.toApiPak(api);
-                    List<FcApiParam> apiParams = apiParamMap.get(api.getId());
-                    FcApiParamPak params = FcApiParamPak.from(apiParams);
-                    apiPak.setParams(params);
-                    return apiPak;
-                })
-                .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
-    }
-
-    private List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
-        List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
-        return pakMapping.toHeaderAssignPak(headerAssignList);
+        return 100;
     }
 
 }

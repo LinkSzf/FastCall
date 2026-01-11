@@ -8,7 +8,7 @@ import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 import priv.szf.fastcall.core.auth.provider.FcCookieAuthProvider;
-import priv.szf.fastcall.core.model.credential.ICredential;
+import priv.szf.fastcall.common.model.credential.ICredential;
 
 @RequiredArgsConstructor
 @Component
