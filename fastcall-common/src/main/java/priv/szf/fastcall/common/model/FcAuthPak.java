@@ -24,6 +24,8 @@ public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
     private String particularHost;
 
+    private Integer statusCode;
+
 
     @Override
     public List<Function<FcAuthPak, ?>> requireNonNull() {

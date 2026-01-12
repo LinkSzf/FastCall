@@ -26,4 +26,6 @@ public class FcAuthVO {
     private LocalDateTime lastAccessTime;
 
     private String particularHost;
+
+    private Integer statusCode;
 }

@@ -3,12 +3,15 @@ package priv.szf.fastcall.core.auth.provider;
 import lombok.NonNull;
 import okhttp3.Request;
 import okhttp3.Response;
+import priv.szf.fastcall.common.model.FcAuthPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.common.model.content.BaseDynAuthContent;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class FcBaseDynAuthProvider<C extends BaseDynAuthContent>
@@ -26,6 +29,15 @@ public abstract class FcBaseDynAuthProvider<C extends BaseDynAuthContent>
     @Override
     protected ICredential buildCredential(@NonNull C authContent) {
         return null;
+    }
+
+    @Override
+    public Integer getAuthInNeedCode(String system) {
+        FcSourcePak sourcePak = getSource().getSourcePak(system);
+        return Optional.of(sourcePak)
+                .map(FcSourcePak::getAuth)
+                .map(FcAuthPak::getStatusCode)
+                .orElse(null);
     }
 
     @Override

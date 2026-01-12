@@ -8,7 +8,7 @@ import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
-import priv.szf.fastcall.core.auth.interceptor.FcTokenRefreshInterceptor;
+import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.FcClientSettingPak;
@@ -40,7 +40,7 @@ public class FastCallClientFactory {
 
     private final FcAuthInterceptor authInceptor;
 
-    private final FcTokenRefreshInterceptor tokenRefreshInterceptor;
+    private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
 
     public static FastCallClient getExistedClient(String systemCode) {
         FastCallClient client = CLIENT_MAP.get(systemCode);

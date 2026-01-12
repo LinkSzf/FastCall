@@ -11,7 +11,7 @@ import priv.szf.fastcall.core.auth.FcRetryManager;
 
 @RequiredArgsConstructor
 @Component
-public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor implements Interceptor {
+public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements Interceptor {
 
     @Getter
     private final FcAuthHandlerDelegate authHandler;
@@ -25,8 +25,8 @@ public class FcTokenRefreshInterceptor extends FcBaseAuthInterceptor implements 
     }
 
     @Override
-    protected Response doAfterProceed(Chain chain, Response response) {
-        boolean isRefreshedAfterResponse = getAuthHandler().refresh(response);
+    protected Response doAfterProceed(Chain chain, Request request, Response response) {
+        boolean isRefreshedAfterResponse = getAuthHandler().refreshIfNecessary(request, response);
         if (isRefreshedAfterResponse) {
             retryManager.setFlag();
         }

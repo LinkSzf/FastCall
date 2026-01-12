@@ -17,6 +17,12 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
     }
 
     @Override
+    public Integer getAuthInNeedCode(Request request) {
+        String system = getSystem(request);
+        return getInteractiveAuthProvider().getAuthInNeedCode(system);
+    }
+
+    @Override
     public void preRefresh(Request request) {
         doRefreshToken(request, null);
     }

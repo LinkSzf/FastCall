@@ -11,7 +11,7 @@ public abstract class FcBaseAuthInterceptor implements Interceptor {
 
     protected abstract IFcAuthHandler getAuthHandler();
 
-    protected abstract Response doAfterProceed(Chain chain, Response response) throws IOException;
+    protected abstract Response doAfterProceed(Chain chain, Request request, Response response) throws IOException;
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request originRequest = chain.request();
@@ -25,7 +25,7 @@ public abstract class FcBaseAuthInterceptor implements Interceptor {
 
         Response response = chain.proceed(modifiedRequest);
 
-        return doAfterProceed(chain, response);
+        return doAfterProceed(chain, modifiedRequest, response);
     }
 
     protected Request modifyRequest(Request request) {

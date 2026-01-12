@@ -7,4 +7,6 @@ import priv.szf.fastcall.common.model.content.BaseAuthContent;
 public interface IFcDynAuthProvider<C extends BaseAuthContent> extends IFcAuthProvider<C> {
 
     void refreshCredential(Request request, Response response, String system);
+
+    Integer getAuthInNeedCode(String request);
 }

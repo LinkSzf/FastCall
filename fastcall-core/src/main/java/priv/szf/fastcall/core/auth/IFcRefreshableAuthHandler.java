@@ -8,4 +8,6 @@ public interface IFcRefreshableAuthHandler extends IFcAuthHandler {
     void preRefresh(Request request);
 
     void refresh(Response response);
+
+    Integer getAuthInNeedCode(Request request);
 }

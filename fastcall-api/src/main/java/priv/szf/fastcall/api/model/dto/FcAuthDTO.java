@@ -33,4 +33,8 @@ public class FcAuthDTO {
     @Size(min = 1, max = 100, message = "指定主机长度必须在1到100个字符之间")
     private String particularHost;
 
+    @Min(value = 100, message = "认证失效状态码不能小于100")
+    @Min(value = 999, message = "认证失效状态码不能大于999")
+    private Integer statusCode;
+
 }

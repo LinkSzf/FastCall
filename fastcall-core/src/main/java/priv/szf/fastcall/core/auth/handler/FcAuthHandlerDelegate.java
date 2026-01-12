@@ -67,17 +67,16 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return true;
     }
 
-    public boolean refresh(Response response) {
-        int code = response.code();
-        if (code != 401) {
-            return false;
-        }
-
-        Request request = response.request();
+    public boolean refreshIfNecessary(Request request, Response response) {
         doExtraForRequest(request);
 
         IFcAuthHandler handler = getHandler(request);
         if (!isRefreshableHandler(handler)) {
+            return false;
+        }
+
+        Integer statusCode = ((IFcRefreshableAuthHandler) handler).getAuthInNeedCode(request);
+        if (Objects.isNull(statusCode) || statusCode != response.code()) {
             return false;
         }
 
