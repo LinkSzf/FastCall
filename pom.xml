@@ -3,10 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>priv.szf</groupId>
     <artifactId>fastcall</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -189,25 +191,4 @@
         </plugins>
     </build>
 
-    <!-- 发布配置 -->
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <url>http://your-repository.com/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://your-repository.com/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <!-- 如果需要部署到私有仓库，取消注释并配置 -->
-    <!--
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
-    -->
 </project>
