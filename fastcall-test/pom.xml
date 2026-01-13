@@ -17,12 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>priv.szf</groupId>
-            <artifactId>fastcall-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>priv.szf</groupId>
-            <artifactId>fastcall-api</artifactId>
+            <artifactId>fastcall-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>

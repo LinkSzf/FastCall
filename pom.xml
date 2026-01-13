@@ -20,6 +20,7 @@
         <module>fastcall-core</module>
         <module>fastcall-api</module>
         <module>fastcall-test</module>
+        <module>fastcall-spring-boot-starter</module>
     </modules>
 
     <properties>
@@ -60,6 +61,11 @@
             <dependency>
                 <groupId>priv.szf</groupId>
                 <artifactId>fastcall-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>priv.szf</groupId>
+                <artifactId>fastcall-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
