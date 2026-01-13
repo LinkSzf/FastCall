@@ -11,32 +11,28 @@ public abstract class FcBaseAuthInterceptor implements Interceptor {
 
     protected abstract IFcAuthHandler getAuthHandler();
 
+    protected abstract boolean shouldSkip(Request request);
+
+    protected abstract Request doBeforeProceed(Request request);
+
     protected abstract Response doAfterProceed(Chain chain, Request request, Response response) throws IOException;
+
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request originRequest = chain.request();
-        if (isNotAuthNeed(originRequest)
-                || shouldNotIntercept(originRequest)
-        ) {
+        if (shouldSkip(originRequest)) {
             return chain.proceed(originRequest);
         }
 
-        Request modifiedRequest = modifyRequest(originRequest);
+        Request request = doBeforeProceed(originRequest);
 
-        Response response = chain.proceed(modifiedRequest);
+        Response response = chain.proceed(request);
 
-        return doAfterProceed(chain, modifiedRequest, response);
+        return doAfterProceed(chain, request, response);
     }
 
     protected Request modifyRequest(Request request) {
         return getAuthHandler().modifyRequest(request);
     }
 
-    protected boolean shouldNotIntercept(Request request) {
-        return false;
-    }
-
-    protected boolean isNotAuthNeed(Request request) {
-        return getAuthHandler().isNotAuthNeed(request);
-    }
 }

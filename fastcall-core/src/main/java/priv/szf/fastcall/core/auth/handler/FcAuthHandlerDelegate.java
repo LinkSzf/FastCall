@@ -51,6 +51,11 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return getHandler(request).isNotAuthNeed(request);
     }
 
+    @Override
+    public FcRequestContext getRequestContext(Request request) {
+        return getHandler(request).getRequestContext(request);
+    }
+
     public boolean isAuthRefreshable(Request request) {
         IFcAuthHandler handler = getHandler(request);
         return isRefreshableHandler(handler);

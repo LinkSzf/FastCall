@@ -6,8 +6,8 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
-import priv.szf.fastcall.core.auth.FcRetryManager;
 
 @RequiredArgsConstructor
 @Component
@@ -16,10 +16,18 @@ public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements I
     @Getter
     private final FcAuthHandlerDelegate authHandler;
 
-    private final FcRetryManager retryManager;
+    @Override
+    protected boolean shouldSkip(Request request) {
+        FcRequestContext.InterceptorContext interceptorContext = getAuthHandler().getRequestContext(request)
+                .getInterceptorContext();
+        boolean skipAuth = interceptorContext.isSkipAuth();
+        boolean needRetry = interceptorContext.isNeedRetry();
+        boolean authRefreshable = getAuthHandler().isAuthRefreshable(request);
+        return skipAuth || needRetry || !authRefreshable;
+    }
 
     @Override
-    protected Request modifyRequest(Request request) {
+    protected Request doBeforeProceed(Request request) {
         boolean isRefreshed = getAuthHandler().preRefresh(request);
         return isRefreshed ? super.modifyRequest(request) : request;
     }
@@ -28,13 +36,9 @@ public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements I
     protected Response doAfterProceed(Chain chain, Request request, Response response) {
         boolean isRefreshedAfterResponse = getAuthHandler().refreshIfNecessary(request, response);
         if (isRefreshedAfterResponse) {
-            retryManager.setFlag();
+            getAuthHandler().getRequestContext(request).getInterceptorContext().setNeedRetry(true);
         }
         return response;
     }
-    @Override
-    protected boolean shouldNotIntercept(Request request) {
-        return !getAuthHandler().isAuthRefreshable(request)
-                || retryManager.isFlagAvailable();
-    }
+
 }

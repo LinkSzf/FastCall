@@ -19,13 +19,22 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
     protected abstract IFcAuthProvider<?> getAuthProvider();
 
     @Override
+    public FcRequestContext getRequestContext(Request request) {
+        FcRequestContext context = request.tag(FcRequestContext.class);
+        if (Objects.isNull(context)) {
+            throw new FastCallException("url[%s]未传递请求信息上下文", request.url());
+        }
+        return context;
+    }
+
+    @Override
     public String getSystem(Request request) {
         return getRequestContext(request).getSystem();
     }
 
     @Override
     public boolean isNotAuthNeed(Request request) {
-        return FcCallType.ANONYMOUS == getRequestContext(request).getCallType();
+        return false;
     }
 
     @Override
@@ -55,14 +64,6 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
             return null;
         }
         return (T) credential;
-    }
-
-    protected FcRequestContext getRequestContext(Request request) {
-        FcRequestContext context = request.tag(FcRequestContext.class);
-        if (Objects.isNull(context)) {
-            throw new FastCallException("url[%s]未传递请求信息上下文", request.url());
-        }
-        return context;
     }
 
 

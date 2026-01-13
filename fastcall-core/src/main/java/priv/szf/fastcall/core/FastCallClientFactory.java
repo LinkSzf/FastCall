@@ -8,13 +8,13 @@ import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
-import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.FcClientSettingPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.model.FcSourcePak;
+import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
 
 import java.io.File;

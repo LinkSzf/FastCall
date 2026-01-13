@@ -26,9 +26,9 @@ public class TokenAuthController extends BaseAuthController {
 
     private static final String PASSWORD = "123456";
 
-    private LocalDateTime lastAuthTime = LocalDateTime.now().minusSeconds(EXPIRE);
-
     protected static final String BASE_URI = "/auth/bearer";
+
+    private LocalDateTime authExpireTime;
 
 
     @Override
@@ -43,6 +43,9 @@ public class TokenAuthController extends BaseAuthController {
 
     @Override
     protected boolean checkAuth(HttpServletRequest request) {
+        if (isTokenExpired()) {
+            return false;
+        }
         String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         return TOKEN.equals(authorization);
     }
@@ -65,6 +68,7 @@ public class TokenAuthController extends BaseAuthController {
         }
 
         log.info("[TEST-({})-登录]用户校验通过！", getSystemCode());
+        this.authExpireTime = LocalDateTime.now().plusSeconds(EXPIRE);
 
         return BearerAuthResponseBody.builder()
                 .timestamp(System.currentTimeMillis())
@@ -82,14 +86,16 @@ public class TokenAuthController extends BaseAuthController {
      * @throws RuntimeException 如果检测到短期内重复访问，则抛出异常
      */
     private void checkConRequest() {
-        if (LocalDateTime.now().minusSeconds(EXPIRE).isBefore(lastAuthTime)) {
+        if (!isTokenExpired() && authExpireTime != null) {
             log.info("[TEST-({})-登录]短期内重复访问！", getSystemCode());
             throw new RuntimeException(
-                    String.format("Test-TokenAuth: 请勿短期重复申请！上次申请时间为：%s, 冷却期为：%s秒", lastAuthTime, EXPIRE)
+                    String.format("Test-TokenAuth: 请勿短期重复申请！上次申请时间为：%s, 冷却期为：%s秒", authExpireTime, EXPIRE)
             );
         }
+    }
 
-        this.lastAuthTime = LocalDateTime.now();
+    private boolean isTokenExpired() {
+        return authExpireTime != null && LocalDateTime.now().isAfter(authExpireTime);
     }
 
 
