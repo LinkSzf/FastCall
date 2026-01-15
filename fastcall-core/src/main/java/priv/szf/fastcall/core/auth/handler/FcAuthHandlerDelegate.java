@@ -67,29 +67,26 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         if (!isRefreshableHandler(handler)) {
             return false;
         }
-
-        ((IFcRefreshableAuthHandler) handler).preRefresh(request);
-        return true;
+        IFcRefreshableAuthHandler refreshableHandler = (IFcRefreshableAuthHandler) handler;
+        return refreshableHandler.preRefresh(request);
     }
 
     public boolean refreshIfNecessary(Request request, Response response) {
-        doExtraForRequest(request);
-
         IFcAuthHandler handler = getHandler(request);
         if (!isRefreshableHandler(handler)) {
             return false;
         }
-
-        Integer statusCode = ((IFcRefreshableAuthHandler) handler).getAuthInNeedCode(request);
+        IFcRefreshableAuthHandler refreshableAuthHandler = (IFcRefreshableAuthHandler) handler;
+        Integer statusCode = refreshableAuthHandler.getAuthInNeedCode(request);
         if (Objects.isNull(statusCode) || statusCode != response.code()) {
             return false;
         }
 
-        ((IFcRefreshableAuthHandler) handler).refresh(response);
-        return true;
+        invalidateCredential(request);
+        return refreshableAuthHandler.refresh(response);
     }
 
-    protected void doExtraForRequest(Request request) {
+    protected void invalidateCredential(Request request) {
         ICredential credential = request.tag(ICredential.class);
         if (Objects.nonNull(credential)) {
             credential.invalidate();

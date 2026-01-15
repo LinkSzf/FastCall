@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.model.credential;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.Digester;
-import lombok.Getter;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.auth.provider.digest.DigestAlgorithm;
@@ -13,8 +12,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
 import java.util.Objects;
 
-@Getter
-public class DigestCredential implements ICredential {
+public class DigestCredential extends BaseCredential implements ICredential {
 
     private String username;
 
@@ -42,8 +40,6 @@ public class DigestCredential implements ICredential {
 
     private String bodyHash;
 
-    private String system;
-
     private String credentialStr;
 
     private ClientNonceManager nonceManager;
@@ -63,12 +59,12 @@ public class DigestCredential implements ICredential {
 
     @Override
     public boolean isInvalid() {
-        String nonce = getNonce();
-        return !this.nonceManager.exist(nonce);
+        return super.isInvalid() || !this.nonceManager.exist(this.nonce);
     }
 
     @Override
     public void invalidate() {
+        super.invalidate();
         this.nonceManager.remove(this.nonce);
     }
 
@@ -208,11 +204,6 @@ public class DigestCredential implements ICredential {
                 body = new byte[0];
             }
             this.credential.bodyHash = credential.hash(new String(body));
-            return this;
-        }
-
-        public Builder system(String system) {
-            this.credential.system = system;
             return this;
         }
 

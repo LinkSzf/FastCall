@@ -2,7 +2,6 @@ package priv.szf.fastcall.core.model.credential;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.time.LocalDateTime;
@@ -10,8 +9,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Builder
-@Data
-public class TokenCredential implements ICredential {
+public class TokenCredential extends BaseCredential implements ICredential {
 
     private final String token;
 
@@ -26,7 +24,7 @@ public class TokenCredential implements ICredential {
 
     @Override
     public boolean isInvalid() {
-        return Objects.isNull(estimatedExpiration)
+        return super.isInvalid() || Objects.isNull(estimatedExpiration)
                 || estimatedExpiration.isBefore(LocalDateTime.now());
     }
 }

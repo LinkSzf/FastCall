@@ -6,7 +6,7 @@ import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
 @Getter
-public class ApiKeyCredential implements ICredential {
+public class ApiKeyCredential extends BaseCredential implements ICredential {
 
     private final String key;
     private final String value;
@@ -28,8 +28,4 @@ public class ApiKeyCredential implements ICredential {
         return StrUtil.EMPTY;
     }
 
-    @Override
-    public boolean isInvalid() {
-        return false;
-    }
 }

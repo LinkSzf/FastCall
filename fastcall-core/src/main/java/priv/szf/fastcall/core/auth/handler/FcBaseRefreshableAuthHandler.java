@@ -2,12 +2,19 @@ package priv.szf.fastcall.core.auth.handler;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+
 public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
         implements IFcRefreshableAuthHandler {
+
+    private static final Map<String, Object> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
     protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
 
@@ -23,19 +30,37 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
     }
 
     @Override
-    public void preRefresh(Request request) {
-        doRefreshToken(request, null);
+    public boolean preRefresh(Request request) {
+        return doRefreshToken(request, null);
     }
 
     @Override
-    public void refresh(Response response) {
+    public boolean refresh(Response response) {
         Request request = response.request();
-        doRefreshToken(request, response);
+        return doRefreshToken(request, response);
     }
 
-    protected void doRefreshToken(Request request, Response response) {
+    protected boolean doRefreshToken(Request request, Response response) {
         String system = getSystem(request);
-        getInteractiveAuthProvider().refreshCredential(request, response, system);
+
+        Object systemLock = SYSTEM_LOCKS.computeIfAbsent(system, k -> new Object());
+
+        if (isCredentialInvalid(system)) {
+            synchronized (systemLock) {
+                if (isCredentialInvalid(system)) {
+                    getInteractiveAuthProvider().refreshCredential(request, response, system);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isCredentialInvalid(String system) {
+        ICredential credential = getCredential(system);
+        return Objects.isNull(credential)
+                || credential.isInvalid();
     }
 
 }

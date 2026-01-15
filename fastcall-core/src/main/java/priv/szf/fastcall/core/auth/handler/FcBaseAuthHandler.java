@@ -34,7 +34,7 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
     @Override
     public boolean isNotAuthNeed(Request request) {
-        return false;
+        return getRequestContext(request).getCallType() == FcCallType.ANONYMOUS;
     }
 
     @Override

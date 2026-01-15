@@ -59,7 +59,6 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
                 .uri(uri)
                 .method(method)
                 .body(body)
-                .system(system)
                 .nonceManager(systemNonceManagerMap.computeIfAbsent(system, v -> new ClientNonceManager()))
                 .build();
     }

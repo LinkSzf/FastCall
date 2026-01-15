@@ -72,7 +72,7 @@ public class TokenAuthController extends BaseAuthController {
 
         return BearerAuthResponseBody.builder()
                 .timestamp(System.currentTimeMillis())
-                .system(new BearerAuthResponseBody.System(TOKEN, EXPIRE))
+                .system(new BearerAuthResponseBody.System(TOKEN, EXPIRE+20))
                 .build();
     }
 

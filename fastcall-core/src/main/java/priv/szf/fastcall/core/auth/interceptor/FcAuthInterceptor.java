@@ -6,8 +6,6 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.FcCallType;
-import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
 
 import java.io.IOException;
@@ -21,24 +19,24 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
 
     @Override
     protected Response doAfterProceed(Chain chain, Request request, Response response) throws IOException {
-        FcRequestContext requestContext = getAuthHandler().getRequestContext(request);
-        boolean needRetry = requestContext.getInterceptorContext().isNeedRetry();
-        if (!needRetry) {
-            return response;
+        boolean needRetry = getAuthHandler().getRequestContext(request)
+                .getInterceptorContext()
+                .isNeedRetry();
+        if (needRetry) {
+            response.close();
+            Request finalRequest = super.modifyRequest(request);
+            return chain.proceed(finalRequest);
         }
-        response.close();
-        Request finalRequest = super.modifyRequest(request);
-        return chain.proceed(finalRequest);
+        return response;
     }
 
     @Override
     public boolean shouldSkip(Request request) {
-        boolean notAuthNeed = getAuthHandler().isNotAuthNeed(request);
-        FcRequestContext requestContext = getAuthHandler().getRequestContext(request);
-        boolean anonymousCall = (FcCallType.ANONYMOUS == requestContext.getCallType());
-        boolean skip = notAuthNeed || anonymousCall;
+        boolean skip = getAuthHandler().isNotAuthNeed(request);
         if (skip) {
-            requestContext.getInterceptorContext().setSkipAuth(true);
+            getAuthHandler().getRequestContext(request)
+                    .getInterceptorContext()
+                    .setSkipAuth(true);
         }
         return skip;
     }

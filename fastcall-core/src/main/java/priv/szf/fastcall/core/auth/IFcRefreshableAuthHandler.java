@@ -5,9 +5,9 @@ import okhttp3.Response;
 
 public interface IFcRefreshableAuthHandler extends IFcAuthHandler {
 
-    void preRefresh(Request request);
+    boolean preRefresh(Request request);
 
-    void refresh(Response response);
+    boolean refresh(Response response);
 
     Integer getAuthInNeedCode(Request request);
 }

@@ -25,7 +25,8 @@ public class FcDigestAuthHandler extends FcBaseRefreshableAuthHandler
     }
 
     @Override
-    public void preRefresh(Request request) {
+    public boolean preRefresh(Request request) {
+        return false;
     }
 
 

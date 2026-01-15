@@ -1,11 +1,9 @@
 package priv.szf.fastcall.core.model.credential;
 
 
-import lombok.Getter;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
-@Getter
-public class CookieCredential implements ICredential {
+public class CookieCredential extends BaseCredential implements ICredential {
 
     private final String cookie;
 
@@ -22,8 +20,4 @@ public class CookieCredential implements ICredential {
         return this.cookie;
     }
 
-    @Override
-    public boolean isInvalid() {
-        return false;
-    }
 }
