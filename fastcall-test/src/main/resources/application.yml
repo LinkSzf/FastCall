@@ -23,7 +23,6 @@ fast-call:
     enable: true
     add-forward-header: true
     prefix: /fc_forward_proxy
-    system-property: Fc-Forward-Proxy-System
   max-requests: 200
   max-requests-per-host: 20
   easy-source:

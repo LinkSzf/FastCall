@@ -46,9 +46,6 @@ public class FastCallProperties {
         /** 过滤前缀 */
         private String prefix = "/fc_forward_proxy";
 
-        /** 标识被代理系统*/
-        private String systemProperty = "Fc-Forward-Proxy-System";
-
         /** 是否自动添加转发请求头 */
         private boolean addForwardHeader = true;
 

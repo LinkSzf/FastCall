@@ -160,8 +160,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement().toLowerCase();
 
-            if (HeaderSkip.onRequest(headerName)
-                    || StrUtil.equals(properties.getForwardProxy().getSystemProperty().toLowerCase(), headerName)) {
+            if (HeaderSkip.onRequest(headerName)) {
                 continue;
             }
 
@@ -263,11 +262,9 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
     }
 
     private FcSourcePak getSourcePak(HttpServletRequest request) {
-        String systemProperty = properties.getForwardProxy().getSystemProperty();
-        String system = request.getHeader(systemProperty);
-        if (StrUtil.isBlank(system)) {
-            throw new FastCallException("请在请求头中使用[%s]指定被代理系统", systemProperty);
-        }
+        String requestUri = request.getRequestURI();
+        String prefix = StrUtil.addSuffixIfNot(properties.getForwardProxy().getPrefix(), "/");
+        String system = StrUtil.subBetween(requestUri, prefix,"/");
 
         return Optional.ofNullable(source.getSourcePak(system))
                 .map(IEssentialCheck::check)
