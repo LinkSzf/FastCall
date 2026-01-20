@@ -1,9 +1,8 @@
 package priv.szf.fastcall.core.auth;
 
-import priv.szf.fastcall.common.model.content.BaseAuthContent;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
-public interface IFcAuthProvider<C extends BaseAuthContent> {
+public interface IFcAuthProvider {
 
     ICredential getCredential(String system);
 

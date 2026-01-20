@@ -12,7 +12,7 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 @RequiredArgsConstructor
 @Component
 public class FcApiKeyAuthProvider extends FcBaseAuthProvider<ApiKeyAuthContent>
-        implements IFcAuthProvider<ApiKeyAuthContent> {
+        implements IFcAuthProvider {
 
     private final IFcSource source;
 

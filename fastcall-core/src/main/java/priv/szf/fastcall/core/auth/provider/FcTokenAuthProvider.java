@@ -22,7 +22,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Component
 public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuthContent, String>
-        implements IFcAuthProvider<TokenAuthContent> {
+        implements IFcAuthProvider {
 
     private static final long DEFAULT_EXPIRED_IN = 3600 * 24 * 7;
 

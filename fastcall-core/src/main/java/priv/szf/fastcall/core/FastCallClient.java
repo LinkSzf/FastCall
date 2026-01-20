@@ -26,7 +26,6 @@ import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
 
-import javax.swing.text.html.Option;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;

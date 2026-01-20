@@ -11,7 +11,7 @@ import priv.szf.fastcall.common.model.content.BasicAuthContent;
 @RequiredArgsConstructor
 @Component
 public class FcBasicAuthProvider extends FcBaseAuthProvider<BasicAuthContent>
-        implements IFcAuthProvider<BasicAuthContent> {
+        implements IFcAuthProvider {
 
     private final IFcSource source;
 

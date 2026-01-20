@@ -19,7 +19,7 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
     protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
 
     @Override
-    protected IFcAuthProvider<?> getAuthProvider() {
+    protected IFcAuthProvider getAuthProvider() {
         return getInteractiveAuthProvider();
     }
 

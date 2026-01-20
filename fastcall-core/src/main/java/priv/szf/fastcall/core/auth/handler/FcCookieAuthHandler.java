@@ -28,10 +28,8 @@ public class FcCookieAuthHandler extends FcBaseRefreshableAuthHandler
     }
 
     @Override
-    protected Request doModifyRequest(@NonNull Request request, @NonNull ICredential credential) {
+    protected Request.Builder doModifyRequest(@NonNull Request.Builder builder, @NonNull ICredential credential) {
         String cookie = credential.getAuthString();
-        return request.newBuilder()
-                .addHeader(FcHttpHeader.COOKIE.getName(), cookie)
-                .build();
+        return builder.header(FcHttpHeader.COOKIE.getName(), cookie);
     }
 }

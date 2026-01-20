@@ -16,7 +16,7 @@ import java.util.Objects;
 public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
 
-    protected abstract IFcAuthProvider<?> getAuthProvider();
+    protected abstract IFcAuthProvider getAuthProvider();
 
     @Override
     public FcRequestContext getRequestContext(Request request) {
@@ -46,16 +46,16 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
             return request;
         }
 
-        return doModifyRequest(request, credential);
+        Request.Builder builder = request.newBuilder();
+        return doModifyRequest(builder, credential)
+                .tag(ICredential.class, credential)
+                .build();
     }
 
-    protected Request doModifyRequest(@NonNull Request request, @NonNull ICredential credential) {
+    protected Request.Builder doModifyRequest(@NonNull Request.Builder builder, @NonNull ICredential credential) {
         String authStr = credential.getAuthString();
         String authorization = StrUtil.prependIfMissingIgnoreCase(authStr, getAuthType().getPrefix());
-        return request.newBuilder()
-                .tag(ICredential.class, credential)
-                .header(FcHttpHeader.AUTHORIZATION.getName(), authorization)
-                .build();
+        return builder.header(FcHttpHeader.AUTHORIZATION.getName(), authorization);
     }
 
     protected <T extends ICredential> T getCredential(String system) {

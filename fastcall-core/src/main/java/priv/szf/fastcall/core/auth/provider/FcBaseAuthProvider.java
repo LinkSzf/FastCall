@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unchecked")
-public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements IFcAuthProvider<C> {
+public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements IFcAuthProvider {
 
     private final Class<C> contentClazz = (Class<C>) TypeUtil.getTypeArgument(this.getClass());
 

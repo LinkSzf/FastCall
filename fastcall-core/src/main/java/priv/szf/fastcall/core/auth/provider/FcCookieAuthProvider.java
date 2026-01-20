@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Component
 public class FcCookieAuthProvider extends FcBaseInteractiveAuthProvider<CookieAuthContent, Object>
-        implements IFcAuthProvider<CookieAuthContent> {
+        implements IFcAuthProvider {
 
     private final IFcSource source;
 

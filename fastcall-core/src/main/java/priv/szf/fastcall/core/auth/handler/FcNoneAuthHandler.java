@@ -15,7 +15,7 @@ public class FcNoneAuthHandler extends FcBaseAuthHandler implements IFcAuthHandl
     }
 
     @Override
-    protected IFcAuthProvider<?> getAuthProvider() {
+    protected IFcAuthProvider getAuthProvider() {
         throw new UnsupportedOperationException();
     }
 
