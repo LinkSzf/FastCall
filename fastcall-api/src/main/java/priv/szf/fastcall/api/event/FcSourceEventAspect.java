@@ -8,7 +8,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
-import priv.szf.fastcall.common.event.source.FcSourceEvent;
+import priv.szf.fastcall.common.FcSourceEventType;
+import priv.szf.fastcall.common.event.source.IFcSourceEvent;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcApiDao;
@@ -60,7 +61,9 @@ public class FcSourceEventAspect {
             break;
         }
 
-        FcSourceEvent sourceEvent = new FcSourceEvent(code);
+        FcSourceEventType type = annotation.type();
+
+        IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
 
         sourcePublisher.publish(sourceEvent);
     }

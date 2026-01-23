@@ -23,6 +23,7 @@ import priv.szf.fastcall.api.service.FcApiParamService;
 import priv.szf.fastcall.api.service.FcApiService;
 import priv.szf.fastcall.api.service.FcHeaderAssignService;
 import priv.szf.fastcall.api.service.FcSystemService;
+import priv.szf.fastcall.common.FcSourceEventType;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -57,7 +58,7 @@ public class FcController {
         return systemService.save(dto);
     }
 
-    @FcSourceEventCut(entity = Long.class)
+    @FcSourceEventCut(entity = Long.class, type = FcSourceEventType.DELETE)
     @DeleteMapping("/{id}")
     public void deleteOne(@PathVariable("id") Long id){
         systemService.removeById(id);
