@@ -17,4 +17,7 @@ interface FcApiRepository extends FcBaseRepository<FcApi>, FcApiDao {
     }
 
     List<FcApi> findAllBySysId(Long systemId);
+
+    @Override
+    FcApi getOneByName(String apiName);
 }

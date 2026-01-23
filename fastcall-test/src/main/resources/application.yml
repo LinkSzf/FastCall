@@ -4,6 +4,9 @@ server:
     context-path: /
 
 fast-call:
+  max-requests: 200
+  max-requests-per-host: 20
+  allow-event: true
   pool:
     max-idle-connections: 50
     keep-alive-minutes: 5
@@ -23,8 +26,6 @@ fast-call:
     enable: true
     add-forward-header: true
     prefix: /fc_forward_proxy
-  max-requests: 200
-  max-requests-per-host: 20
   easy-source:
     - system:
         code: none-system

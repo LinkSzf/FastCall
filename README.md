@@ -25,6 +25,7 @@ FastCall是一款专用于进行调用三方系统HTTP接口的便捷访问工�
 * 支持的配置缓存：Redis，InMemory。会根据引用项目的环境自动选择。
 * 支持的数据源：数据库，配置文件。
 * 支持的持久化框架：Hibernate，MybatisPlus。会根据引用项目的环境自动选择。
+* 支持发布请求事件。
 
 ## 环境依赖
 JDK 1.8 +
@@ -44,6 +45,9 @@ JDK 1.8 +
 
 ```yaml
 fast-call:
+  max-requests: 200
+  max-requests-per-host: 20
+  allow-event: true
   pool:
     max-idle-connections: 50
     keep-alive-minutes: 5
@@ -63,9 +67,6 @@ fast-call:
     enable: true
     add-forward-header: true
     prefix: /fc_forward_proxy
-    system-property: Fc-Forward-Proxy-System
-  max-requests: 200
-  max-requests-per-host: 20
   easy-source:
     - system:
         code: none-system

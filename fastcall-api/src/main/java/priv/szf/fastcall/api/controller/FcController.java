@@ -23,7 +23,7 @@ import priv.szf.fastcall.api.service.FcApiParamService;
 import priv.szf.fastcall.api.service.FcApiService;
 import priv.szf.fastcall.api.service.FcHeaderAssignService;
 import priv.szf.fastcall.api.service.FcSystemService;
-import priv.szf.fastcall.common.FcSourceEventType;
+import priv.szf.fastcall.common.event.source.FcSourceEventType;
 
 import javax.validation.Valid;
 import java.util.List;

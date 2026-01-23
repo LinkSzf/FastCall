@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import priv.szf.fastcall.common.source.IFcCacheSource;
+import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.event.FcSourceEventListener;
 import priv.szf.fastcall.core.event.IFcSourceEventListener;
 
@@ -14,8 +15,11 @@ public class FcEventConfig {
 
     @ConditionalOnMissingBean(IFcSourceEventListener.class)
     @Bean
-    public IFcSourceEventListener fcSourceEventListener(List<IFcCacheSource> sources) {
-        return new FcSourceEventListener(sources);
+    public IFcSourceEventListener fcSourceEventListener(
+            List<IFcCacheSource> sources,
+            FastCallClientFactory clientFactory
+    ) {
+        return new FcSourceEventListener(sources, clientFactory);
     }
 
 

@@ -14,6 +14,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import priv.szf.fastcall.common.event.request.IFcRequestEvent;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
@@ -25,6 +26,10 @@ import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
+import priv.szf.fastcall.core.event.FcApiRequestEvent;
+import priv.szf.fastcall.core.event.FcAuthRequestEvent;
+import priv.szf.fastcall.core.event.FcRequestEvent;
+import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -49,6 +54,8 @@ public class FastCallClient {
     private final FcAuthType authType;
 
     private final IFcSource source;
+
+    private final IFcRequestEventPublisher eventPublisher;
 
     private static final ThreadLocal<Builder<?>> LOCAL_BUILDER = new ThreadLocal<>();
 
@@ -183,6 +190,7 @@ public class FastCallClient {
                 : Optional.ofNullable(defaultParams).orElse(FcApiParamPak.empty());
 
         return newCall()
+                .apiName(apiName)
                 .host(api.getParticularHost())
                 .uri(api.getPath())
                 .method(api.getMethod())
@@ -198,12 +206,45 @@ public class FastCallClient {
 
     public <T> FastCallResponse<T> callIt() {
         Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
+        IFcRequestEvent requestEvent = null;
         try {
-            return doCall(builder);
+            FastCallResponse<T> response = doCall(builder);
+            requestEvent = createRequestEvent(builder, response);
+            return response;
         }
         finally {
             LOCAL_BUILDER.remove();
+            if (Objects.isNull(requestEvent)) {
+                requestEvent = new FcRequestEvent(builder.fullUrl, false);
+            }
+            eventPublisher.publish(requestEvent);
         }
+    }
+
+    private <T> IFcRequestEvent createRequestEvent(Builder<T> builder, FastCallResponse<T> response) {
+        IFcRequestEvent requestEvent = null;
+
+        String apiName = builder.apiName;
+        if (Objects.nonNull(apiName)) {
+            requestEvent = FcApiRequestEvent.builder()
+                    .system(system)
+                    .api(apiName)
+                    .url(builder.fullUrl)
+                    .success(response.isSuccessful())
+                    .build();
+        }
+        else if (builder.isAuth) {
+            requestEvent = FcAuthRequestEvent.builder()
+                    .system(system)
+                    .url(builder.fullUrl)
+                    .success(response.isSuccessful())
+                    .build();
+        }
+        else {
+            requestEvent = new FcRequestEvent(builder.fullUrl, response.isSuccessful());
+        }
+
+        return requestEvent;
     }
 
     public <T> FastCallResponse<T> anonymousCallIt() {
@@ -236,6 +277,10 @@ public class FastCallClient {
 
         private FcCallType callType = FcCallType.NORMAL;
 
+        private boolean isAuth = false;
+
+        private String apiName;
+
         private String host;
 
         private String uri;
@@ -252,6 +297,16 @@ public class FastCallClient {
             this.client = client;
             this.dataType = dataType;
             this.host = source.getSourcePak(system).getSystem().getHost();
+        }
+
+        private Builder<T> apiName(String apiName) {
+            this.apiName = apiName;
+            return this;
+        }
+
+        public Builder<T> isAuth(boolean isAuth) {
+            this.isAuth = isAuth;
+            return this;
         }
 
         public Builder<T> url(String url) {

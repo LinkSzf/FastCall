@@ -38,6 +38,7 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
         FcAuthProp authProp = Optional.ofNullable(authContent.getProp()).orElse(new FcAuthProp());
         FastCallClient client = FastCallClientFactory.getExistedClient(system);
         FastCallResponse<R> authResponse = client.<R>newCall()
+                .isAuth(true)
                 .host(authPak.getParticularHost())
                 .uri(authPak.getPath())
                 .params(authProp.getParams())

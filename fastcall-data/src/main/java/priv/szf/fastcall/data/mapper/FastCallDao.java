@@ -11,6 +11,8 @@ public interface FastCallDao<T> {
 
     T getOneById(Long id);
 
+    void updateOneById(Long id, T entity);
+
     T insertOrUpdate(T entity);
 
     List<T> insertOrUpdateBatch(List<T> entities);

@@ -2,7 +2,7 @@ package priv.szf.fastcall.api.event;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import priv.szf.fastcall.common.FcSourceEventType;
+import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.FcBaseEvent;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
 

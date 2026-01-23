@@ -2,13 +2,13 @@ package priv.szf.fastcall.data.mapper.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.data.mapper.FastCallDao;
 
 import java.util.List;
 
 @NoRepositoryBean
 public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao<T> {
-
 
     @Override
     default List<T> list() {
@@ -20,14 +20,23 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
         return getReferenceById(id);
     }
 
+    @Transactional
+    @Override
+    default void updateOneById(Long id, T entity) {
+        boolean exists = existsById(id);
+        if (exists) {
+            save(entity);
+        }
+    }
+
     @Override
     default T insertOrUpdate(T entity) {
-        return save(entity);
+        return saveAndFlush(entity);
     }
 
     @Override
     default List<T> insertOrUpdateBatch(List<T> entities) {
-        return saveAll(entities);
+        return saveAllAndFlush(entities);
     }
 
     @Override

@@ -22,6 +22,11 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
     }
 
     @Override
+    default void updateOneById(Long id, T entity) {
+        updateById(entity);
+    }
+
+    @Override
     default T insertOrUpdate(T entity) {
         Db.saveOrUpdate(entity);
         return entity;

@@ -16,6 +16,7 @@ import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
+import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 
 import java.io.File;
 import java.util.Map;
@@ -41,6 +42,8 @@ public class FastCallClientFactory {
     private final FcAuthInterceptor authInceptor;
 
     private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
+
+    private final IFcRequestEventPublisher eventPublisher;
 
     public static FastCallClient getExistedClient(String systemCode) {
         FastCallClient client = CLIENT_MAP.get(systemCode);
@@ -74,6 +77,7 @@ public class FastCallClientFactory {
                 .system(systemCode)
                 .authType(authType)
                 .source(source)
+                .eventPublisher(eventPublisher)
                 .build();
     }
 
@@ -120,4 +124,7 @@ public class FastCallClientFactory {
                 .build();
     }
 
+    public void removeClient(String system) {
+        CLIENT_MAP.remove(system);
+    }
 }

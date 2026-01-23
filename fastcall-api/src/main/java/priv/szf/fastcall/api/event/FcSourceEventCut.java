@@ -1,6 +1,6 @@
 package priv.szf.fastcall.api.event;
 
-import priv.szf.fastcall.common.FcSourceEventType;
+import priv.szf.fastcall.common.event.source.FcSourceEventType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

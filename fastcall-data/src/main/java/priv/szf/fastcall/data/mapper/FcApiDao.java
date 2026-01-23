@@ -9,4 +9,5 @@ public interface FcApiDao extends FastCallDao<FcApi> {
 
     List<FcApi> listBySystemId(Long systemId);
 
+    FcApi getOneByName(String apiName);
 }

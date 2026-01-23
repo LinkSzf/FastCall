@@ -1,31 +1,21 @@
 package priv.szf.fastcall.api.event;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.event.IFcEvent;
+import priv.szf.fastcall.common.event.FcBaseEventPublisher;
 import priv.szf.fastcall.common.event.IFcEventPublisher;
-
-import java.util.Collection;
+import priv.szf.fastcall.common.event.source.IFcSourceEvent;
 
 @RequiredArgsConstructor
 @Component
-public class FcSourceEventPublisher  implements IFcEventPublisher {
+public class FcSourceEventPublisher extends FcBaseEventPublisher<IFcSourceEvent> implements IFcEventPublisher {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public void publish(IFcEvent event) {
+    public void doPublish(IFcSourceEvent event) {
         applicationEventPublisher.publishEvent(event);
     }
 
-    @Override
-    public void publishAll(Collection<IFcEvent> events) {
-        if (CollectionUtil.isEmpty(events)) {
-            return;
-        }
-
-        events.forEach(this::publish);
-    }
 }

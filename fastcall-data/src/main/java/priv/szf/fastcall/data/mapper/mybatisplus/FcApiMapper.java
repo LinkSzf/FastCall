@@ -18,4 +18,10 @@ interface FcApiMapper extends FcBaseMapper<FcApi>, FcApiDao {
         return selectList(qw);
     }
 
+    @Override
+    default FcApi getOneByName(String apiName) {
+        LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
+                .eq(FcApi::getName, apiName);
+        return selectOne(qw);
+    }
 }

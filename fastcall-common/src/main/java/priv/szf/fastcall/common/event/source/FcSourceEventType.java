@@ -1,4 +1,4 @@
-package priv.szf.fastcall.common;
+package priv.szf.fastcall.common.event.source;
 
 public enum FcSourceEventType {
 

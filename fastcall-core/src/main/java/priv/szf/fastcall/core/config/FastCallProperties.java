@@ -12,6 +12,16 @@ import java.util.List;
 @ConfigurationProperties(prefix = "fast-call")
 @Data
 public class FastCallProperties {
+
+    /** 最大并发请求数 */
+    private int maxRequests = 200;
+
+    /** 每主机最大并发请求数 */
+    private int maxRequestsPerHost = 30;
+
+    /** 是否允许事件 */
+    private boolean allowEvent = false;
+
     /** 客户端配置 */
     private Client client = new Client();
 
@@ -26,12 +36,6 @@ public class FastCallProperties {
 
     /** 转发代理配置 */
     private ForwardProxy forwardProxy = new ForwardProxy();
-
-    /** 最大并发请求数 */
-    private int maxRequests = 200;
-
-    /** 每主机最大并发请求数 */
-    private int maxRequestsPerHost = 30;
 
     /** 快捷源配置 */
     private List<EasySource> easySource = new ArrayList<>();
