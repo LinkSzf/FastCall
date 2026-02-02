@@ -22,7 +22,7 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
     public FcRequestContext getRequestContext(Request request) {
         FcRequestContext context = request.tag(FcRequestContext.class);
         if (Objects.isNull(context)) {
-            throw new FastCallException("url[%s]未传递请求信息上下文", request.url());
+            throw new FastCallException("Required request context not found");
         }
         return context;
     }

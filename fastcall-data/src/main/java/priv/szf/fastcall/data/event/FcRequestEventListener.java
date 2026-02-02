@@ -1,6 +1,7 @@
 package priv.szf.fastcall.data.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.event.request.IFcApiRequestEvent;
@@ -15,6 +16,7 @@ import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.util.Objects;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class FcRequestEventListener implements IFcRequestEventListener {
@@ -35,6 +37,7 @@ public class FcRequestEventListener implements IFcRequestEventListener {
         @EventListener
         @Override
         public void listen(IFcAuthRequestEvent event) {
+            log.debug("An auth request event has been listened: system{}", event.getSystem());
             if (!event.isSuccess()) {
                 return;
             }
@@ -56,6 +59,7 @@ public class FcRequestEventListener implements IFcRequestEventListener {
         @EventListener
         @Override
         public void listen(IFcApiRequestEvent event) {
+            log.debug("An api request event has been listened: system{}", event.getSystem());
             if (!event.isSuccess()) {
                 return;
             }

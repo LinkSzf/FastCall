@@ -26,7 +26,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
     public ICredential getCredential(String system) {
         FcSourcePak sourcePak = getSource().getSourcePak(system);
         if (Objects.isNull(sourcePak)) {
-            throw new FastCallException("系统[%s]配置未找到", system);
+            throw new FastCallException("Source infos of system[{}] not found", system);
         }
         ICredential credential = sourcePak.getCredential();
         return (Objects.nonNull(credential)) ? credential
@@ -37,7 +37,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
         BaseAuthContent content = Optional.ofNullable(getSource().getSourcePak(system))
                 .map(FcSourcePak::getAuth)
                 .map(FcAuthPak::getContent)
-                .orElseThrow(() -> new FastCallException("系统[%s]认证配置未找到", system));
+                .orElseThrow(() -> new FastCallException("Source infos about auth-content of system[{}] not found", system));
 
         return contentClazz.cast(content);
     }

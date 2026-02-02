@@ -1,14 +1,13 @@
 package priv.szf.fastcall.api.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiMapping;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
-import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.exception.FcDataDuplicatedException;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.entity.FcApi;
 
@@ -19,7 +18,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Transactional
 @Service
 @RequiredArgsConstructor
@@ -71,9 +69,7 @@ public class FcApiService {
         }
 
         if (!duplicateNames.isEmpty()) {
-            throw new FastCallException(
-                    "发现重复的名称: " + String.join(", ", duplicateNames)
-            );
+            throw new FcDataDuplicatedException("Api name cannot be duplicated with [{}].", String.join(", ", duplicateNames));
         }
     }
 

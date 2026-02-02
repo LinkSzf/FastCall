@@ -6,6 +6,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import priv.szf.fastcall.common.FastCallConts;
 
 import java.util.concurrent.*;
 
@@ -13,9 +14,17 @@ import java.util.concurrent.*;
 @AllArgsConstructor
 public class FcClientPoolConfig {
 
+    private static final String CLIENT_CONNECTION_POOL_NAME = FastCallConts.NAME + "ClientConnectionPool";
+
+    private static final String CLIENT_THREAD_POOL_NAME = FastCallConts.NAME + "ClientThreadPool";
+
+    private static final String DISPATCHER_NAME = FastCallConts.NAME + "Dispatcher";
+
+    private static final String CLIENT_THREAD_POOL_THREAD_NAME = FastCallConts.NAME + "-Client-Thread";
+
     private final FastCallProperties properties;
 
-    @Bean
+    @Bean(CLIENT_CONNECTION_POOL_NAME)
     public ConnectionPool clientConnectionPool() {
         return new ConnectionPool(
                 properties.getPool().getMaxIdleConnections(),
@@ -24,11 +33,11 @@ public class FcClientPoolConfig {
         );
     }
 
-    @Bean
+    @Bean(CLIENT_THREAD_POOL_NAME)
     public ExecutorService clientThreadPool() {
         int corePoolSize = properties.getMaxRequestsPerHost() + 1;
         int maximumPoolSize = properties.getMaxRequests() + 1;
-        int  keepAliveTime = 60;
+        int keepAliveTime = 60;
 
         return new ThreadPoolExecutor(
                 corePoolSize,
@@ -37,7 +46,7 @@ public class FcClientPoolConfig {
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(),
                 r -> {
-                    Thread thread = new Thread(r, "FastCall-Client-Thread");
+                    Thread thread = new Thread(r, CLIENT_THREAD_POOL_THREAD_NAME);
                     thread.setDaemon(false);
                     return thread;
                 },
@@ -45,7 +54,7 @@ public class FcClientPoolConfig {
         );
     }
 
-    @Bean
+    @Bean(DISPATCHER_NAME)
     public Dispatcher dispatcher() {
         Dispatcher dispatcher = new Dispatcher(clientThreadPool());
         dispatcher.setMaxRequests(properties.getMaxRequests());

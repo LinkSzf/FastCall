@@ -45,7 +45,7 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
 
     @Override
     public int getWeight() {
-        return 0;
+        return Integer.MIN_VALUE;
     }
 
     private FcSystemPak getFcSystemPak(FastCallProperties.EasySource es) {

@@ -2,11 +2,15 @@ package priv.szf.fastcall.core;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Cache;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.exception.FcDataNotFoundException;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
@@ -25,6 +29,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FastCallClientFactory {
@@ -45,36 +50,38 @@ public class FastCallClientFactory {
 
     private final IFcRequestEventPublisher eventPublisher;
 
-    public static FastCallClient getExistedClient(String systemCode) {
-        FastCallClient client = CLIENT_MAP.get(systemCode);
+    public static FastCallClient getExistedClient(String system) {
+        FastCallClient client = CLIENT_MAP.get(system);
         if (Objects.isNull(client)) {
-            throw new FastCallException("系统[%s]未实例化请求客户端", systemCode);
+            throw new FcUnexpectedException("System[{}] has not been instantiated", system);
         }
         return client;
     }
 
-    public FastCallClient getClient(String systemCode) {
-        return CLIENT_MAP.computeIfAbsent(systemCode, this::createNewClient);
+    public FastCallClient getClient(String system) {
+        return CLIENT_MAP.computeIfAbsent(system, this::createNewClient);
     }
 
-    private FastCallClient createNewClient(String systemCode) {
-        FcSourcePak sourcePak = source.getSourcePak(systemCode);
+    private FastCallClient createNewClient(String system) {
+        FcSourcePak sourcePak = source.getSourcePak(system);
         if (Objects.isNull(sourcePak)) {
-            throw new FastCallException("系统[%s]未配置中找到", systemCode);
+            throw new FcDataNotFoundException("System[{}] does not have config infos", system);
         }
 
-        FcSystemPak system = sourcePak.getSystem();
-        if (!system.isEnable()) {
-            throw new FastCallException("系统[%s]已设置禁用，无法发起访问", systemCode);
+        FcSystemPak systemPak = sourcePak.getSystem();
+        if (!systemPak.isEnable()) {
+            throw new FastCallException("System[{}] has been set to disable and access cannot be initiated", system);
         }
 
         FcAuthType authType = sourcePak.getAuth().getType();
 
-        FcClientSettingPak clientSetting = getClientSetting(system);
+        FcClientSettingPak clientSetting = getClientSetting(systemPak);
         OkHttpClient client = initCoreClient(clientSetting);
+
+        log.debug("{}-A new client of system[{}] has been created", FastCallConts.NAME, system);
         return FastCallClient.builder()
                 .client(client)
-                .system(systemCode)
+                .system(system)
                 .authType(authType)
                 .source(source)
                 .eventPublisher(eventPublisher)

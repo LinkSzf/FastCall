@@ -39,10 +39,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
     ) {
         String data = response.getData();
         if (Objects.isNull(data)) {
-            throw new FastCallException(
-                            "系统刷新认证失败，响应体为空，code[%s], message[%s]",
-                            response.getCode(), response.getMessage()
-            );
+            throw new FastCallException("Failed to get token, the response body is empty");
         }
 
         JSONObject jsonData = JSONUtil.parseObj(data);
@@ -78,7 +75,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
     private String getToken(JSONObject jsonData, String fieldPath) {
         String token = jsonData.getByPath(fieldPath, String.class);
         if (StrUtil.isBlank(token)) {
-            throw new FastCallException("响应体[%s]中路径[%s]未找到token字段", jsonData, fieldPath);
+            throw new FastCallException("Token field is not found at path[{}] in the response body.", fieldPath);
         }
         return token;
     }

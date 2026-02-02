@@ -28,12 +28,10 @@ public final class FcUtils {
             f.set(request, cloneRequestBody);
 
             return buffer.readByteArray();
-        } catch (IOException e) {
-            throw new FcUnexpectedException(e, "读取请求体内容时，IO异常");
+        } catch (IOException | NoSuchFieldException | IllegalAccessException e) {
+            throw new FcUnexpectedException(e, "IO exception occurred when reading request body");
         }
-        catch (Exception e) {
-            throw new FcUnexpectedException(e, "读取请求体内容时，重新设置请求体失败");
-        }
+
     }
 
 

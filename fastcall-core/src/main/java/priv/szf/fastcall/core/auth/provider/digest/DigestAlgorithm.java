@@ -44,7 +44,7 @@ public enum DigestAlgorithm {
                 return algo;
             }
         }
-        throw new IllegalArgumentException(String.format("暂不支持的Digest加密算法: %s", text));
+        throw new UnsupportedOperationException();
     }
 
     public String getHashAlgorithm() {

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.common.source.IFcChainSource;
@@ -23,7 +23,7 @@ public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
     @Autowired
     public FcSourceDelegate(List<IFcChainSource> availableSources) {
         if (CollectionUtil.isEmpty(availableSources)) {
-            throw new FastCallException("没有可用的数据源");
+            throw new FcUnexpectedException("No available sources");
         }
 
         List<IFcChainSource> sortedSources = availableSources.stream()

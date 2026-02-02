@@ -6,6 +6,7 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
@@ -96,12 +97,12 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     private IFcAuthHandler getHandler(Request request) {
         FcAuthType authType = Optional.ofNullable(request.tag(FcRequestContext.class))
                 .map(FcRequestContext::getAuthType)
-                .orElseThrow(() -> new FastCallException("url[%s]未传递认证类型上下文", request.url()));
+                .orElseThrow(() -> new FcUnexpectedException("Auth-type not found in request context"));
 
         IFcAuthHandler handler = handlerMap.get(authType);
-        if (Objects.isNull(handler)) {{
-            throw new FastCallException("url[%s]未找到认证类型[%s]对应的的认证处理器", request.url(), authType);
-        }}
+        if (Objects.isNull(handler)) {
+            throw new FcUnexpectedException("No handler corresponding to auth-type[{}] found", authType);
+        }
 
         return handler;
     }

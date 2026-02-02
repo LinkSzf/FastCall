@@ -1,7 +1,6 @@
 package priv.szf.fastcall.api.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Transactional
 @Service
 @RequiredArgsConstructor
@@ -47,7 +45,7 @@ public class FcSystemService {
                     system.setAuth(auth);
                     return system;
                 })
-                .orElseThrow(() -> new FcDataNotFoundException("系统[%s]不存在",  id));
+                .orElseThrow(() -> new FcDataNotFoundException("The system[{}] no longer exists.",  id));
     }
 
     public FcSystemVO save(FcSystemDTO dto) {
@@ -74,7 +72,7 @@ public class FcSystemService {
 
     private void checkData(FcSystemDTO dto) {
         if (systemDao.existSameCode(dto.getId(), dto.getCode())) {
-            throw new FcDataDuplicatedException("系统编码[%s]已存在", dto.getCode());
+            throw new FcDataDuplicatedException("The system code[{}] already exists.", dto.getCode());
         }
     }
 }

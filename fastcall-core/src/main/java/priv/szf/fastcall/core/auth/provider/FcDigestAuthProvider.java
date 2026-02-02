@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
@@ -13,7 +14,6 @@ import priv.szf.fastcall.core.auth.provider.digest.DigestChallenge;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
-import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.content.DigestAuthContent;
 import priv.szf.fastcall.core.model.credential.DigestCredential;
 
@@ -42,8 +42,8 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
     ) {
         String authenticateHeader = response.header(FcHttpHeader.WWW_AUTHENTICATE.getName());
         if (!StrUtil.startWithIgnoreCase(authenticateHeader, FcAuthType.DIGEST.getPrefix())) {
-            throw new FastCallException(
-                            "未识别到Digest认证头，code[%s], message[%s], data[%s]",
+            throw new FcUnexpectedException(
+                            "Digest auth header not recognized, code[{}], message[{}], data[{}]",
                             response.code(), response.message(), response.body()
             );
         }

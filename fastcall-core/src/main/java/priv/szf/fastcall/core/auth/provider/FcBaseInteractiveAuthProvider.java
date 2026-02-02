@@ -57,7 +57,7 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
 
     protected void checkSuccess(FastCallResponse<R> response) {
         if (!response.isSuccessful()) {
-            throw new FastCallException("系统刷新认证失败，code[%s], message[%s], data[%s]",
+            throw new FastCallException("Failed to obtain authentication, code[{}], message[{}], data[{}]",
                     response.getCode(), response.getMessage(), response.getData()
             );
         }

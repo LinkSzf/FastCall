@@ -14,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import priv.szf.fastcall.common.FastCallConts;
 import priv.szf.fastcall.common.FcHeaderOperation;
 import priv.szf.fastcall.common.FcHeaderType;
 import priv.szf.fastcall.common.FcMediaType;
@@ -70,11 +71,13 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain
     ) {
+        log.debug("{}-ForwardProxy filtering...", FastCallConts.NAME);
         FcSourcePak sourcePak = getSourcePak(request);
 
         checkAccess(sourcePak);
 
         String url = buildUrl(request, sourcePak);
+        log.debug("{}-ForwardProxy extracts target url[{}]", FastCallConts.NAME, url);
 
         FcRequestMethod method = FcRequestMethod.parse(request.getMethod());
 
@@ -93,6 +96,8 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                 .body(requestBody, mediaType)
                 .prepared()
                 .callIt();
+        log.debug("{}-ForwardProxy calls target url[{}] done. successful[{}], code[{}], msg[{}]",
+                FastCallConts.NAME, url, fcResponse.isSuccessful(), fcResponse.getCode(), fcResponse.getMessage());
 
         writeToResponse(sourcePak, fcResponse, response, request.getRequestURI());
     }
@@ -135,14 +140,14 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                 response.flushBuffer();
                 return;
             } catch (IOException e) {
-                throw new FcUnexpectedException(e, "写入响应体时发生异常");
+                throw new FcUnexpectedException(e, "IO exception occurred when writing to response");
             }
         }
 
         try {
             response.flushBuffer();
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "刷新到响应缓冲区时发生异常");
+            throw new FcUnexpectedException(e, "IO exception occurred when flushing response");
         }
     }
 
@@ -150,7 +155,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
         try(ServletInputStream inputStream = request.getInputStream()) {
             return StreamUtils.copyToByteArray(inputStream);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "构建请求体时发生异常");
+            throw new FcUnexpectedException(e, "IO exception occurred when reading request body");
         }
     }
 
@@ -209,7 +214,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                             headers.remove(name);
                             break;
                         default:
-                            throw new FcUnexpectedException("未知的Header操作[%s]", operation);
+                            throw new UnsupportedOperationException();
                     }
                 });
     }
@@ -268,13 +273,13 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
 
         return Optional.ofNullable(source.getSourcePak(system))
                 .map(IEssentialCheck::check)
-                .orElseThrow(() -> new FcDataNotFoundException("代理请求时未找到该系统[%s]", system));
+                .orElseThrow(() -> new FcDataNotFoundException("Source infos of System[{}] do not exist", system));
     }
 
     private void checkAccess(FcSourcePak sourcePak) {
         boolean enable = sourcePak.getSystem().isEnable();
         if (!enable) {
-            throw new FastCallException("该系统[%s]已被禁用，无法发起访问!", sourcePak.getSystem().getCode());
+            throw new FastCallException("System[{}] has been set to disable and unable to initiate access", sourcePak.getSystem().getCode());
         }
     }
 

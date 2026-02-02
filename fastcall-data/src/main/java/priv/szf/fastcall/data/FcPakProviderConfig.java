@@ -1,12 +1,11 @@
 package priv.szf.fastcall.data;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+import priv.szf.fastcall.common.FastCallConts;
 import priv.szf.fastcall.common.source.IFcPakProvider;
-import priv.szf.fastcall.data.mapper.FastCallDao;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
@@ -15,12 +14,15 @@ import priv.szf.fastcall.data.mapper.FcSystemDao;
 import priv.szf.fastcall.data.pak.FcDefaultPakProvider;
 import priv.szf.fastcall.data.pak.FcPakMapping;
 
+@Slf4j
 @Configuration
 public class FcPakProviderConfig {
 
+    private static final String PAK_PROVIDER = FastCallConts.NAME + "PakProvider";
+
     @ConditionalOnMissingBean
-    @Bean
-    public IFcPakProvider getPakProvider(
+    @Bean(PAK_PROVIDER)
+    public IFcPakProvider fcPakProvider(
             FcSystemDao systemDao,
             FcAuthDao authDao,
             FcApiDao apiDao,
@@ -28,6 +30,7 @@ public class FcPakProviderConfig {
             FcHeaderAssignDao headerAssignDao,
             FcPakMapping pakMapping
     ) {
+        log.info("{} default pak provider initialized.", FastCallConts.NAME);
         return new FcDefaultPakProvider(
                 systemDao,
                 authDao,

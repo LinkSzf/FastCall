@@ -132,7 +132,7 @@ public class FastCallClient {
         try (Response response = call.execute()) {
             return buildStandardResponse(builder, response);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "url[%s]请求失败，IO异常", builder.fullUrl);
+            throw new FcUnexpectedException(e, "IO exception occured when exectuing url[{}]", builder.fullUrl);
         }
     }
 
@@ -159,10 +159,10 @@ public class FastCallClient {
                 return JSONUtil.toBean(bodyStr, dataType);
             }
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "url[%s]请求失败，读取响应体字符串时IO异常", url);
+            throw new FcUnexpectedException(e, "IO exception occured when reading response body in url[{}]", url);
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
-                            "url[%s]请求失败，类型转换失败，无法将响应体转换为类型[%s]",
+                            "Response body cannot be converted to type[{}] in url[{}]",
                             url,
                             dataType.getName());
         }
@@ -182,7 +182,7 @@ public class FastCallClient {
         Map<String, FcApiPak> apiMap = source.getSourcePak(system).getApiMap();
         FcApiPak api = apiMap.get(apiName);
         if (Objects.isNull(api)) {
-            throw new FastCallException("apiName[%s]不存在", apiName);
+            throw new FastCallException("Source infos of api[{}] do not exist", apiName);
         }
 
         FcApiParamPak defaultParams = api.getParams();

@@ -22,7 +22,7 @@ public interface IEssentialCheck<T> {
             Object value = f.apply(tThis);
 
             if (value == null) {
-                throw new FcSourceAbsenceException("必需系统信息[%s-属性%s]未设置", this.getClass().getSimpleName(), index);
+                throw new FcSourceAbsenceException("必需系统信息[{}-属性{}]未设置", this.getClass().getSimpleName(), index);
             }
 
             if (value instanceof IEssentialCheck) {

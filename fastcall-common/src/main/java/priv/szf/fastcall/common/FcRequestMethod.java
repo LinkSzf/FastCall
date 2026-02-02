@@ -37,6 +37,6 @@ public enum FcRequestMethod {
                 return value;
             }
         }
-        throw new FastCallException("不支持该请求方式[%s]", name);
+        throw new FastCallException("Unsupported request method[{}]", name);
     }
 }

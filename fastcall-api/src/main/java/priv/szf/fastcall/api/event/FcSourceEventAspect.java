@@ -2,6 +2,7 @@ package priv.szf.fastcall.api.event;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,6 +18,7 @@ import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.util.Optional;
 
+@Slf4j
 @Aspect
 @RequiredArgsConstructor
 @Component

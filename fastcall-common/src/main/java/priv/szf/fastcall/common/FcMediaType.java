@@ -75,6 +75,6 @@ public enum FcMediaType {
                 return value;
             }
         }
-        throw new FastCallException("不支持该数据类型[%s]", name);
+        throw new FastCallException("Unsupported media type[{}]", name);
     }
 }

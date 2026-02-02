@@ -38,6 +38,7 @@
         <mybatis-spring.version>2.0.7</mybatis-spring.version>
         <mysql.version>8.0.33</mysql.version>
         <okhttp.version>4.11.0</okhttp.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <spring-boot.version>2.7.18</spring-boot.version>
     </properties>
 
@@ -149,6 +150,13 @@
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- SLF4J API -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
