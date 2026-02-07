@@ -13,6 +13,7 @@ import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -37,7 +38,11 @@ public class FcHeaderAssignService {
             return Collections.emptyList();
         }
 
-        shrinkHeaderAssignToThis(dtoList);
+        dtoList.stream()
+                .filter(Objects::nonNull)
+                .forEach(dto -> dto.setSysId(systemId));
+
+        shrinkHeaderAssignToThis(systemId, dtoList);
 
         List<FcHeaderAssign> apiParamList = headerAssignMapping.toEntityList(dtoList);
         List<FcHeaderAssign> savedApiParamList = headerAssignDao.insertOrUpdateBatch(apiParamList);
@@ -46,13 +51,29 @@ public class FcHeaderAssignService {
 
     }
 
-    private void shrinkHeaderAssignToThis(List<FcHeaderAssignDTO> dtoList) {
-        List<Long> ids = dtoList.stream()
+    private void shrinkHeaderAssignToThis(Long systemId, List<FcHeaderAssignDTO> dtoList) {
+        List<FcHeaderAssign> existingAssigns = headerAssignDao.listBySystemId(systemId);
+        if (CollectionUtil.isEmpty(existingAssigns)) {
+            return;
+        }
+
+        Set<Long> keepIds = dtoList.stream()
                 .filter(Objects::nonNull)
                 .map(FcHeaderAssignDTO::getId)
-                .distinct()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        List<Long> removeIds = existingAssigns.stream()
+                .map(FcHeaderAssign::getId)
+                .filter(Objects::nonNull)
+                .filter(id -> !keepIds.contains(id))
                 .collect(Collectors.toList());
-        headerAssignDao.removeBatchNotInIds(ids);
+
+        if (CollectionUtil.isEmpty(removeIds)) {
+            return;
+        }
+
+        headerAssignDao.removeBatchByIds(removeIds);
     }
 
     private void removeBySystemId(Long systemId) {

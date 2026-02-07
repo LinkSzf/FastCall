@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.event.FcBaseEventPublisher;
 import priv.szf.fastcall.common.event.request.IFcRequestEvent;
 import priv.szf.fastcall.core.config.FastCallProperties;
@@ -32,7 +32,7 @@ public class FcRequestEventPublisher extends FcBaseEventPublisher<IFcRequestEven
         executor.execute(() -> {
             if (properties.isAllowEvent()) {
                 applicationEventPublisher.publishEvent(event);
-                log.debug("{}-a request event published: url[{}]", FastCallConts.NAME, event.getUrl());
+                log.debug("{}-a request event published: url[{}]", FastCallConsts.NAME, event.getUrl());
             }
         });
 

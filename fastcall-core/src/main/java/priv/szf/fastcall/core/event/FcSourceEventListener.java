@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
 import priv.szf.fastcall.common.source.IFcCacheSource;
@@ -27,7 +27,7 @@ public class FcSourceEventListener implements IFcSourceEventListener {
     @EventListener
     @Override
     public void listen(IFcSourceEvent event) {
-        log.debug("{}-a source event is listened: system[{}]", FastCallConts.NAME, event.getSystem());
+        log.debug("{}-a source event is listened: system[{}]", FastCallConsts.NAME, event.getSystem());
         Optional.of(event)
                 .map(IFcSourceEvent::getSystem)
                 .ifPresent(system -> {

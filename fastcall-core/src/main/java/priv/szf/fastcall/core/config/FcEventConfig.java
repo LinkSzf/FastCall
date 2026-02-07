@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.event.FcSourceEventListener;
@@ -16,7 +16,7 @@ import java.util.List;
 @Configuration
 public class FcEventConfig {
 
-    private static final String SOURCE_EVENT_LISTENER = FastCallConts.NAME + "SourceEventListener";
+    private static final String SOURCE_EVENT_LISTENER = FastCallConsts.NAME + "SourceEventListener";
 
     @ConditionalOnMissingBean(IFcSourceEventListener.class)
     @Bean(SOURCE_EVENT_LISTENER)
@@ -24,7 +24,7 @@ public class FcEventConfig {
             List<IFcCacheSource> sources,
             FastCallClientFactory clientFactory
     ) {
-        log.info("{} default source event listener initialized.", FastCallConts.NAME);
+        log.info("{} default source event listener initialized.", FastCallConsts.NAME);
         return new FcSourceEventListener(sources, clientFactory);
     }
 
@@ -33,3 +33,4 @@ public class FcEventConfig {
 
 
 }
+

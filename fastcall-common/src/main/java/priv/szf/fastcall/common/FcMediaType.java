@@ -28,7 +28,7 @@ public enum FcMediaType {
 
     APPLICATION_PROBLEM_JSON("application/problem+json"),
 
-    APPLICATION_PROBLEM_JSON_UTF8("application/problem+json,charset=UTF-8"),
+    APPLICATION_PROBLEM_JSON_UTF8("application/problem+json;charset=UTF-8"),
 
     APPLICATION_PROBLEM_XML("application/problem+xml"),
 

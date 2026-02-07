@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,9 +16,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class FcAsyncConfig {
 
-    public static final String EVENT_EXECUTOR = FastCallConts.NAME + "-event-executor";
+    public static final String EVENT_EXECUTOR = FastCallConsts.NAME + "-event-executor";
 
-    private static final String EVENT_EXECUTOR_THREAD_NAME_PREFIX = FastCallConts.NAME + "-event-";
+    private static final String EVENT_EXECUTOR_THREAD_NAME_PREFIX = FastCallConsts.NAME + "-event-";
 
     @ConditionalOnMissingBean(name = EVENT_EXECUTOR)
     @Bean(EVENT_EXECUTOR)
@@ -30,8 +30,9 @@ public class FcAsyncConfig {
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         executor.setThreadNamePrefix(EVENT_EXECUTOR_THREAD_NAME_PREFIX);
         executor.initialize();
-        log.info("{} default event executor initialized.", FastCallConts.NAME);
+        log.info("{} default event executor initialized.", FastCallConsts.NAME);
         return executor;
     }
 
 }
+

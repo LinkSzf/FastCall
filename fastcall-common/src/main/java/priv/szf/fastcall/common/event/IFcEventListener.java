@@ -1,8 +1,6 @@
 package priv.szf.fastcall.common.event;
 
-public interface IFcEventLister<T extends IFcEvent> {
+public interface IFcEventListener<T extends IFcEvent> {
 
     void listen(T event);
-
-
 }

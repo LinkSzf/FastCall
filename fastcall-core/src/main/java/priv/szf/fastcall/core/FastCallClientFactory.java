@@ -8,7 +8,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
@@ -78,7 +78,7 @@ public class FastCallClientFactory {
         FcClientSettingPak clientSetting = getClientSetting(systemPak);
         OkHttpClient client = initCoreClient(clientSetting);
 
-        log.debug("{}-A new client of system[{}] has been created", FastCallConts.NAME, system);
+        log.debug("{}-A new client of system[{}] has been created", FastCallConsts.NAME, system);
         return FastCallClient.builder()
                 .client(client)
                 .system(system)
@@ -135,3 +135,4 @@ public class FastCallClientFactory {
         CLIENT_MAP.remove(system);
     }
 }
+

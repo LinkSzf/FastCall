@@ -57,8 +57,6 @@ public class FastCallClient {
 
     private final IFcRequestEventPublisher eventPublisher;
 
-    private static final ThreadLocal<Builder<?>> LOCAL_BUILDER = new ThreadLocal<>();
-
     private <T> Request createRequest(Builder<T> builder) {
         Headers.Builder headerBuilder = new Headers.Builder();
         builder.headers.forEach((key, values) ->
@@ -178,7 +176,7 @@ public class FastCallClient {
         return new Builder<>(this, (Class<T>)Object.class);
     }
 
-    public FastCallClient newApiCall(String apiName, FcApiParamPak params) {
+    public PreparedCall<Object> newApiCall(String apiName, FcApiParamPak params) {
         Map<String, FcApiPak> apiMap = source.getSourcePak(system).getApiMap();
         FcApiPak api = apiMap.get(apiName);
         if (Objects.isNull(api)) {
@@ -189,7 +187,7 @@ public class FastCallClient {
         FcApiParamPak finalParams = (Objects.nonNull(params)) ? params
                 : Optional.ofNullable(defaultParams).orElse(FcApiParamPak.empty());
 
-        return newCall()
+        return newCall(Object.class)
                 .apiName(apiName)
                 .host(api.getParticularHost())
                 .uri(api.getPath())
@@ -200,12 +198,11 @@ public class FastCallClient {
                 .prepared();
     }
 
-    public FastCallClient newApiCall(String apiName) {
+    public PreparedCall<Object> newApiCall(String apiName) {
         return newApiCall(apiName, null);
     }
 
-    public <T> FastCallResponse<T> callIt() {
-        Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
+    private <T> FastCallResponse<T> callIt(Builder<T> builder) {
         IFcRequestEvent requestEvent = null;
         try {
             FastCallResponse<T> response = doCall(builder);
@@ -213,7 +210,6 @@ public class FastCallClient {
             return response;
         }
         finally {
-            LOCAL_BUILDER.remove();
             if (Objects.isNull(requestEvent)) {
                 requestEvent = new FcRequestEvent(builder.fullUrl, false);
             }
@@ -245,22 +241,6 @@ public class FastCallClient {
         }
 
         return requestEvent;
-    }
-
-    public <T> FastCallResponse<T> anonymousCallIt() {
-        Builder<T> builder = (Builder<T>) LOCAL_BUILDER.get();
-        builder.callType = FcCallType.ANONYMOUS;
-        return callIt();
-    }
-
-    public <T> T call() {
-        FastCallResponse<T> call = callIt();
-        return call.getData();
-    }
-
-    public <T> T anonymousCall() {
-        FastCallResponse<T> call = anonymousCallIt();
-        return call.getData();
     }
 
     public class Builder<T> {
@@ -382,7 +362,7 @@ public class FastCallClient {
             return this;
         }
 
-        public FastCallClient prepared() {
+        public PreparedCall<T> prepared() {
             this.fullUrl = (StrUtil.isNotBlank(this.url)) ? this.url
                     : URLUtil.completeUrl(host, uri);
 
@@ -390,12 +370,38 @@ public class FastCallClient {
                 this.fullUrl = this.fullUrl + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             }
 
-            LOCAL_BUILDER.set(this);
-
-            return this.client;
+            return new PreparedCall<>(this.client, this);
         }
 
     }
 
+    public static final class PreparedCall<T> {
+
+        private final FastCallClient client;
+
+        private final Builder<T> builder;
+
+        private PreparedCall(FastCallClient client, Builder<T> builder) {
+            this.client = client;
+            this.builder = builder;
+        }
+
+        public FastCallResponse<T> callIt() {
+            return client.callIt(builder);
+        }
+
+        public FastCallResponse<T> anonymousCallIt() {
+            builder.callType = FcCallType.ANONYMOUS;
+            return callIt();
+        }
+
+        public T call() {
+            return callIt().getData();
+        }
+
+        public T anonymousCall() {
+            return anonymousCallIt().getData();
+        }
+    }
 
 }

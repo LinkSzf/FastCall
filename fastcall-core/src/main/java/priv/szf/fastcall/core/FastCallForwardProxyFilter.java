@@ -14,7 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.FcHeaderOperation;
 import priv.szf.fastcall.common.FcHeaderType;
 import priv.szf.fastcall.common.FcMediaType;
@@ -71,13 +71,13 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain
     ) {
-        log.debug("{}-ForwardProxy filtering...", FastCallConts.NAME);
+        log.debug("{}-ForwardProxy filtering...", FastCallConsts.NAME);
         FcSourcePak sourcePak = getSourcePak(request);
 
         checkAccess(sourcePak);
 
         String url = buildUrl(request, sourcePak);
-        log.debug("{}-ForwardProxy extracts target url[{}]", FastCallConts.NAME, url);
+        log.debug("{}-ForwardProxy extracts target url[{}]", FastCallConsts.NAME, url);
 
         FcRequestMethod method = FcRequestMethod.parse(request.getMethod());
 
@@ -97,7 +97,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
                 .prepared()
                 .callIt();
         log.debug("{}-ForwardProxy calls target url[{}] done. successful[{}], code[{}], msg[{}]",
-                FastCallConts.NAME, url, fcResponse.isSuccessful(), fcResponse.getCode(), fcResponse.getMessage());
+                FastCallConsts.NAME, url, fcResponse.isSuccessful(), fcResponse.getCode(), fcResponse.getMessage());
 
         writeToResponse(sourcePak, fcResponse, response, request.getRequestURI());
     }
@@ -314,3 +314,4 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
 
 
 }
+

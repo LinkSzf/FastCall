@@ -40,9 +40,13 @@ public class FcApiService {
             return Collections.emptyList();
         }
 
+        dtoList.stream()
+                .filter(Objects::nonNull)
+                .forEach(dto -> dto.setSysId(systemId));
+
         checkData(dtoList);
 
-        shrinkApisToThis(dtoList);
+        shrinkApisToThis(systemId, dtoList);
 
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
         List<FcApi> savedApiList = apiDao.insertOrUpdateBatch(apiList);
@@ -73,14 +77,31 @@ public class FcApiService {
         }
     }
 
-    private void shrinkApisToThis(List<FcApiDTO> dtoList) {
-        List<Long> apiIds = dtoList.stream()
+    private void shrinkApisToThis(Long systemId, List<FcApiDTO> dtoList) {
+        List<FcApi> existingApis = apiDao.listBySystemId(systemId);
+        if (CollectionUtils.isEmpty(existingApis)) {
+            return;
+        }
+
+        Set<Long> keepIds = dtoList.stream()
                 .filter(Objects::nonNull)
                 .map(FcApiDTO::getId)
+                .filter(Objects::nonNull)
                 .distinct()
+                .collect(Collectors.toSet());
+
+        List<Long> removeIds = existingApis.stream()
+                .map(FcApi::getId)
+                .filter(Objects::nonNull)
+                .filter(id -> !keepIds.contains(id))
                 .collect(Collectors.toList());
-        apiParamService.removeByApiIds(apiIds);
-        apiDao.removeBatchNotInIds(apiIds);
+
+        if (CollectionUtils.isEmpty(removeIds)) {
+            return;
+        }
+
+        apiParamService.removeByApiIds(removeIds);
+        apiDao.removeBatchByIds(removeIds);
     }
 
 }

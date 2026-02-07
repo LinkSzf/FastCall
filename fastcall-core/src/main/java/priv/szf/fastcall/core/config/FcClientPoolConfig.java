@@ -6,7 +6,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import priv.szf.fastcall.common.FastCallConts;
+import priv.szf.fastcall.common.FastCallConsts;
 
 import java.util.concurrent.*;
 
@@ -14,13 +14,13 @@ import java.util.concurrent.*;
 @AllArgsConstructor
 public class FcClientPoolConfig {
 
-    private static final String CLIENT_CONNECTION_POOL_NAME = FastCallConts.NAME + "ClientConnectionPool";
+    private static final String CLIENT_CONNECTION_POOL_NAME = FastCallConsts.NAME + "ClientConnectionPool";
 
-    private static final String CLIENT_THREAD_POOL_NAME = FastCallConts.NAME + "ClientThreadPool";
+    private static final String CLIENT_THREAD_POOL_NAME = FastCallConsts.NAME + "ClientThreadPool";
 
-    private static final String DISPATCHER_NAME = FastCallConts.NAME + "Dispatcher";
+    private static final String DISPATCHER_NAME = FastCallConsts.NAME + "Dispatcher";
 
-    private static final String CLIENT_THREAD_POOL_THREAD_NAME = FastCallConts.NAME + "-Client-Thread";
+    private static final String CLIENT_THREAD_POOL_THREAD_NAME = FastCallConsts.NAME + "-Client-Thread";
 
     private final FastCallProperties properties;
 
@@ -66,3 +66,4 @@ public class FcClientPoolConfig {
 
 
 }
+

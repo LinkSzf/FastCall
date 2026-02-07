@@ -1,6 +1,6 @@
 package priv.szf.fastcall.common;
 
-public class FastCallConts {
+public final class FastCallConsts {
 
     public static final String NAME = "FastCall";
 
@@ -10,5 +10,6 @@ public class FastCallConts {
 
     public static final int AUTO_CONFIGURATION_CORE_ORDER = AUTO_CONFIGURATION_ORDER + 2;
 
-
+    private FastCallConsts() {
+    }
 }

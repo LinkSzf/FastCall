@@ -19,8 +19,9 @@ interface FcApiMapper extends FcBaseMapper<FcApi>, FcApiDao {
     }
 
     @Override
-    default FcApi getOneByName(String apiName) {
+    default FcApi getOneByNameAndSysId(Long sysId, String apiName) {
         LambdaQueryWrapper<FcApi> qw = Wrappers.<FcApi>lambdaQuery()
+                .eq(FcApi::getSysId, sysId)
                 .eq(FcApi::getName, apiName);
         return selectOne(qw);
     }
