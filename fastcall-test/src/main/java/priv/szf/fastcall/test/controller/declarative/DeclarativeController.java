@@ -11,6 +11,7 @@ import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.test.client.DeclarativeDemoClient;
 import priv.szf.fastcall.test.model.DeclarativeUser;
 
+import java.io.ByteArrayInputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,5 +86,11 @@ public class DeclarativeController {
     public Map<String, Object> upload(@RequestParam(defaultValue = "demo upload") String desc) {
         byte[] bytes = ("hello-fastcall-" + System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8);
         return client.upload(desc, bytes, "{\"biz\":\"fastcall\"}");
+    }
+
+    @PostMapping("/upload-stream")
+    public Map<String, Object> uploadStream(@RequestParam(defaultValue = "demo upload stream") String desc) {
+        byte[] bytes = ("hello-fastcall-stream-" + System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8);
+        return client.uploadStream(desc, new ByteArrayInputStream(bytes), "{\"biz\":\"fastcall-stream\"}");
     }
 }

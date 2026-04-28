@@ -1,7 +1,6 @@
 package priv.szf.fastcall.core.declarative;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,9 @@ import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
@@ -25,12 +27,16 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +44,8 @@ import java.util.regex.Pattern;
 final class FcClientRequestResolver {
 
     private static final Pattern PATH_PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]+)}");
+
+    private static final ConcurrentMap<Class<?>, List<PropertyDescriptor>> BEAN_PROPERTY_CACHE = new ConcurrentHashMap<>();
 
     private final IFcSource source;
 
@@ -168,8 +176,7 @@ final class FcClientRequestResolver {
     private Map<String, Object> toBeanPropertyMap(Object bean) {
         try {
             Map<String, Object> result = new LinkedHashMap<>();
-            BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass(), Object.class);
-            for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+            for (PropertyDescriptor descriptor : getBeanPropertyDescriptors(bean.getClass())) {
                 Method readMethod = descriptor.getReadMethod();
                 if (Objects.isNull(readMethod)) {
                     continue;
@@ -185,6 +192,23 @@ final class FcClientRequestResolver {
             return result;
         } catch (Exception e) {
             throw new FastCallException("Failed to expand bean parameter [{}]: {}", bean.getClass().getName(), e.getMessage());
+        }
+    }
+
+    private List<PropertyDescriptor> getBeanPropertyDescriptors(Class<?> beanClass) {
+        return BEAN_PROPERTY_CACHE.computeIfAbsent(beanClass, this::loadBeanPropertyDescriptors);
+    }
+
+    private List<PropertyDescriptor> loadBeanPropertyDescriptors(Class<?> beanClass) {
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(beanClass, Object.class);
+            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+            if (propertyDescriptors == null || propertyDescriptors.length == 0) {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(Arrays.asList(propertyDescriptors));
+        } catch (Exception e) {
+            throw new FastCallException("Failed to inspect bean parameter [{}]: {}", beanClass.getName(), e.getMessage());
         }
     }
 
@@ -274,8 +298,11 @@ final class FcClientRequestResolver {
         }
         if (value instanceof InputStream) {
             String finalFileName = StrUtil.blankToDefault(fileName, partName);
-            byte[] bytes = IoUtil.readBytes((InputStream) value);
-            builder.addFormDataPart(partName, finalFileName, RequestBody.create(bytes, MediaType.parse(partType.getName())));
+            builder.addFormDataPart(
+                    partName,
+                    finalFileName,
+                    createStreamingRequestBody((InputStream) value, MediaType.parse(partType.getName()))
+            );
             return;
         }
         if (value instanceof RequestBody) {
@@ -284,6 +311,29 @@ final class FcClientRequestResolver {
             return;
         }
         builder.addFormDataPart(partName, String.valueOf(value));
+    }
+
+    private RequestBody createStreamingRequestBody(InputStream inputStream, MediaType mediaType) {
+        return new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return mediaType;
+            }
+
+            @Override
+            public long contentLength() {
+                return -1L;
+            }
+
+            @Override
+            public void writeTo(BufferedSink sink) {
+                try (Source source = Okio.source(inputStream)) {
+                    sink.writeAll(source);
+                } catch (Exception e) {
+                    throw new FastCallException(e, "Failed to stream multipart input stream body");
+                }
+            }
+        };
     }
 
     private boolean isIterableValue(Object value) {

@@ -12,6 +12,7 @@ import priv.szf.fastcall.core.declarative.annotation.FcPath;
 import priv.szf.fastcall.core.declarative.annotation.FcQuery;
 import priv.szf.fastcall.test.model.DeclarativeUser;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,13 @@ public interface DeclarativeDemoClient {
     Map<String, Object> upload(
             @FcPart("desc") String desc,
             @FcPart(value = "files", fileName = "payload.txt", mediaType = FcMediaType.TEXT_PLAIN) byte[] fileContent,
+            @FcPart("meta") String meta
+    );
+
+    @FcMethod(uri = "/declarative/target/upload-stream", method = FcRequestMethod.POST)
+    Map<String, Object> uploadStream(
+            @FcPart("desc") String desc,
+            @FcPart(value = "files", fileName = "payload.txt", mediaType = FcMediaType.TEXT_PLAIN) InputStream fileContent,
             @FcPart("meta") String meta
     );
 }

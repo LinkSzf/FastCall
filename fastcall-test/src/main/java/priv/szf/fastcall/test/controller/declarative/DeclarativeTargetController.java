@@ -95,4 +95,19 @@ public class DeclarativeTargetController {
         result.put("contentType", file.getContentType());
         return result;
     }
+
+    @PostMapping("/upload-stream")
+    public Map<String, Object> uploadStream(
+            @RequestPart(value = "desc", required = false) String desc,
+            @RequestPart("files") MultipartFile file,
+            @RequestPart(value = "meta", required = false) String meta
+    ) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("desc", desc);
+        result.put("meta", meta);
+        result.put("fileName", file.getOriginalFilename());
+        result.put("size", file.getSize());
+        result.put("contentType", file.getContentType());
+        return result;
+    }
 }
