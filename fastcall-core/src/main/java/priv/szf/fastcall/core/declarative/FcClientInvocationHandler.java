@@ -6,8 +6,11 @@ import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.FastCallClient;
 
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +38,7 @@ final class FcClientInvocationHandler implements InvocationHandler {
             return invokeObjectMethod(proxy, method, args);
         }
         if (method.isDefault()) {
-            throw new UnsupportedOperationException("Default methods are not supported in FastCall declarative client");
+            return invokeDefaultMethod(proxy, method, args);
         }
 
         FcClientMethodMetadata metadata = methodMetadataMap.get(method);
@@ -82,15 +85,47 @@ final class FcClientInvocationHandler implements InvocationHandler {
 
     private Object invokeObjectMethod(Object proxy, Method method, Object[] args) {
         String methodName = method.getName();
-        if ("toString".equals(methodName)) {
-            return "FastCallDeclarativeClient(" + interfaceType.getName() + ")";
-        }
-        if ("hashCode".equals(methodName)) {
-            return System.identityHashCode(proxy);
-        }
-        if ("equals".equals(methodName)) {
-            return Objects.nonNull(args) && args.length == 1 && proxy == args[0];
+        switch (methodName) {
+            case "toString":
+                return "FastCallDeclarativeClient(" + interfaceType.getName() + ")";
+            case "hashCode":
+                return System.identityHashCode(proxy);
+            case "equals":
+                return Objects.nonNull(args) && args.length == 1 && proxy == args[0];
         }
         throw new UnsupportedOperationException("Unsupported Object method: " + methodName);
+    }
+
+    private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
+        Class<?> declaringClass = method.getDeclaringClass();
+        MethodHandles.Lookup lookup = createLookup(declaringClass);
+        Object[] invokeArgs = (Objects.nonNull(args)) ? args : new Object[0];
+        return lookup.findSpecial(
+                        declaringClass,
+                        method.getName(),
+                        MethodType.methodType(method.getReturnType(), method.getParameterTypes()),
+                        declaringClass
+                )
+                .bindTo(proxy)
+                .invokeWithArguments(invokeArgs);
+    }
+
+    private MethodHandles.Lookup createLookup(Class<?> declaringClass) throws Throwable {
+        try {
+            Method privateLookupIn = MethodHandles.class.getMethod("privateLookupIn", Class.class, MethodHandles.Lookup.class);
+            return (MethodHandles.Lookup) privateLookupIn.invoke(null, declaringClass, MethodHandles.lookup());
+        } catch (NoSuchMethodException ignore) {
+            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+            if (!constructor.isAccessible()) {
+                constructor.setAccessible(true);
+            }
+            return constructor.newInstance(
+                    declaringClass,
+                    MethodHandles.Lookup.PUBLIC
+                            | MethodHandles.Lookup.PRIVATE
+                            | MethodHandles.Lookup.PROTECTED
+                            | MethodHandles.Lookup.PACKAGE
+            );
+        }
     }
 }

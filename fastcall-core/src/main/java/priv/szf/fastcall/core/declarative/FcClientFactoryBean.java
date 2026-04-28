@@ -77,6 +77,6 @@ public class FcClientFactoryBean implements FactoryBean<Object>, BeanFactoryAwar
 
     @Override
     public boolean isSingleton() {
-        return true;
+        return FactoryBean.super.isSingleton();
     }
 }

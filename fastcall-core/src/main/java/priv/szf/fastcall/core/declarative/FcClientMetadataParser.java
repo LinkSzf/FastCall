@@ -17,6 +17,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +44,9 @@ final class FcClientMetadataParser {
         Map<Method, FcClientMethodMetadata> metadataMap = new HashMap<>();
         for (Method method : methods) {
             if (method.getDeclaringClass() == Object.class) {
+                continue;
+            }
+            if (method.isDefault() || Modifier.isStatic(method.getModifiers())) {
                 continue;
             }
             FcClientMethodMetadata metadata = parseMethodMetadata(interfaceSystem, method);
@@ -140,12 +144,13 @@ final class FcClientMetadataParser {
 
     private List<FcClientMethodMetadata.ParamBinding> parseParamBindings(Method method) {
         Annotation[][] allParamAnnotations = method.getParameterAnnotations();
+        Class<?>[] parameterTypes = method.getParameterTypes();
         List<FcClientMethodMetadata.ParamBinding> bindings = new ArrayList<>();
         int bodyCount = 0;
 
         for (int i = 0; i < allParamAnnotations.length; i++) {
             Annotation[] annotations = allParamAnnotations[i];
-            FcClientMethodMetadata.ParamBinding binding = parseSingleParamBinding(method, i, annotations);
+            FcClientMethodMetadata.ParamBinding binding = parseSingleParamBinding(method, i, annotations, parameterTypes[i]);
             bindings.add(binding);
             if (binding.getKind() == FcClientMethodMetadata.ParamKind.BODY) {
                 bodyCount++;
@@ -158,23 +163,32 @@ final class FcClientMetadataParser {
         return bindings;
     }
 
-    private FcClientMethodMetadata.ParamBinding parseSingleParamBinding(Method method, int index, Annotation[] annotations) {
+    private FcClientMethodMetadata.ParamBinding parseSingleParamBinding(
+            Method method,
+            int index,
+            Annotation[] annotations,
+            Class<?> parameterType
+    ) {
         FcClientMethodMetadata.ParamBinding binding = null;
         for (Annotation annotation : annotations) {
             FcClientMethodMetadata.ParamBinding current = null;
 
             if (annotation instanceof FcQuery) {
+                String queryKey = ((FcQuery) annotation).value();
+                validateKvBinding(method, index, queryKey, parameterType, "@FcQuery");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.QUERY,
                         index,
-                        ((FcQuery) annotation).value(),
+                        queryKey,
                         null
                 );
             } else if (annotation instanceof FcHeader) {
+                String headerKey = ((FcHeader) annotation).value();
+                validateKvBinding(method, index, headerKey, parameterType, "@FcHeader");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.HEADER,
                         index,
-                        ((FcHeader) annotation).value(),
+                        headerKey,
                         null
                 );
             } else if (annotation instanceof FcPath) {
@@ -215,6 +229,28 @@ final class FcClientMetadataParser {
             );
         }
         return binding;
+    }
+
+    private void validateKvBinding(
+            Method method,
+            int index,
+            String key,
+            Class<?> parameterType,
+            String annotationName
+    ) {
+        boolean mapType = Map.class.isAssignableFrom(parameterType);
+        if (StrUtil.isBlank(key) && !mapType) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] {} key is blank, so argument type must be Map",
+                    interfaceType.getName(), method.getName(), index, annotationName
+            );
+        }
+        if (StrUtil.isNotBlank(key) && mapType) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] {} key is non-blank, so argument type cannot be Map",
+                    interfaceType.getName(), method.getName(), index, annotationName
+            );
+        }
     }
 
     @RequiredArgsConstructor

@@ -17,9 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 final class FcClientRequestResolver {
+
+    private static final Pattern PATH_PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]+)}");
 
     private final IFcSource source;
 
@@ -74,6 +78,9 @@ final class FcClientRequestResolver {
                     break;
                 case PATH:
                     String placeholder = "{" + binding.getName() + "}";
+                    if (!StrUtil.contains(resolvedUri, placeholder)) {
+                        throw new FastCallException("Path variable [{}] does not exist in URI template [{}]", binding.getName(), resolvedUri);
+                    }
                     resolvedUri = StrUtil.replace(resolvedUri, placeholder, URLUtil.encode(String.valueOf(arg)));
                     break;
                 case BODY:
@@ -86,11 +93,33 @@ final class FcClientRequestResolver {
             }
         }
 
-        if (StrUtil.contains(resolvedUri, "{") && StrUtil.contains(resolvedUri, "}")) {
-            throw new FastCallException("URI template contains unresolved path variables: {}", resolvedUri);
-        }
+        validateResolvedUriTemplate(resolvedUri);
 
         return new FcResolvedRequest(system, method, resolvedHost, resolvedUri, headers, queries, body, hasBody, bodyType);
+    }
+
+    private void validateResolvedUriTemplate(String resolvedUri) {
+        int leftBraceCount = StrUtil.count(resolvedUri, "{");
+        int rightBraceCount = StrUtil.count(resolvedUri, "}");
+        if (leftBraceCount == 0 && rightBraceCount == 0) {
+            return;
+        }
+
+        if (leftBraceCount != rightBraceCount) {
+            throw new FastCallException("URI template contains unbalanced braces: {}", resolvedUri);
+        }
+
+        Matcher matcher = PATH_PLACEHOLDER_PATTERN.matcher(resolvedUri);
+        int placeholderCount = 0;
+        while (matcher.find()) {
+            placeholderCount++;
+        }
+
+        if (placeholderCount != leftBraceCount) {
+            throw new FastCallException("URI template contains malformed path variable segment: {}", resolvedUri);
+        }
+
+        throw new FastCallException("URI template contains unresolved path variables: {}", resolvedUri);
     }
 
     private void putKvArg(Map<String, String> target, String key, Object arg, String type) {
@@ -121,4 +150,3 @@ final class FcClientRequestResolver {
                 .orElseThrow(() -> new FastCallException("Source infos of api[{}] in system[{}] do not exist", apiName, system));
     }
 }
-

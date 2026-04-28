@@ -6,6 +6,7 @@ import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.core.declarative.annotation.EnableFastCallClients;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -21,6 +22,7 @@ import org.springframework.util.ClassUtils;
 import java.beans.Introspector;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class FcClientRegistrar implements ImportBeanDefinitionRegistrar,
@@ -35,10 +37,15 @@ public class FcClientRegistrar implements ImportBeanDefinitionRegistrar,
         Set<String> basePackages = resolveBasePackages(importingClassMetadata);
         ClassPathScanningCandidateComponentProvider scanner = buildScanner();
         scanner.addIncludeFilter(new AnnotationTypeFilter(FcClient.class));
+        Set<String> scannedClassNames = new LinkedHashSet<>();
 
         for (String basePackage : basePackages) {
             Set<BeanDefinition> candidates = scanner.findCandidateComponents(basePackage);
             for (BeanDefinition candidate : candidates) {
+                String className = candidate.getBeanClassName();
+                if (StrUtil.isBlank(className) || !scannedClassNames.add(className)) {
+                    continue;
+                }
                 registerFcClient(candidate, registry);
             }
         }
@@ -61,6 +68,9 @@ public class FcClientRegistrar implements ImportBeanDefinitionRegistrar,
         if (!interfaceType.isInterface()) {
             throw new FastCallException("Type[{}] annotated with @FcClient must be an interface", className);
         }
+        if (isInterfaceTypeRegistered(registry, interfaceType)) {
+            return;
+        }
 
         FcClient fcClient = interfaceType.getAnnotation(FcClient.class);
         String beanName = StrUtil.isNotBlank(fcClient.value())
@@ -69,11 +79,30 @@ public class FcClientRegistrar implements ImportBeanDefinitionRegistrar,
         if (registry.containsBeanDefinition(beanName)) {
             beanName = interfaceType.getName();
         }
+        if (registry.containsBeanDefinition(beanName)) {
+            throw new FastCallException(
+                    "Bean name[{}] already exists while registering @FcClient interface[{}], please set unique @FcClient.value",
+                    beanName, interfaceType.getName()
+            );
+        }
 
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FcClientFactoryBean.class);
         builder.addConstructorArgValue(interfaceType);
         builder.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+        // 显式声明FactoryBean产物类型，便于Spring类型推断与IDE识别
+        builder.getRawBeanDefinition().setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceType);
         registry.registerBeanDefinition(beanName, builder.getBeanDefinition());
+    }
+
+    private boolean isInterfaceTypeRegistered(BeanDefinitionRegistry registry, Class<?> interfaceType) {
+        for (String beanName : registry.getBeanDefinitionNames()) {
+            BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
+            Object objectTypeAttr = beanDefinition.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE);
+            if (Objects.equals(objectTypeAttr, interfaceType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ClassPathScanningCandidateComponentProvider buildScanner() {
