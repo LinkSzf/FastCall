@@ -48,12 +48,23 @@ final class FcClientMethodMetadata {
         private final String name;
 
         private final FcMediaType bodyMediaType;
+
+        private final String partFileName;
+
+        private final FcMediaType partMediaType;
+
+        /**
+         * 仅对 QUERY/HEADER 生效：
+         * true 表示参数按 map/bean 展开为多键值；false 表示按单键值写入。
+         */
+        private final boolean expandEntries;
     }
 
     enum ParamKind {
         QUERY,
         HEADER,
         PATH,
-        BODY
+        BODY,
+        PART
     }
 }

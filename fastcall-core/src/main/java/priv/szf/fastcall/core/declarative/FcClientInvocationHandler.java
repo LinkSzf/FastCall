@@ -70,8 +70,8 @@ final class FcClientInvocationHandler implements InvocationHandler {
         FastCallClient.Builder<?> builder = client.newCall(dataType)
                 .method(request.getMethod())
                 .uri(request.getUri())
-                .headers(request.getHeaders())
-                .params(request.getQueries());
+                .allHeaders(request.getHeaders())
+                .allParams(request.getQueries());
 
         if (StrUtil.isNotBlank(request.getHost())) {
             builder.host(request.getHost());

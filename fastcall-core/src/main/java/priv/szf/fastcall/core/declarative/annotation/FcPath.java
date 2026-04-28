@@ -13,6 +13,7 @@ public @interface FcPath {
 
     /**
      * URI模板中的路径变量名称，例如 `/users/{id}`。
+     * 留空时回退到Java参数名。
      */
-    String value();
+    String value() default "";
 }

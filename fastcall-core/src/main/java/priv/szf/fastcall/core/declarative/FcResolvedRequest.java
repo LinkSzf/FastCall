@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -19,9 +20,9 @@ final class FcResolvedRequest {
 
     private final String uri;
 
-    private final Map<String, String> headers;
+    private final Map<String, List<String>> headers;
 
-    private final Map<String, String> queries;
+    private final Map<String, List<String>> queries;
 
     private final Object body;
 
@@ -29,4 +30,3 @@ final class FcResolvedRequest {
 
     private final FcMediaType bodyType;
 }
-

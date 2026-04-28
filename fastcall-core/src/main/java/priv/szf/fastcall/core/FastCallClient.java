@@ -1,7 +1,6 @@
 package priv.szf.fastcall.core;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONUtil;
@@ -40,6 +39,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,8 +68,10 @@ public class FastCallClient {
 
         FcRequestMethod method = builder.method;
         RequestBody requestBody = Optional.ofNullable(builder.body)
-                .filter(ArrayUtil::isNotEmpty)
                 .map(body -> {
+                    if (body instanceof RequestBody) {
+                        return (RequestBody) body;
+                    }
                     MediaType mediaType = MediaType.parse(builder.contentType.getName());
 
                     if (body instanceof byte[]) {
@@ -290,7 +292,7 @@ public class FastCallClient {
 
         private String fullUrl;
 
-        private Map<String, String> params;
+        private Map<String, List<String>> params = new LinkedHashMap<>();
 
         private Object body;
 
@@ -328,7 +330,30 @@ public class FastCallClient {
         }
 
         public Builder<T> params(Map<String, String> params) {
-            this.params = params;
+            this.params = new LinkedHashMap<>();
+            if (CollectionUtil.isNotEmpty(params)) {
+                params.forEach((k, v) -> {
+                    if (Objects.nonNull(k) && Objects.nonNull(v)) {
+                        List<String> values = this.params.computeIfAbsent(k, key -> new ArrayList<>());
+                        values.add(v);
+                    }
+                });
+            }
+            return this;
+        }
+
+        public Builder<T> allParams(Map<String, List<String>> params) {
+            this.params = new LinkedHashMap<>();
+            if (CollectionUtil.isNotEmpty(params)) {
+                params.forEach((k, vs) -> {
+                    if (Objects.nonNull(k) && CollectionUtil.isNotEmpty(vs)) {
+                        List<String> values = this.params.computeIfAbsent(k, key -> new ArrayList<>());
+                        vs.stream()
+                                .filter(Objects::nonNull)
+                                .forEach(values::add);
+                    }
+                });
+            }
             return this;
         }
 
@@ -388,10 +413,31 @@ public class FastCallClient {
                     : URLUtil.completeUrl(host, uri);
 
             if (CollectionUtil.isNotEmpty(params)) {
-                this.fullUrl = this.fullUrl + "?" + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
+                String query = buildMultiValueQuery(params);
+                if (StrUtil.isNotBlank(query)) {
+                    this.fullUrl = this.fullUrl + "?" + query;
+                }
             }
 
             return new PreparedCall<>(this.client, this);
+        }
+
+        private String buildMultiValueQuery(Map<String, List<String>> params) {
+            StringBuilder queryBuilder = new StringBuilder();
+            params.forEach((k, values) -> {
+                if (CollectionUtil.isEmpty(values)) {
+                    return;
+                }
+                for (String value : values) {
+                    if (queryBuilder.length() > 0) {
+                        queryBuilder.append("&");
+                    }
+                    String encodedKey = URLUtil.encode(k, StandardCharsets.UTF_8);
+                    String encodedValue = (value == null) ? "" : URLUtil.encode(value, StandardCharsets.UTF_8);
+                    queryBuilder.append(encodedKey).append("=").append(encodedValue);
+                }
+            });
+            return queryBuilder.toString();
         }
 
     }

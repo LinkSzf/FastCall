@@ -127,9 +127,12 @@ import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.core.declarative.annotation.FcBody;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
+import priv.szf.fastcall.core.declarative.annotation.FcHeader;
 import priv.szf.fastcall.core.declarative.annotation.FcMethod;
+import priv.szf.fastcall.core.declarative.annotation.FcPart;
 import priv.szf.fastcall.core.declarative.annotation.FcPath;
 import priv.szf.fastcall.core.declarative.annotation.FcQuery;
+import priv.szf.fastcall.common.FcMediaType;
 
 @FcClient(system = "demo-system")
 public interface DemoClient {
@@ -139,6 +142,18 @@ public interface DemoClient {
 
     @FcMethod(api = "createUserApi")
     FastCallResponse<String> create(@FcBody Object req);
+
+    @FcMethod(uri = "/users/search", method = FcRequestMethod.GET)
+    String search(@FcQuery Map<String, Object> queryMap,
+                  @FcHeader Map<String, Object> headerMap,
+                  @FcHeader("X-Tag") List<String> tags);
+
+    @FcMethod(uri = "/token", method = FcRequestMethod.POST)
+    String token(@FcBody(mediaType = FcMediaType.APPLICATION_FORM_URLENCODED) Map<String, Object> form);
+
+    @FcMethod(uri = "/upload", method = FcRequestMethod.POST)
+    String upload(@FcPart("desc") String desc,
+                  @FcPart("files") File file);
 }
 ```
 

@@ -8,19 +8,24 @@ import priv.szf.fastcall.core.declarative.annotation.FcBody;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
 import priv.szf.fastcall.core.declarative.annotation.FcHeader;
 import priv.szf.fastcall.core.declarative.annotation.FcMethod;
+import priv.szf.fastcall.core.declarative.annotation.FcPart;
 import priv.szf.fastcall.core.declarative.annotation.FcPath;
 import priv.szf.fastcall.core.declarative.annotation.FcQuery;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.lang.reflect.Modifier;
+import java.util.Date;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,6 +80,7 @@ final class FcClientMetadataParser {
 
         ReturnInfo returnInfo = parseReturnInfo(method);
         List<FcClientMethodMetadata.ParamBinding> paramBindings = parseParamBindings(method);
+        validateBodyBinding(method, paramBindings);
 
         return new FcClientMethodMetadata(
                 method,
@@ -145,69 +151,111 @@ final class FcClientMetadataParser {
     private List<FcClientMethodMetadata.ParamBinding> parseParamBindings(Method method) {
         Annotation[][] allParamAnnotations = method.getParameterAnnotations();
         Class<?>[] parameterTypes = method.getParameterTypes();
+        Parameter[] parameters = method.getParameters();
         List<FcClientMethodMetadata.ParamBinding> bindings = new ArrayList<>();
-        int bodyCount = 0;
 
         for (int i = 0; i < allParamAnnotations.length; i++) {
-            Annotation[] annotations = allParamAnnotations[i];
-            FcClientMethodMetadata.ParamBinding binding = parseSingleParamBinding(method, i, annotations, parameterTypes[i]);
+            FcClientMethodMetadata.ParamBinding binding = parseSingleParamBinding(
+                    method,
+                    i,
+                    parameters[i],
+                    allParamAnnotations[i],
+                    parameterTypes[i]
+            );
             bindings.add(binding);
+        }
+        return bindings;
+    }
+
+    private void validateBodyBinding(Method method, List<FcClientMethodMetadata.ParamBinding> bindings) {
+        int bodyCount = 0;
+        int partCount = 0;
+        for (FcClientMethodMetadata.ParamBinding binding : bindings) {
             if (binding.getKind() == FcClientMethodMetadata.ParamKind.BODY) {
                 bodyCount++;
+            } else if (binding.getKind() == FcClientMethodMetadata.ParamKind.PART) {
+                partCount++;
             }
         }
 
         if (bodyCount > 1) {
             throw new FastCallException("Method[{}#{}] can only have one @FcBody parameter", interfaceType.getName(), method.getName());
         }
-        return bindings;
+        if (bodyCount > 0 && partCount > 0) {
+            throw new FastCallException("Method[{}#{}] @FcBody cannot be used together with @FcPart", interfaceType.getName(), method.getName());
+        }
     }
 
     private FcClientMethodMetadata.ParamBinding parseSingleParamBinding(
             Method method,
             int index,
+            Parameter parameter,
             Annotation[] annotations,
             Class<?> parameterType
     ) {
         FcClientMethodMetadata.ParamBinding binding = null;
+
         for (Annotation annotation : annotations) {
             FcClientMethodMetadata.ParamBinding current = null;
 
             if (annotation instanceof FcQuery) {
-                String queryKey = ((FcQuery) annotation).value();
-                validateKvBinding(method, index, queryKey, parameterType, "@FcQuery");
+                boolean expandEntries = shouldExpandKvParam(parameterType);
+                String key = resolveKvKey(method, index, parameter, ((FcQuery) annotation).value(), expandEntries, "@FcQuery");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.QUERY,
                         index,
-                        queryKey,
-                        null
+                        key,
+                        null,
+                        null,
+                        null,
+                        expandEntries
                 );
             } else if (annotation instanceof FcHeader) {
-                String headerKey = ((FcHeader) annotation).value();
-                validateKvBinding(method, index, headerKey, parameterType, "@FcHeader");
+                boolean expandEntries = shouldExpandKvParam(parameterType);
+                String key = resolveKvKey(method, index, parameter, ((FcHeader) annotation).value(), expandEntries, "@FcHeader");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.HEADER,
                         index,
-                        headerKey,
-                        null
+                        key,
+                        null,
+                        null,
+                        null,
+                        expandEntries
                 );
             } else if (annotation instanceof FcPath) {
-                String pathName = ((FcPath) annotation).value();
-                if (StrUtil.isBlank(pathName)) {
-                    throw new FastCallException("Method[{}#{}] @FcPath value cannot be blank", interfaceType.getName(), method.getName());
-                }
+                String pathName = resolvePathName(method, index, parameter, ((FcPath) annotation).value());
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.PATH,
                         index,
                         pathName,
-                        null
+                        null,
+                        null,
+                        null,
+                        false
                 );
             } else if (annotation instanceof FcBody) {
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.BODY,
                         index,
                         null,
-                        ((FcBody) annotation).mediaType()
+                        ((FcBody) annotation).mediaType(),
+                        null,
+                        null,
+                        false
+                );
+            } else if (annotation instanceof FcPart) {
+                FcPart partAnno = (FcPart) annotation;
+                if (StrUtil.isBlank(partAnno.value())) {
+                    throw new FastCallException("Method[{}#{}] @FcPart value cannot be blank", interfaceType.getName(), method.getName());
+                }
+                current = new FcClientMethodMetadata.ParamBinding(
+                        FcClientMethodMetadata.ParamKind.PART,
+                        index,
+                        partAnno.value(),
+                        null,
+                        partAnno.fileName(),
+                        partAnno.mediaType(),
+                        false
                 );
             }
 
@@ -224,33 +272,102 @@ final class FcClientMetadataParser {
 
         if (Objects.isNull(binding)) {
             throw new FastCallException(
-                    "Method[{}#{}] parameter[{}] must be annotated with one of @FcQuery/@FcHeader/@FcPath/@FcBody",
+                    "Method[{}#{}] parameter[{}] must be annotated with one of @FcQuery/@FcHeader/@FcPath/@FcBody/@FcPart",
                     interfaceType.getName(), method.getName(), index
             );
         }
         return binding;
     }
 
-    private void validateKvBinding(
+    private String resolvePathName(
             Method method,
             int index,
+            Parameter parameter,
+            String value
+    ) {
+        String pathName = StrUtil.trim(value);
+        if (StrUtil.isNotBlank(pathName)) {
+            return pathName;
+        }
+
+        if (!parameter.isNamePresent()) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] @FcPath requires explicit value or javac -parameters for parameter name discovery",
+                    interfaceType.getName(), method.getName(), index
+            );
+        }
+
+        pathName = StrUtil.trim(parameter.getName());
+        if (StrUtil.isBlank(pathName)) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] @FcPath cannot resolve parameter name",
+                    interfaceType.getName(), method.getName(), index
+            );
+        }
+        return pathName;
+    }
+
+    private String resolveKvKey(
+            Method method,
+            int index,
+            Parameter parameter,
             String key,
-            Class<?> parameterType,
+            boolean expandEntries,
             String annotationName
     ) {
-        boolean mapType = Map.class.isAssignableFrom(parameterType);
-        if (StrUtil.isBlank(key) && !mapType) {
+        if (expandEntries) {
+            return StrUtil.trim(key);
+        }
+
+        String trimmedKey = StrUtil.trim(key);
+        if (StrUtil.isNotBlank(trimmedKey)) {
+            return trimmedKey;
+        }
+
+        if (!parameter.isNamePresent()) {
             throw new FastCallException(
-                    "Method[{}#{}] parameter[{}] {} key is blank, so argument type must be Map",
+                    "Method[{}#{}] parameter[{}] {} requires explicit value or javac -parameters for parameter name discovery",
                     interfaceType.getName(), method.getName(), index, annotationName
             );
         }
-        if (StrUtil.isNotBlank(key) && mapType) {
+
+        String parameterName = StrUtil.trim(parameter.getName());
+        if (StrUtil.isBlank(parameterName)) {
             throw new FastCallException(
-                    "Method[{}#{}] parameter[{}] {} key is non-blank, so argument type cannot be Map",
+                    "Method[{}#{}] parameter[{}] {} cannot resolve parameter name",
                     interfaceType.getName(), method.getName(), index, annotationName
             );
         }
+        return parameterName;
+    }
+
+    private boolean shouldExpandKvParam(Class<?> parameterType) {
+        return Map.class.isAssignableFrom(parameterType) || isBeanType(parameterType);
+    }
+
+    private boolean isBeanType(Class<?> type) {
+        if (type.isPrimitive() || type.isEnum() || type.isArray()) {
+            return false;
+        }
+        if (CharSequence.class.isAssignableFrom(type)
+                || Number.class.isAssignableFrom(type)
+                || Boolean.class == type
+                || Character.class == type
+                || Date.class.isAssignableFrom(type)
+                || Temporal.class.isAssignableFrom(type)
+                || Class.class == type) {
+            return false;
+        }
+        if (Iterable.class.isAssignableFrom(type) || Iterator.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
+            return false;
+        }
+
+        Package typePackage = type.getPackage();
+        if (Objects.nonNull(typePackage)) {
+            String packageName = typePackage.getName();
+            return !StrUtil.startWithAny(packageName, "java.", "javax.", "jakarta.");
+        }
+        return true;
     }
 
     @RequiredArgsConstructor

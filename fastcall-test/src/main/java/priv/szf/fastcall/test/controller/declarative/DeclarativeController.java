@@ -14,6 +14,8 @@ import priv.szf.fastcall.test.model.DeclarativeUser;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/declarative")
@@ -51,5 +53,37 @@ public class DeclarativeController {
         }
 
         return users.get(0).getChildren().get(0).getName();
+    }
+
+    @GetMapping("/query-map")
+    public Map<String, Object> queryMap(@RequestParam(defaultValue = "100") int page,
+                                        @RequestParam(defaultValue = "20") int size
+    ) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("page", page);
+        query.put("size", size);
+        query.put("active", true);
+
+        Map<String, Object> headers = new LinkedHashMap<>();
+        headers.put("X-Req-Id", "req-" + System.currentTimeMillis());
+        headers.put("X-Biz", "declarative");
+
+        return client.queryMap(query, headers, Arrays.asList("t1", "t2"));
+    }
+
+    @PostMapping("/form-submit")
+    public Map<String, Object> formSubmit(@RequestParam(defaultValue = "alice") String name) {
+        Map<String, Object> form = new LinkedHashMap<>();
+        form.put("name", name);
+        form.put("roles", Arrays.asList("admin", "ops"));
+        form.put("dept", "dev");
+        form.put("level", 3);
+        return client.formSubmit(form);
+    }
+
+    @PostMapping("/upload")
+    public Map<String, Object> upload(@RequestParam(defaultValue = "demo upload") String desc) {
+        byte[] bytes = ("hello-fastcall-" + System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8);
+        return client.upload(desc, bytes, "{\"biz\":\"fastcall\"}");
     }
 }

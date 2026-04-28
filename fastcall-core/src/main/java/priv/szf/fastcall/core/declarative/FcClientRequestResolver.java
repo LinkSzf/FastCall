@@ -1,9 +1,14 @@
 package priv.szf.fastcall.core.declarative;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import lombok.RequiredArgsConstructor;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
@@ -12,6 +17,15 @@ import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.source.IFcSource;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +48,13 @@ final class FcClientRequestResolver {
         FcRequestMethod method = metadata.getRequestMethod();
         FcMediaType bodyType = metadata.getDefaultBodyType();
 
-        Map<String, String> queries = new LinkedHashMap<>();
-        Map<String, String> headers = new LinkedHashMap<>();
+        Map<String, List<String>> queries = new LinkedHashMap<>();
+        Map<String, List<String>> headers = new LinkedHashMap<>();
+
         Object body = null;
         boolean hasBody = false;
+        boolean hasPart = false;
+        List<PartValue> partValues = new ArrayList<>();
 
         String apiName = metadata.getApiName();
         if (StrUtil.isNotBlank(apiName)) {
@@ -48,12 +65,8 @@ final class FcClientRequestResolver {
 
             FcApiParamPak defaultParams = api.getParams();
             if (Objects.nonNull(defaultParams)) {
-                if (CollectionUtil.isNotEmpty(defaultParams.getParams())) {
-                    queries.putAll(defaultParams.getParams());
-                }
-                if (CollectionUtil.isNotEmpty(defaultParams.getHeaders())) {
-                    headers.putAll(defaultParams.getHeaders());
-                }
+                putSingleValueMap(queries, defaultParams.getParams());
+                putSingleValueMap(headers, defaultParams.getHeaders());
                 if (Objects.nonNull(defaultParams.getBody())) {
                     body = defaultParams.getBody();
                     hasBody = true;
@@ -71,10 +84,10 @@ final class FcClientRequestResolver {
 
             switch (binding.getKind()) {
                 case QUERY:
-                    putKvArg(queries, binding.getName(), arg, "query");
+                    putKvArg(queries, binding, arg, "query");
                     break;
                 case HEADER:
-                    putKvArg(headers, binding.getName(), arg, "header");
+                    putKvArg(headers, binding, arg, "header");
                     break;
                 case PATH:
                     String placeholder = "{" + binding.getName() + "}";
@@ -88,14 +101,207 @@ final class FcClientRequestResolver {
                     hasBody = true;
                     bodyType = binding.getBodyMediaType();
                     break;
+                case PART:
+                    hasPart = true;
+                    addPartValues(partValues, binding, arg);
+                    break;
                 default:
                     throw new UnsupportedOperationException("Unsupported param kind: " + binding.getKind());
             }
         }
 
-        validateResolvedUriTemplate(resolvedUri);
+        if (hasPart) {
+            body = buildMultipartBody(partValues);
+            hasBody = true;
+            bodyType = FcMediaType.MULTIPART_FORM_DATA;
+        } else if (hasBody && bodyType == FcMediaType.APPLICATION_FORM_URLENCODED) {
+            body = convertToFormBody(body);
+        }
 
+        validateResolvedUriTemplate(resolvedUri);
         return new FcResolvedRequest(system, method, resolvedHost, resolvedUri, headers, queries, body, hasBody, bodyType);
+    }
+
+    private void putSingleValueMap(Map<String, List<String>> target, Map<String, String> source) {
+        if (CollectionUtil.isEmpty(source)) {
+            return;
+        }
+        source.forEach((k, v) -> {
+            if (Objects.nonNull(k) && Objects.nonNull(v)) {
+                addValue(target, k, v);
+            }
+        });
+    }
+
+    private void putKvArg(
+            Map<String, List<String>> target,
+            FcClientMethodMetadata.ParamBinding binding,
+            Object arg,
+            String type
+    ) {
+        if (binding.isExpandEntries()) {
+            if (arg instanceof Map) {
+                ((Map<?, ?>) arg).forEach((k, v) -> {
+                    if (Objects.nonNull(k) && Objects.nonNull(v)) {
+                        putValue(target, String.valueOf(k), v);
+                    }
+                });
+                return;
+            }
+
+            Map<String, Object> beanMap = toBeanPropertyMap(arg);
+            beanMap.forEach((k, v) -> {
+                if (Objects.nonNull(k) && Objects.nonNull(v)) {
+                    putValue(target, k, v);
+                }
+            });
+            return;
+        }
+
+        String key = binding.getName();
+        if (StrUtil.isBlank(key)) {
+            throw new FastCallException("Blank {} key is not allowed for single-value parameter", type);
+        }
+        putValue(target, key, arg);
+    }
+
+    private Map<String, Object> toBeanPropertyMap(Object bean) {
+        try {
+            Map<String, Object> result = new LinkedHashMap<>();
+            BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass(), Object.class);
+            for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+                Method readMethod = descriptor.getReadMethod();
+                if (Objects.isNull(readMethod)) {
+                    continue;
+                }
+                if (!readMethod.isAccessible()) {
+                    readMethod.setAccessible(true);
+                }
+                Object value = readMethod.invoke(bean);
+                if (Objects.nonNull(value)) {
+                    result.put(descriptor.getName(), value);
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            throw new FastCallException("Failed to expand bean parameter [{}]: {}", bean.getClass().getName(), e.getMessage());
+        }
+    }
+
+    private void putValue(Map<String, List<String>> target, String key, Object value) {
+        if (Objects.isNull(value)) {
+            return;
+        }
+        if (isIterableValue(value)) {
+            foreachValue(value, item -> {
+                if (Objects.nonNull(item)) {
+                    addValue(target, key, String.valueOf(item));
+                }
+            });
+            return;
+        }
+        addValue(target, key, String.valueOf(value));
+    }
+
+    private void addValue(Map<String, List<String>> target, String key, String value) {
+        List<String> values = target.computeIfAbsent(key, k -> new ArrayList<>());
+        values.add(value);
+    }
+
+    private void addPartValues(List<PartValue> parts, FcClientMethodMetadata.ParamBinding binding, Object arg) {
+        if (isIterableValue(arg) && !(arg instanceof byte[])) {
+            foreachValue(arg, item -> {
+                if (Objects.nonNull(item)) {
+                    parts.add(new PartValue(binding, item));
+                }
+            });
+            return;
+        }
+        parts.add(new PartValue(binding, arg));
+    }
+
+    private RequestBody convertToFormBody(Object body) {
+        if (!(body instanceof Map)) {
+            throw new FastCallException(
+                    "@FcBody with mediaType={} requires argument type Map",
+                    FcMediaType.APPLICATION_FORM_URLENCODED.getName()
+            );
+        }
+        Map<?, ?> map = (Map<?, ?>) body;
+        FormBody.Builder builder = new FormBody.Builder(StandardCharsets.UTF_8);
+        map.forEach((k, v) -> {
+            if (Objects.isNull(k) || Objects.isNull(v)) {
+                return;
+            }
+            if (isIterableValue(v)) {
+                foreachValue(v, item -> {
+                    if (Objects.nonNull(item)) {
+                        builder.add(String.valueOf(k), String.valueOf(item));
+                    }
+                });
+            } else {
+                builder.add(String.valueOf(k), String.valueOf(v));
+            }
+        });
+        return builder.build();
+    }
+
+    private RequestBody buildMultipartBody(List<PartValue> partValues) {
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        for (PartValue partValue : partValues) {
+            addMultipartPart(builder, partValue);
+        }
+        return builder.build();
+    }
+
+    private void addMultipartPart(MultipartBody.Builder builder, PartValue partValue) {
+        FcClientMethodMetadata.ParamBinding binding = partValue.binding;
+        Object value = partValue.value;
+        String partName = binding.getName();
+        String fileName = binding.getPartFileName();
+        FcMediaType partType = Optional.ofNullable(binding.getPartMediaType()).orElse(FcMediaType.APPLICATION_OCTET_STREAM);
+
+        if (value instanceof File) {
+            File file = (File) value;
+            String finalFileName = StrUtil.blankToDefault(fileName, file.getName());
+            builder.addFormDataPart(partName, finalFileName, RequestBody.create(file, MediaType.parse(partType.getName())));
+            return;
+        }
+        if (value instanceof byte[]) {
+            String finalFileName = StrUtil.blankToDefault(fileName, partName);
+            builder.addFormDataPart(partName, finalFileName, RequestBody.create((byte[]) value, MediaType.parse(partType.getName())));
+            return;
+        }
+        if (value instanceof InputStream) {
+            String finalFileName = StrUtil.blankToDefault(fileName, partName);
+            byte[] bytes = IoUtil.readBytes((InputStream) value);
+            builder.addFormDataPart(partName, finalFileName, RequestBody.create(bytes, MediaType.parse(partType.getName())));
+            return;
+        }
+        if (value instanceof RequestBody) {
+            String finalFileName = StrUtil.blankToDefault(fileName, partName);
+            builder.addFormDataPart(partName, finalFileName, (RequestBody) value);
+            return;
+        }
+        builder.addFormDataPart(partName, String.valueOf(value));
+    }
+
+    private boolean isIterableValue(Object value) {
+        return value instanceof Iterable || value.getClass().isArray();
+    }
+
+    private void foreachValue(Object iterableOrArray, ValueConsumer consumer) {
+        if (iterableOrArray instanceof Iterable) {
+            for (Object item : (Iterable<?>) iterableOrArray) {
+                consumer.accept(item);
+            }
+            return;
+        }
+
+        int length = Array.getLength(iterableOrArray);
+        for (int i = 0; i < length; i++) {
+            consumer.accept(Array.get(iterableOrArray, i));
+        }
     }
 
     private void validateResolvedUriTemplate(String resolvedUri) {
@@ -122,25 +328,6 @@ final class FcClientRequestResolver {
         throw new FastCallException("URI template contains unresolved path variables: {}", resolvedUri);
     }
 
-    private void putKvArg(Map<String, String> target, String key, Object arg, String type) {
-        if (arg instanceof Map) {
-            if (StrUtil.isNotBlank(key)) {
-                throw new FastCallException("{} parameter is Map, so annotation key must be blank", type);
-            }
-            ((Map<?, ?>) arg).forEach((k, v) -> {
-                if (Objects.nonNull(k) && Objects.nonNull(v)) {
-                    target.put(String.valueOf(k), String.valueOf(v));
-                }
-            });
-            return;
-        }
-
-        if (StrUtil.isBlank(key)) {
-            throw new FastCallException("Blank {} key is only supported when argument type is Map", type);
-        }
-        target.put(key, String.valueOf(arg));
-    }
-
     private FcApiPak getApi(String system, String apiName) {
         FcSourcePak sourcePak = Optional.ofNullable(source.getSourcePak(system))
                 .orElseThrow(() -> new FastCallException("Source infos of system[{}] do not exist", system));
@@ -148,5 +335,15 @@ final class FcClientRequestResolver {
         return Optional.ofNullable(sourcePak.getApiMap())
                 .map(apiMap -> apiMap.get(apiName))
                 .orElseThrow(() -> new FastCallException("Source infos of api[{}] in system[{}] do not exist", apiName, system));
+    }
+
+    @RequiredArgsConstructor
+    private static final class PartValue {
+        private final FcClientMethodMetadata.ParamBinding binding;
+        private final Object value;
+    }
+
+    private interface ValueConsumer {
+        void accept(Object value);
     }
 }

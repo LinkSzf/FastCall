@@ -13,7 +13,8 @@ public @interface FcHeader {
 
     /**
      * Header名称。
-     * 为空时参数类型必须是Map，并会合并Map中的所有键值对。
+     * 对单值参数：优先使用该值作为参数名，留空时回退到Java参数名。
+     * 对Map或Bean参数：无论是否填写该值，都会按键值对展开。
      */
     String value() default "";
 }
