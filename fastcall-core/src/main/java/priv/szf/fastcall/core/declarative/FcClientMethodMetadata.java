@@ -6,6 +6,7 @@ import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 
 @Getter
@@ -28,7 +29,7 @@ final class FcClientMethodMetadata {
 
     private final FcMediaType defaultBodyType;
 
-    private final Class<?> dataType;
+    private final Type dataType;
 
     private final boolean returnResponse;
 

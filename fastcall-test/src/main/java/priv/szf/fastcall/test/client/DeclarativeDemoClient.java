@@ -8,7 +8,9 @@ import priv.szf.fastcall.core.declarative.annotation.FcHeader;
 import priv.szf.fastcall.core.declarative.annotation.FcMethod;
 import priv.szf.fastcall.core.declarative.annotation.FcPath;
 import priv.szf.fastcall.core.declarative.annotation.FcQuery;
+import priv.szf.fastcall.test.model.DeclarativeUser;
 
+import java.util.List;
 import java.util.Map;
 
 @FcClient(system = "declarative-system")
@@ -25,5 +27,7 @@ public interface DeclarativeDemoClient {
 
     @FcMethod(uri = "/declarative/target/anonymous", method = FcRequestMethod.GET, anonymous = true)
     String anonymous(@FcQuery("name") String name);
-}
 
+    @FcMethod(uri = "/declarative/target/users", method = FcRequestMethod.GET)
+    List<DeclarativeUser> users();
+}

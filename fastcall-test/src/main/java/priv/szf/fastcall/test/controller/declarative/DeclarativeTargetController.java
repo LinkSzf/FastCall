@@ -9,13 +9,17 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.test.model.DeclarativeUser;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/declarative/target")
-public class DeclarativeDemoTargetController {
+public class DeclarativeTargetController {
 
     @GetMapping("/echo/{id}")
     public String echo(@PathVariable("id") String id,
@@ -41,5 +45,14 @@ public class DeclarativeDemoTargetController {
     ) {
         return "anonymous:name=" + name + ",authorization=" + authorization;
     }
-}
 
+    @GetMapping("/users")
+    public List<DeclarativeUser> users() {
+        DeclarativeUser child = new DeclarativeUser(11L, "child11", null);
+        List<DeclarativeUser> childList = Collections.singletonList(child);
+        return Arrays.asList(
+                new DeclarativeUser(1L, "alice", childList),
+                new DeclarativeUser(2L, "bob", childList)
+        );
+    }
+}

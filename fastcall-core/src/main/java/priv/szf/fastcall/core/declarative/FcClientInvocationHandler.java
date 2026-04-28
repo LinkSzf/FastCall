@@ -8,6 +8,7 @@ import priv.szf.fastcall.core.FastCallClient;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
@@ -61,7 +62,7 @@ final class FcClientInvocationHandler implements InvocationHandler {
         return metadata.isAnonymous() ? preparedCall.anonymousCall() : preparedCall.call();
     }
 
-    private FastCallClient.Builder<?> buildCallBuilder(FcResolvedRequest request, Class<?> dataType) {
+    private FastCallClient.Builder<?> buildCallBuilder(FcResolvedRequest request, Type dataType) {
         FastCallClient client = fastCall.getClient(request.getSystem());
         FastCallClient.Builder<?> builder = client.newCall(dataType)
                 .method(request.getMethod())
@@ -93,4 +94,3 @@ final class FcClientInvocationHandler implements InvocationHandler {
         throw new UnsupportedOperationException("Unsupported Object method: " + methodName);
     }
 }
-

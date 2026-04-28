@@ -9,14 +9,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.test.client.DeclarativeDemoClient;
+import priv.szf.fastcall.test.model.DeclarativeUser;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/declarative/demo")
+@RequestMapping("/declarative")
 @RequiredArgsConstructor
-public class DeclarativeDemoController {
+public class DeclarativeController {
 
     private final DeclarativeDemoClient client;
 
@@ -40,5 +42,14 @@ public class DeclarativeDemoController {
     public String anonymous(@RequestParam(defaultValue = "fastcall") String name) {
         return client.anonymous(name);
     }
-}
 
+    @GetMapping("/users/first-name")
+    public String firstUserName() {
+        List<DeclarativeUser> users = client.users();
+        if (users == null || users.isEmpty()) {
+            return null;
+        }
+
+        return users.get(0).getChildren().get(0).getName();
+    }
+}

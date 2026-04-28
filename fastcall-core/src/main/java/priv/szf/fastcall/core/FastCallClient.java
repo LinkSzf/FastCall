@@ -35,6 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,27 +136,29 @@ public class FastCallClient {
         }
     }
 
-    private <T> T readResponseBodyData(Class<T> dataType, ResponseBody body, String url) {
+    private <T> T readResponseBodyData(Type dataType, ResponseBody body, String url) {
         if (Objects.isNull(body)) {
             return null;
         }
 
         try {
-            if (dataType == byte[].class) {
+            Class<?> rawType = getRawType(dataType);
+
+            if (rawType == byte[].class) {
                 return (T) body.bytes();
             }
 
-            if (dataType == InputStream.class) {
+            if (rawType == InputStream.class) {
                 return (T) new ByteArrayInputStream(body.bytes());
             }
 
             String bodyStr = body.string();
-            if (String.class == dataType || Object.class == dataType) {
+            if (rawType == String.class || rawType == Object.class) {
                 return (T) bodyStr;
             }
 
             if (JSONUtil.isTypeJSON(bodyStr)) {
-                return JSONUtil.toBean(bodyStr, dataType);
+                return JSONUtil.toBean(bodyStr, dataType, false);
             }
         } catch (IOException e) {
             throw new FcUnexpectedException(e, "IO exception occured when reading response body in url[{}]", url);
@@ -162,18 +166,35 @@ public class FastCallClient {
             throw new FcUnexpectedException(e,
                             "Response body cannot be converted to type[{}] in url[{}]",
                             url,
-                            dataType.getName());
+                            dataType.getTypeName());
         }
 
         return null;
+    }
+
+    private Class<?> getRawType(Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        }
+        if (type instanceof ParameterizedType) {
+            Type raw = ((ParameterizedType) type).getRawType();
+            if (raw instanceof Class) {
+                return (Class<?>) raw;
+            }
+        }
+        return Object.class;
     }
 
     public <T> Builder<T> newCall(Class<T> dataType) {
         return new Builder<>(this, dataType);
     }
 
+    public <T> Builder<T> newCall(Type dataType) {
+        return new Builder<>(this, dataType);
+    }
+
     public <T> Builder<T> newCall() {
-        return new Builder<>(this, (Class<T>)Object.class);
+        return new Builder<>(this, Object.class);
     }
 
     public PreparedCall<Object> newApiCall(String apiName, FcApiParamPak params) {
@@ -249,7 +270,7 @@ public class FastCallClient {
 
         private final FastCallClient client;
 
-        private final Class<T> dataType;
+        private final Type dataType;
 
         private FcRequestMethod method = FcRequestMethod.GET;
 
@@ -273,7 +294,7 @@ public class FastCallClient {
 
         private Object body;
 
-        private Builder(FastCallClient client, Class<T> dataType) {
+        private Builder(FastCallClient client, Type dataType) {
             this.client = client;
             this.dataType = dataType;
             this.host = source.getSourcePak(system).getSystem().getHost();

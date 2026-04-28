@@ -15,6 +15,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,19 +92,20 @@ final class FcClientMetadataParser {
         Class<?> returnType = method.getReturnType();
         boolean returnResponse = FastCallResponse.class.isAssignableFrom(returnType);
         boolean returnVoid = returnType == Void.TYPE || returnType == Void.class;
+        Type genericReturnType = method.getGenericReturnType();
 
-        Class<?> dataType;
+        Type dataType;
         if (returnResponse) {
-            dataType = resolveResponseDataType(method.getGenericReturnType());
+            dataType = resolveResponseDataType(genericReturnType);
         } else if (returnVoid) {
             dataType = Object.class;
         } else {
-            dataType = returnType;
+            dataType = normalizeType(genericReturnType);
         }
         return new ReturnInfo(dataType, returnResponse, returnVoid);
     }
 
-    private Class<?> resolveResponseDataType(Type genericReturnType) {
+    private Type resolveResponseDataType(Type genericReturnType) {
         if (!(genericReturnType instanceof ParameterizedType)) {
             return Object.class;
         }
@@ -111,16 +114,26 @@ final class FcClientMetadataParser {
         if (args.length == 0) {
             return Object.class;
         }
+        return normalizeType(args[0]);
+    }
 
-        Type first = args[0];
-        if (first instanceof Class) {
-            return (Class<?>) first;
+    private Type normalizeType(Type type) {
+        if (type instanceof Class || type instanceof ParameterizedType) {
+            return type;
         }
-        if (first instanceof ParameterizedType) {
-            Type rawType = ((ParameterizedType) first).getRawType();
-            if (rawType instanceof Class) {
-                return (Class<?>) rawType;
+        if (type instanceof WildcardType) {
+            Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+            if (upperBounds.length > 0) {
+                return normalizeType(upperBounds[0]);
             }
+            return Object.class;
+        }
+        if (type instanceof TypeVariable) {
+            Type[] bounds = ((TypeVariable<?>) type).getBounds();
+            if (bounds.length > 0) {
+                return normalizeType(bounds[0]);
+            }
+            return Object.class;
         }
         return Object.class;
     }
@@ -206,9 +219,8 @@ final class FcClientMetadataParser {
 
     @RequiredArgsConstructor
     private static final class ReturnInfo {
-        private final Class<?> dataType;
+        private final Type dataType;
         private final boolean returnResponse;
         private final boolean returnVoid;
     }
 }
-
