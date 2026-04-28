@@ -109,6 +109,45 @@ FastCallResponse<Object> response = fastCall.getClient(sytemCode)
                 .callIt();
 ```
 
+### 声明式客户端调用（Feign风格，基于FastCall）
+
+1. 在启动类开启扫描：
+```java
+import priv.szf.fastcall.core.declarative.annotation.EnableFastCallClients;
+
+@SpringBootApplication
+@EnableFastCallClients(basePackages = "com.demo.client")
+public class App {
+}
+```
+
+2. 定义客户端接口：
+```java
+import priv.szf.fastcall.core.FastCallResponse;
+import priv.szf.fastcall.common.FcRequestMethod;
+import priv.szf.fastcall.core.declarative.annotation.FcBody;
+import priv.szf.fastcall.core.declarative.annotation.FcClient;
+import priv.szf.fastcall.core.declarative.annotation.FcMethod;
+import priv.szf.fastcall.core.declarative.annotation.FcPath;
+import priv.szf.fastcall.core.declarative.annotation.FcQuery;
+
+@FcClient(system = "demo-system")
+public interface DemoClient {
+
+    @FcMethod(uri = "/users/{id}", method = FcRequestMethod.GET)
+    String getUser(@FcPath("id") String id, @FcQuery("verbose") boolean verbose);
+
+    @FcMethod(api = "createUserApi")
+    FastCallResponse<String> create(@FcBody Object req);
+}
+```
+
+3. 直接注入接口调用：
+```java
+@Autowired
+private DemoClient demoClient;
+```
+
 ## 版本说明
 * v1.0.0 第一个正式版发布
 

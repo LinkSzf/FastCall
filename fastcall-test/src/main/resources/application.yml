@@ -40,6 +40,19 @@ fast-call:
             "username": "admin",
             "password": "123456"
           }
+    - system:
+        code: declarative-system
+        name: 声明式调用演示系统
+        enable: true
+        host: http://127.0.0.1:${server.port}
+      auth:
+        type: NONE
+        path: /
+        content: |
+          {
+            "username": "demo",
+            "password": "demo"
+          }
 
 spring:
   application:

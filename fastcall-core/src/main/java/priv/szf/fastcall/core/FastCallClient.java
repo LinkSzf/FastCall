@@ -367,7 +367,7 @@ public class FastCallClient {
                     : URLUtil.completeUrl(host, uri);
 
             if (CollectionUtil.isNotEmpty(params)) {
-                this.fullUrl = this.fullUrl + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
+                this.fullUrl = this.fullUrl + "?" + URLUtil.buildQuery(params, StandardCharsets.UTF_8);
             }
 
             return new PreparedCall<>(this.client, this);
