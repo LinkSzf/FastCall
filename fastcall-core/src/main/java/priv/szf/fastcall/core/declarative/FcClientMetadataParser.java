@@ -200,7 +200,7 @@ final class FcClientMetadataParser {
 
             if (annotation instanceof FcQuery) {
                 boolean expandEntries = shouldExpandKvParam(parameterType);
-                String key = resolveKvKey(method, index, parameter, ((FcQuery) annotation).value(), expandEntries, "@FcQuery");
+                String key = resolveKvKey(method, index, ((FcQuery) annotation).value(), expandEntries, "@FcQuery");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.QUERY,
                         index,
@@ -212,7 +212,7 @@ final class FcClientMetadataParser {
                 );
             } else if (annotation instanceof FcHeader) {
                 boolean expandEntries = shouldExpandKvParam(parameterType);
-                String key = resolveKvKey(method, index, parameter, ((FcHeader) annotation).value(), expandEntries, "@FcHeader");
+                String key = resolveKvKey(method, index, ((FcHeader) annotation).value(), expandEntries, "@FcHeader");
                 current = new FcClientMethodMetadata.ParamBinding(
                         FcClientMethodMetadata.ParamKind.HEADER,
                         index,
@@ -310,7 +310,6 @@ final class FcClientMetadataParser {
     private String resolveKvKey(
             Method method,
             int index,
-            Parameter parameter,
             String key,
             boolean expandEntries,
             String annotationName
@@ -323,22 +322,10 @@ final class FcClientMetadataParser {
         if (StrUtil.isNotBlank(trimmedKey)) {
             return trimmedKey;
         }
-
-        if (!parameter.isNamePresent()) {
-            throw new FastCallException(
-                    "Method[{}#{}] parameter[{}] {} requires explicit value or javac -parameters for parameter name discovery",
-                    interfaceType.getName(), method.getName(), index, annotationName
-            );
-        }
-
-        String parameterName = StrUtil.trim(parameter.getName());
-        if (StrUtil.isBlank(parameterName)) {
-            throw new FastCallException(
-                    "Method[{}#{}] parameter[{}] {} cannot resolve parameter name",
-                    interfaceType.getName(), method.getName(), index, annotationName
-            );
-        }
-        return parameterName;
+        throw new FastCallException(
+                "Method[{}#{}] parameter[{}] {} requires explicit non-blank value for non-map/bean parameters",
+                interfaceType.getName(), method.getName(), index, annotationName
+        );
     }
 
     private boolean shouldExpandKvParam(Class<?> parameterType) {

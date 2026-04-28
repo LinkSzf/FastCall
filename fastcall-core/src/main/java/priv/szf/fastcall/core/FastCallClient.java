@@ -145,6 +145,7 @@ public class FastCallClient {
 
         try {
             Class<?> rawType = getRawType(dataType);
+            MediaType contentType = body.contentType();
 
             if (rawType == byte[].class) {
                 return (T) body.bytes();
@@ -159,19 +160,53 @@ public class FastCallClient {
                 return (T) bodyStr;
             }
 
-            if (JSONUtil.isTypeJSON(bodyStr)) {
+            if (StrUtil.isBlank(bodyStr)) {
+                return null;
+            }
+
+            boolean isJsonPayload = isJsonMediaType(contentType) || JSONUtil.isTypeJSON(bodyStr);
+            if (!isJsonPayload) {
+                throw new FcUnexpectedException(
+                        "Response content type[{}] is not JSON, cannot convert to type[{}] in url[{}], body preview: {}",
+                        Objects.toString(contentType, "null"),
+                        dataType.getTypeName(),
+                        url,
+                        abbreviateBody(bodyStr)
+                );
+            }
+
+            try {
                 return JSONUtil.toBean(bodyStr, dataType, false);
+            } catch (RuntimeException e) {
+                throw new FcUnexpectedException(
+                        e,
+                        "JSON response cannot be converted to type[{}] in url[{}], body preview: {}",
+                        dataType.getTypeName(),
+                        url,
+                        abbreviateBody(bodyStr)
+                );
             }
         } catch (IOException e) {
             throw new FcUnexpectedException(e, "IO exception occured when reading response body in url[{}]", url);
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
-                            "Response body cannot be converted to type[{}] in url[{}]",
-                            url,
-                            dataType.getTypeName());
+                    "Response body cannot be converted to type[{}] in url[{}]",
+                    dataType.getTypeName(),
+                    url);
         }
+    }
 
-        return null;
+    private boolean isJsonMediaType(MediaType mediaType) {
+        return Objects.nonNull(mediaType) && StrUtil.containsIgnoreCase(mediaType.toString(), "json");
+    }
+
+    private String abbreviateBody(String bodyStr) {
+        String value = StrUtil.nullToEmpty(bodyStr);
+        int maxLen = 200;
+        if (value.length() <= maxLen) {
+            return value;
+        }
+        return value.substring(0, maxLen) + "...";
     }
 
     private Class<?> getRawType(Type type) {
@@ -415,7 +450,15 @@ public class FastCallClient {
             if (CollectionUtil.isNotEmpty(params)) {
                 String query = buildMultiValueQuery(params);
                 if (StrUtil.isNotBlank(query)) {
-                    this.fullUrl = this.fullUrl + "?" + query;
+                    if (StrUtil.contains(this.fullUrl, "?")) {
+                        if (StrUtil.endWithAny(this.fullUrl, "?", "&")) {
+                            this.fullUrl = this.fullUrl + query;
+                        } else {
+                            this.fullUrl = this.fullUrl + "&" + query;
+                        }
+                    } else {
+                        this.fullUrl = this.fullUrl + "?" + query;
+                    }
                 }
             }
 

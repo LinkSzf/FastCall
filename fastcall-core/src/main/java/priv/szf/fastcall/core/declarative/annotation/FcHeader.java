@@ -13,8 +13,8 @@ public @interface FcHeader {
 
     /**
      * Header名称。
-     * 对单值参数：优先使用该值作为参数名，留空时回退到Java参数名。
-     * 对Map或Bean参数：无论是否填写该值，都会按键值对展开。
+     * 对单值参数：必须显式填写该值作为参数名。
+     * 对Map或Bean参数：可留空，按键值对展开。
      */
     String value() default "";
 }
