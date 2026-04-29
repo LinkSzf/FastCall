@@ -38,19 +38,21 @@ public class FcClientPoolConfig {
         int corePoolSize = properties.getMaxRequestsPerHost() + 1;
         int maximumPoolSize = properties.getMaxRequests() + 1;
         int keepAliveTime = 60;
+        int queueCapacity = Math.max(properties.getMaxRequests() * 2, 256);
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(queueCapacity);
 
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(),
+                workQueue,
                 r -> {
                     Thread thread = new Thread(r, CLIENT_THREAD_POOL_THREAD_NAME);
                     thread.setDaemon(false);
                     return thread;
                 },
-                new ThreadPoolExecutor.DiscardOldestPolicy()
+                new ThreadPoolExecutor.CallerRunsPolicy()
         );
     }
 
