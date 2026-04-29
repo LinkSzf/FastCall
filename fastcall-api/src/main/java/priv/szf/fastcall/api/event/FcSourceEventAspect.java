@@ -3,8 +3,8 @@ package priv.szf.fastcall.api.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
@@ -30,44 +30,38 @@ public class FcSourceEventAspect {
 
     private final FcApiDao apiDao;
 
-    @AfterReturning(
-            pointcut = "@annotation(FcSourceEventCut)",
-            returning = "result"
-    )
-    public void publishEventAfterMethodExecution(JoinPoint joinPoint, Object result) {
+    @Around("@annotation(FcSourceEventCut)")
+    public Object publishEventAfterMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         FcSourceEventCut annotation = signature.getMethod().getAnnotation(FcSourceEventCut.class);
-        Class<?> entity = annotation.entity();
-        Object[] args = joinPoint.getArgs();
+        String code = resolveSystemCode(annotation, joinPoint.getArgs());
+        Object result = joinPoint.proceed();
 
+        FcSourceEventType type = annotation.type();
+        IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
+        sourcePublisher.publish(sourceEvent);
+        return result;
+    }
+
+    private String resolveSystemCode(FcSourceEventCut annotation, Object[] args) {
+        Class<?> entity = annotation.entity();
         String code = null;
         for (Object arg : args) {
             if (!entity.isInstance(arg)) {
                 continue;
             }
-
             if (entity == FcSystemDTO.class) {
                 code = ((FcSystemDTO) arg).getCode();
-                break;
-            }
-
-            if (entity == Long.class) {
+            } else if (entity == Long.class) {
                 if (annotation.level() == IdLevel.API) {
                     code = getSystemCodeByApiId((Long) arg);
-                }
-                if (annotation.level() == IdLevel.SYSTEM) {
+                } else if (annotation.level() == IdLevel.SYSTEM) {
                     code = getSystemCodeById((Long) arg);
                 }
             }
-
             break;
         }
-
-        FcSourceEventType type = annotation.type();
-
-        IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
-
-        sourcePublisher.publish(sourceEvent);
+        return code;
     }
 
     private String getSystemCodeById(Long id) {
