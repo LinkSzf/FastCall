@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@ConditionalOnProperty(prefix = "fastcall.forward-proxy", name = "enable", havingValue = "true")
+@ConditionalOnProperty(prefix = "fast-call.forward-proxy", name = "enable", havingValue = "true")
 @RequiredArgsConstructor
 @ConditionalOnWebApplication
 @Slf4j
