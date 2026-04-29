@@ -8,11 +8,12 @@ import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
 import priv.szf.fastcall.core.auth.provider.digest.DigestAlgorithm;
 import priv.szf.fastcall.core.auth.provider.digest.DigestChallenge;
 
-import javax.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
 import java.util.Objects;
 
 public class DigestCredential extends BaseCredential implements ICredential {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private String username;
 
@@ -32,15 +33,9 @@ public class DigestCredential extends BaseCredential implements ICredential {
 
     private DigestAlgorithm algorithm = DigestAlgorithm.MD5;
 
-    private String cnonce;
-
-    private String response;
-
-    private int nc;
-
     private String bodyHash;
 
-    private String credentialStr;
+    private volatile String credentialStr;
 
     private ClientNonceManager nonceManager;
 
@@ -50,11 +45,21 @@ public class DigestCredential extends BaseCredential implements ICredential {
 
     @Override
     public String getAuthString() {
-        if (Objects.nonNull(this.credentialStr) && !existQop()) {
-            return this.credentialStr;
+        if (existQop()) {
+            return buildCredentialStr();
         }
 
-        return buildCredentialStr();
+        String cached = this.credentialStr;
+        if (Objects.nonNull(cached)) {
+            return cached;
+        }
+
+        synchronized (this) {
+            if (Objects.isNull(this.credentialStr)) {
+                this.credentialStr = buildCredentialStr();
+            }
+            return this.credentialStr;
+        }
     }
 
     @Override
@@ -69,11 +74,11 @@ public class DigestCredential extends BaseCredential implements ICredential {
     }
 
     private String buildCredentialStr() {
-        if (existQop()) {
-            this.nc = this.nonceManager.getNextNc(nonce);
-        }
-        this.cnonce = generateClientNonce();
-        this.response = calculateResponse();
+        int nonceCount = existQop()
+                ? this.nonceManager.getNextNc(nonce)
+                : 0;
+        String clientNonce = generateClientNonce();
+        String digestResponse = calculateResponse(clientNonce, nonceCount);
         StringBuilder credentialBuilder = new StringBuilder();
 
         credentialBuilder.append("username=\"").append(username).append("\", ");
@@ -86,44 +91,42 @@ public class DigestCredential extends BaseCredential implements ICredential {
         }
 
         if (existQop()) {
-            String ncString = String.format("%08x", nc);
+            String ncString = String.format("%08x", nonceCount);
             credentialBuilder.append("qop=").append(qop).append(", ");
             credentialBuilder.append("nc=").append(ncString).append(", ");
-            credentialBuilder.append("cnonce=\"").append(cnonce).append("\", ");
+            credentialBuilder.append("cnonce=\"").append(clientNonce).append("\", ");
         }
 
-        credentialBuilder.append("response=\"").append(response).append("\"");
+        credentialBuilder.append("response=\"").append(digestResponse).append("\"");
 
         if (StrUtil.isNotBlank(opaque)) {
             credentialBuilder.append(", opaque=\"").append(opaque).append("\"");
         }
 
-        String credential = credentialBuilder.toString();
-        this.credentialStr = credential;
-        return credential;
+        return credentialBuilder.toString();
     }
 
     private boolean existQop() {
         return StrUtil.isNotEmpty(qop);
     }
 
-    private String calculateResponse() {
-        String ha1 = calculateHA1();
+    private String calculateResponse(String clientNonce, int nonceCount) {
+        String ha1 = calculateHA1(clientNonce);
         String ha2 = calculateHA2();
 
         String text = existQop() ?
-                StrUtil.join(":", ha1, nonce, String.format("%08x", nc), cnonce, qop, ha2)
+                StrUtil.join(":", ha1, nonce, String.format("%08x", nonceCount), clientNonce, qop, ha2)
                 : StrUtil.join(":", ha1, nonce, ha2);
 
         return hash(text);
     }
 
-    private String calculateHA1() {
+    private String calculateHA1(String clientNonce) {
         String text = StrUtil.join(":", username, realm, password);
         String ha1 = hash(text);
 
         if (algorithm.isSessionAlgorithm()) {
-            String newText = StrUtil.join(":", ha1, nonce, cnonce);
+            String newText = StrUtil.join(":", ha1, nonce, clientNonce);
             ha1 = hash(newText);
         }
 
@@ -139,10 +142,9 @@ public class DigestCredential extends BaseCredential implements ICredential {
     }
 
     private String generateClientNonce() {
-        SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[8];
-        random.nextBytes(bytes);
-        return DatatypeConverter.printHexBinary(bytes).toLowerCase();
+        SECURE_RANDOM.nextBytes(bytes);
+        return HexUtil.encodeHexStr(bytes);
     }
 
     private String hash(String text) {
