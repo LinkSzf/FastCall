@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class FastCallClientFactory {
 
     private static final Map<String, FastCallClient> CLIENT_MAP = new ConcurrentHashMap<>();
+    private static final Object CACHE_LOCK = new Object();
 
     private final IFcSource source;
 
@@ -49,6 +50,8 @@ public class FastCallClientFactory {
     private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
 
     private final IFcRequestEventPublisher eventPublisher;
+
+    private volatile Cache sharedCache;
 
     public static FastCallClient getExistedClient(String system) {
         FastCallClient client = CLIENT_MAP.get(system);
@@ -110,13 +113,7 @@ public class FastCallClientFactory {
         int readTimeout = settingPak.getReadTimeout();
         int writeTimeout = settingPak.getWriteTimeout();
 
-        Cache cache = Optional.ofNullable(properties.getCache())
-                .filter(FastCallProperties.Cache::isEnable)
-                .map(cacheSetting -> {
-                    File cacheFile = new File(cacheSetting.getPath());
-                    return new Cache(cacheFile, cacheSetting.getMaxSize());
-                })
-                .orElse(null);
+        Cache cache = resolveSharedCache();
 
         return new OkHttpClient.Builder()
                 .connectTimeout(connectTimeout, TimeUnit.SECONDS)
@@ -129,6 +126,26 @@ public class FastCallClientFactory {
                 .addNetworkInterceptor(tokenRefreshInterceptor)
                 .cache(cache)
                 .build();
+    }
+
+    private Cache resolveSharedCache() {
+        FastCallProperties.Cache cacheSetting = properties.getCache();
+        if (Objects.isNull(cacheSetting) || !cacheSetting.isEnable()) {
+            return null;
+        }
+
+        Cache cache = this.sharedCache;
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
+
+        synchronized (CACHE_LOCK) {
+            if (Objects.isNull(this.sharedCache)) {
+                File cacheFile = new File(cacheSetting.getPath());
+                this.sharedCache = new Cache(cacheFile, cacheSetting.getMaxSize());
+            }
+            return this.sharedCache;
+        }
     }
 
     public void removeClient(String system) {
