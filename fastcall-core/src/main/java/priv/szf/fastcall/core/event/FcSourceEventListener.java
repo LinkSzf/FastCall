@@ -32,11 +32,16 @@ public class FcSourceEventListener implements IFcSourceEventListener {
                 .map(IFcSourceEvent::getSystem)
                 .ifPresent(system -> {
                     sources.forEach(s -> s.invalidate(system));
-                    if (event.getEventType() == FcSourceEventType.DELETE) {
+                    if (isClientUnavailable(event)) {
                         clientFactory.removeClient(system);
                     }
                 });
 
+    }
+
+    private static boolean isClientUnavailable(IFcSourceEvent event) {
+        return event.getEventType() == FcSourceEventType.DELETE
+                || event.getEventType() == FcSourceEventType.UPDATE;
     }
 
 }
