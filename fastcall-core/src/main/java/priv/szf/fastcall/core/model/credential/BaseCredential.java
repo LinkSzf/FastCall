@@ -4,7 +4,7 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 
 public abstract class BaseCredential implements ICredential {
 
-    private boolean invalid = false;
+    private volatile boolean invalid = false;
 
     @Override
     public boolean isInvalid() {

@@ -25,7 +25,7 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
     private FcAuthPak auth;
 
     @Setter
-    private ICredential credential;
+    private volatile ICredential credential;
 
     private Map<String, FcApiPak> apiMap;
 
