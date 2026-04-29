@@ -28,7 +28,9 @@ public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcSourc
     @Override
     protected void tryUpdateCredential(String system, ICredential credential) {
         FcSourcePak sourcePak = getSourcePak(system);
-        sourcePak.setCredential(credential);
+        if (Objects.nonNull(sourcePak)) {
+            sourcePak.setCredential(credential);
+        }
     }
 
     @Override

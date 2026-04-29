@@ -35,6 +35,9 @@ public class FcAuthRequestEventListener implements IFcAuthRequestEventListener {
         }
 
         FcAuth auth = authDao.getBySystemId(system.getId());
+        if (Objects.isNull(auth)) {
+            return;
+        }
         auth.setLastAccessTime(event.getOccurredOn());
         authDao.updateOneById(auth.getId(), auth);
     }
