@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.api.model.dto.FcHeaderAssignDTO;
 import priv.szf.fastcall.api.model.mapping.FcHeaderAssignMapping;
+import priv.szf.fastcall.api.service.support.FcShrinkSupport;
 import priv.szf.fastcall.api.model.vo.FcHeaderAssignVO;
 import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
@@ -13,8 +14,6 @@ import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -53,21 +52,12 @@ public class FcHeaderAssignService {
 
     private void shrinkHeaderAssignToThis(Long systemId, List<FcHeaderAssignDTO> dtoList) {
         List<FcHeaderAssign> existingAssigns = headerAssignDao.listBySystemId(systemId);
-        if (CollectionUtil.isEmpty(existingAssigns)) {
-            return;
-        }
-
-        Set<Long> keepIds = dtoList.stream()
-                .filter(Objects::nonNull)
-                .map(FcHeaderAssignDTO::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        List<Long> removeIds = existingAssigns.stream()
-                .map(FcHeaderAssign::getId)
-                .filter(Objects::nonNull)
-                .filter(id -> !keepIds.contains(id))
-                .collect(Collectors.toList());
+        List<Long> removeIds = FcShrinkSupport.resolveRemoveIds(
+                existingAssigns,
+                FcHeaderAssign::getId,
+                dtoList,
+                FcHeaderAssignDTO::getId
+        );
 
         if (CollectionUtil.isEmpty(removeIds)) {
             return;

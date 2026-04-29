@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiMapping;
+import priv.szf.fastcall.api.service.support.FcShrinkSupport;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
 import priv.szf.fastcall.common.exception.FcDataDuplicatedException;
 import priv.szf.fastcall.data.mapper.FcApiDao;
@@ -79,22 +80,12 @@ public class FcApiService {
 
     private void shrinkApisToThis(Long systemId, List<FcApiDTO> dtoList) {
         List<FcApi> existingApis = apiDao.listBySystemId(systemId);
-        if (CollectionUtils.isEmpty(existingApis)) {
-            return;
-        }
-
-        Set<Long> keepIds = dtoList.stream()
-                .filter(Objects::nonNull)
-                .map(FcApiDTO::getId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toSet());
-
-        List<Long> removeIds = existingApis.stream()
-                .map(FcApi::getId)
-                .filter(Objects::nonNull)
-                .filter(id -> !keepIds.contains(id))
-                .collect(Collectors.toList());
+        List<Long> removeIds = FcShrinkSupport.resolveRemoveIds(
+                existingApis,
+                FcApi::getId,
+                dtoList,
+                FcApiDTO::getId
+        );
 
         if (CollectionUtils.isEmpty(removeIds)) {
             return;
