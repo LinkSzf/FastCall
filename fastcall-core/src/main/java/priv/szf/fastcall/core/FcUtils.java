@@ -4,9 +4,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.core.auth.FcRequestContext;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 public final class FcUtils {
@@ -21,17 +21,41 @@ public final class FcUtils {
 
         try (Buffer buffer = new Buffer()) {
             body.writeTo(buffer);
-
-            RequestBody cloneRequestBody = RequestBody.create(buffer.clone().readByteArray(), body.contentType());
-            Field f = Request.class.getDeclaredField("body");
-            f.setAccessible(true);
-            f.set(request, cloneRequestBody);
-
             return buffer.readByteArray();
-        } catch (IOException | NoSuchFieldException | IllegalAccessException e) {
+        } catch (IOException e) {
             throw new FcUnexpectedException(e, "IO exception occurred when reading request body");
         }
 
+    }
+
+    public static void cacheRequestBodySnapshot(Request request, byte[] bodyBytes) {
+        FcRequestContext context = request.tag(FcRequestContext.class);
+        if (Objects.isNull(context)) {
+            return;
+        }
+        context.getInterceptorContext().setRequestBodySnapshot(bodyBytes);
+    }
+
+    public static Request rebuildRequestWithBodySnapshot(Request request) {
+        RequestBody body = request.body();
+        if (Objects.isNull(body)) {
+            return request;
+        }
+
+        FcRequestContext context = request.tag(FcRequestContext.class);
+        if (Objects.isNull(context)) {
+            return request;
+        }
+
+        byte[] snapshot = context.getInterceptorContext().getRequestBodySnapshot();
+        if (Objects.isNull(snapshot)) {
+            return request;
+        }
+
+        RequestBody clonedBody = RequestBody.create(snapshot, body.contentType());
+        return request.newBuilder()
+                .method(request.method(), clonedBody)
+                .build();
     }
 
 

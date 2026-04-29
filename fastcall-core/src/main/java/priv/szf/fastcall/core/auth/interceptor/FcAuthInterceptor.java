@@ -6,6 +6,7 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
 
 import java.io.IOException;
@@ -24,7 +25,8 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
                 .isNeedRetry();
         if (needRetry) {
             response.close();
-            Request finalRequest = super.modifyRequest(request);
+            Request retryBaseRequest = FcUtils.rebuildRequestWithBodySnapshot(request);
+            Request finalRequest = super.modifyRequest(retryBaseRequest);
             return chain.proceed(finalRequest);
         }
         return response;

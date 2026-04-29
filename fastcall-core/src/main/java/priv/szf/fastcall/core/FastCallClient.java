@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@SuppressWarnings("all")
 @Builder
 public class FastCallClient {
 
@@ -76,7 +75,7 @@ public class FastCallClient {
         try (Response response = call.execute()) {
             return buildStandardResponse(builder, response);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "IO exception occured when exectuing url[{}]", builder.fullUrl);
+            throw new FcUnexpectedException(e, "IO exception occurred when executing url[{}]", builder.fullUrl);
         }
     }
 
@@ -134,7 +133,7 @@ public class FastCallClient {
     }
 
     private <T> IFcRequestEvent createRequestEvent(Builder<T> builder, FastCallResponse<T> response) {
-        IFcRequestEvent requestEvent = null;
+        IFcRequestEvent requestEvent;
 
         String apiName = builder.apiName;
         if (Objects.nonNull(apiName)) {

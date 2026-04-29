@@ -52,6 +52,7 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
         String method = request.method();
         String uri = request.url().encodedPath();
         byte[] body = FcUtils.readRequestBody(request);
+        FcUtils.cacheRequestBodySnapshot(request, body);
         return DigestCredential.builder()
                 .username(authContent.getUsername())
                 .password(authContent.getPassword())

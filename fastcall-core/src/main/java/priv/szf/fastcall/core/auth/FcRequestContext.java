@@ -38,5 +38,7 @@ public class FcRequestContext implements IEssentialCheck<FcRequestContext> {
         private boolean skipAuth = false;
 
         private boolean needRetry = false;
+
+        private byte[] requestBodySnapshot;
     }
 }
