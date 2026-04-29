@@ -34,7 +34,7 @@ public class FcAuthDTO {
     private String particularHost;
 
     @Min(value = 100, message = "认证失效状态码不能小于100")
-    @Min(value = 999, message = "认证失效状态码不能大于999")
+    @Max(value = 999, message = "认证失效状态码不能大于999")
     private Integer statusCode;
 
 }
