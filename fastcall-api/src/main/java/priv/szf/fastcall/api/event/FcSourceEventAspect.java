@@ -9,14 +9,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
+import priv.szf.fastcall.api.service.port.IFcSourceCodeResolver;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
-import priv.szf.fastcall.data.entity.FcApi;
-import priv.szf.fastcall.data.entity.FcSystem;
-import priv.szf.fastcall.data.mapper.FcApiDao;
-import priv.szf.fastcall.data.mapper.FcSystemDao;
-
-import java.util.Optional;
 
 @Slf4j
 @Aspect
@@ -26,9 +21,7 @@ public class FcSourceEventAspect {
 
     private final FcSourceEventPublisher sourcePublisher;
 
-    private final FcSystemDao systemDao;
-
-    private final FcApiDao apiDao;
+    private final IFcSourceCodeResolver sourceCodeResolver;
 
     @Around("@annotation(FcSourceEventCut)")
     public Object publishEventAfterMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -54,28 +47,13 @@ public class FcSourceEventAspect {
                 code = ((FcSystemDTO) arg).getCode();
             } else if (entity == Long.class) {
                 if (annotation.level() == IdLevel.API) {
-                    code = getSystemCodeByApiId((Long) arg);
+                    code = sourceCodeResolver.getSystemCodeByApiId((Long) arg);
                 } else if (annotation.level() == IdLevel.SYSTEM) {
-                    code = getSystemCodeById((Long) arg);
+                    code = sourceCodeResolver.getSystemCodeBySystemId((Long) arg);
                 }
             }
             break;
         }
         return code;
-    }
-
-    private String getSystemCodeById(Long id) {
-        FcSystem system = systemDao.getOneById(id);
-        return Optional.ofNullable(system)
-                .map(FcSystem::getCode)
-                .orElse(null);
-    }
-
-    private String getSystemCodeByApiId(Long id) {
-        FcApi api = apiDao.getOneById(id);
-        return Optional.ofNullable(api)
-                .map(FcApi::getSysId)
-                .map(this::getSystemCodeById)
-                .orElse(null);
     }
 }
