@@ -191,7 +191,7 @@ final class FcClientRequestResolver {
             }
             return result;
         } catch (Exception e) {
-            throw new FastCallException("Failed to expand bean parameter [{}]: {}", bean.getClass().getName(), e.getMessage());
+            throw new FastCallException(e, "Failed to expand bean parameter [{}]", bean.getClass().getName());
         }
     }
 
@@ -208,7 +208,7 @@ final class FcClientRequestResolver {
             }
             return Collections.unmodifiableList(Arrays.asList(propertyDescriptors));
         } catch (Exception e) {
-            throw new FastCallException("Failed to inspect bean parameter [{}]: {}", beanClass.getName(), e.getMessage());
+            throw new FastCallException(e, "Failed to inspect bean parameter [{}]", beanClass.getName());
         }
     }
 

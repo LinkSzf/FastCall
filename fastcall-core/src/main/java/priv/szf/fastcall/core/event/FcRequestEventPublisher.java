@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core.event;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,7 +14,6 @@ import priv.szf.fastcall.core.config.FcAsyncConfig;
 import java.util.concurrent.Executor;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class FcRequestEventPublisher extends FcBaseEventPublisher<IFcRequestEvent> implements IFcRequestEventPublisher {
 
@@ -23,9 +21,18 @@ public class FcRequestEventPublisher extends FcBaseEventPublisher<IFcRequestEven
 
     private final FastCallProperties properties;
 
+    private final Executor executor;
+
     @Autowired
-    @Qualifier(FcAsyncConfig.EVENT_EXECUTOR)
-    private Executor executor;
+    public FcRequestEventPublisher(
+            ApplicationEventPublisher applicationEventPublisher,
+            FastCallProperties properties,
+            @Qualifier(FcAsyncConfig.EVENT_EXECUTOR) Executor executor
+    ) {
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.properties = properties;
+        this.executor = executor;
+    }
 
     @Override
     protected void doPublish(IFcRequestEvent event) {
