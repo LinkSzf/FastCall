@@ -17,7 +17,7 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
 
     @Override
     default T getOneById(Long id) {
-        return getReferenceById(id);
+        return findById(id).orElse(null);
     }
 
     @Transactional
