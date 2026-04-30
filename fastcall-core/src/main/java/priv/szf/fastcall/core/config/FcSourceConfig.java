@@ -24,7 +24,7 @@ public class FcSourceConfig {
 
     @ConditionalOnExpression(
             "'${fast-call.source-cache.enable:true}' == 'true' and " +
-                    "'${fast-call.source-cache.engine:redis}' == 'redis'"
+                    "'${fast-call.source-cache.engine:memory}' == 'redis'"
     )
     @ConditionalOnBean(RedisTemplate.class)
     @Bean(REDIS_CACHE_SOURCE)
