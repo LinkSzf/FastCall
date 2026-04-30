@@ -15,7 +15,6 @@ import priv.szf.fastcall.data.entity.FcApi;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,13 +40,20 @@ public class FcApiService {
             return Collections.emptyList();
         }
 
-        dtoList.stream()
-                .filter(Objects::nonNull)
-                .forEach(dto -> dto.setSysId(systemId));
+        FcShrinkSupport.assignParentId(dtoList, systemId, FcApiDTO::setSysId);
 
         checkData(dtoList);
 
-        shrinkApisToThis(systemId, dtoList);
+        FcShrinkSupport.shrinkToIncoming(
+                apiDao.listBySystemId(systemId),
+                FcApi::getId,
+                dtoList,
+                FcApiDTO::getId,
+                removeIds -> {
+                    apiParamService.removeByApiIds(removeIds);
+                    apiDao.removeBatchByIds(removeIds);
+                }
+        );
 
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
         List<FcApi> savedApiList = apiDao.insertOrUpdateBatch(apiList);
@@ -67,6 +73,9 @@ public class FcApiService {
         Set<String> duplicateNames = new HashSet<>();
 
         for (FcApiDTO api : dtoList) {
+            if (api == null) {
+                continue;
+            }
             String name = api.getName();
             if (!nameSet.add(name)) {
                 duplicateNames.add(name);
@@ -76,23 +85,6 @@ public class FcApiService {
         if (!duplicateNames.isEmpty()) {
             throw new FcDataDuplicatedException("Api name cannot be duplicated with [{}].", String.join(", ", duplicateNames));
         }
-    }
-
-    private void shrinkApisToThis(Long systemId, List<FcApiDTO> dtoList) {
-        List<FcApi> existingApis = apiDao.listBySystemId(systemId);
-        List<Long> removeIds = FcShrinkSupport.resolveRemoveIds(
-                existingApis,
-                FcApi::getId,
-                dtoList,
-                FcApiDTO::getId
-        );
-
-        if (CollectionUtils.isEmpty(removeIds)) {
-            return;
-        }
-
-        apiParamService.removeByApiIds(removeIds);
-        apiDao.removeBatchByIds(removeIds);
     }
 
 }

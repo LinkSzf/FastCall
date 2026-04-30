@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,42 @@ public final class FcShrinkSupport {
                 .filter(Objects::nonNull)
                 .filter(id -> !keepIds.contains(id))
                 .collect(Collectors.toList());
+    }
+
+    public static <D> void assignParentId(
+            List<D> incomingList,
+            Long parentId,
+            BiConsumer<D, Long> parentIdSetter
+    ) {
+        if (CollectionUtils.isEmpty(incomingList) || parentIdSetter == null) {
+            return;
+        }
+
+        incomingList.stream()
+                .filter(Objects::nonNull)
+                .forEach(dto -> parentIdSetter.accept(dto, parentId));
+    }
+
+    public static <E, D> void shrinkToIncoming(
+            List<E> existingList,
+            Function<E, Long> existingIdExtractor,
+            List<D> incomingList,
+            Function<D, Long> incomingIdExtractor,
+            Consumer<List<Long>> removeAction
+    ) {
+        if (removeAction == null) {
+            return;
+        }
+
+        List<Long> removeIds = resolveRemoveIds(
+                existingList,
+                existingIdExtractor,
+                incomingList,
+                incomingIdExtractor
+        );
+        if (!CollectionUtils.isEmpty(removeIds)) {
+            removeAction.accept(removeIds);
+        }
     }
 
 }

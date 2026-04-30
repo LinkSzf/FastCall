@@ -13,7 +13,6 @@ import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Transactional
 @Service
@@ -37,33 +36,21 @@ public class FcHeaderAssignService {
             return Collections.emptyList();
         }
 
-        dtoList.stream()
-                .filter(Objects::nonNull)
-                .forEach(dto -> dto.setSysId(systemId));
+        FcShrinkSupport.assignParentId(dtoList, systemId, FcHeaderAssignDTO::setSysId);
 
-        shrinkHeaderAssignToThis(systemId, dtoList);
+        FcShrinkSupport.shrinkToIncoming(
+                headerAssignDao.listBySystemId(systemId),
+                FcHeaderAssign::getId,
+                dtoList,
+                FcHeaderAssignDTO::getId,
+                headerAssignDao::removeBatchByIds
+        );
 
         List<FcHeaderAssign> apiParamList = headerAssignMapping.toEntityList(dtoList);
         List<FcHeaderAssign> savedApiParamList = headerAssignDao.insertOrUpdateBatch(apiParamList);
 
         return headerAssignMapping.toVoList(savedApiParamList);
 
-    }
-
-    private void shrinkHeaderAssignToThis(Long systemId, List<FcHeaderAssignDTO> dtoList) {
-        List<FcHeaderAssign> existingAssigns = headerAssignDao.listBySystemId(systemId);
-        List<Long> removeIds = FcShrinkSupport.resolveRemoveIds(
-                existingAssigns,
-                FcHeaderAssign::getId,
-                dtoList,
-                FcHeaderAssignDTO::getId
-        );
-
-        if (CollectionUtil.isEmpty(removeIds)) {
-            return;
-        }
-
-        headerAssignDao.removeBatchByIds(removeIds);
     }
 
     private void removeBySystemId(Long systemId) {

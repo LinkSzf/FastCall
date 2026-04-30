@@ -13,7 +13,6 @@ import priv.szf.fastcall.data.entity.FcApiParam;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Transactional
 @Service
@@ -35,11 +34,15 @@ public class FcApiParamService {
             return Collections.emptyList();
         }
 
-        dtoList.stream()
-                .filter(Objects::nonNull)
-                .forEach(dto -> dto.setApiId(apiId));
+        FcShrinkSupport.assignParentId(dtoList, apiId, FcApiParamDTO::setApiId);
 
-        shrinkApiParamToThis(apiId, dtoList);
+        FcShrinkSupport.shrinkToIncoming(
+                apiParamDao.listByApiId(apiId),
+                FcApiParam::getId,
+                dtoList,
+                FcApiParamDTO::getId,
+                apiParamDao::removeBatchByIds
+        );
 
         List<FcApiParam> apiParamList = apiParamMapping.toEntityList(dtoList);
         List<FcApiParam> savedApiParamList = apiParamDao.insertOrUpdateBatch(apiParamList);
@@ -53,22 +56,6 @@ public class FcApiParamService {
         }
 
         apiParamDao.removeBatchByApiIds(apiIds);
-    }
-
-    private void shrinkApiParamToThis(Long apiId, List<FcApiParamDTO> dtoList) {
-        List<FcApiParam> existingParams = apiParamDao.listByApiId(apiId);
-        List<Long> removeIds = FcShrinkSupport.resolveRemoveIds(
-                existingParams,
-                FcApiParam::getId,
-                dtoList,
-                FcApiParamDTO::getId
-        );
-
-        if (CollectionUtil.isEmpty(removeIds)) {
-            return;
-        }
-
-        apiParamDao.removeBatchByIds(removeIds);
     }
 
 }
