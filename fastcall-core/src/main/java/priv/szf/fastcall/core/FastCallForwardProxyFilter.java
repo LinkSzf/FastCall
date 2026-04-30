@@ -3,7 +3,6 @@ package priv.szf.fastcall.core;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.IEssentialCheck;
 import priv.szf.fastcall.common.source.IFcSource;
+import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -260,10 +260,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String prefix = properties.getForwardProxy().getPrefix();
         String resourceUri = StrUtil.removePrefix(requestUri, prefix);
-        String url = URLUtil.completeUrl(host, resourceUri);
-        String queryString = request.getQueryString();
-        return (queryString == null) ? url
-                : url + "?" + queryString;
+        return FcRequestBuildSupport.completeUrlWithQuery(host, resourceUri, request.getQueryString());
     }
 
     private FcSourcePak getSourcePak(HttpServletRequest request) {

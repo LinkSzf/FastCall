@@ -46,7 +46,7 @@ public class FastCallClientFactory {
 
     private final Dispatcher dispatcher;
 
-    private final FcAuthInterceptor authInceptor;
+    private final FcAuthInterceptor authInterceptor;
 
     private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
 
@@ -125,7 +125,7 @@ public class FastCallClientFactory {
                 .retryOnConnectionFailure(true)
                 .connectionPool(connectionPool)
                 .dispatcher(dispatcher)
-                .addInterceptor(authInceptor)
+                .addInterceptor(authInterceptor)
                 .addNetworkInterceptor(tokenRefreshInterceptor)
                 .cache(cache)
                 .build();

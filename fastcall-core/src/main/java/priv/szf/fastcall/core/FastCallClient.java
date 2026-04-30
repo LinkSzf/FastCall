@@ -25,11 +25,10 @@ import priv.szf.fastcall.core.event.FcRequestEvent;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 import priv.szf.fastcall.core.support.FcHttpRequestFactory;
 import priv.szf.fastcall.core.support.FcHttpResponseMapper;
+import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -222,30 +221,12 @@ public class FastCallClient {
         }
 
         public Builder<T> params(Map<String, String> params) {
-            this.params = new LinkedHashMap<>();
-            if (CollectionUtil.isNotEmpty(params)) {
-                params.forEach((k, v) -> {
-                    if (Objects.nonNull(k) && Objects.nonNull(v)) {
-                        List<String> values = this.params.computeIfAbsent(k, key -> new ArrayList<>());
-                        values.add(v);
-                    }
-                });
-            }
+            this.params = FcRequestBuildSupport.toMultiValueParams(params);
             return this;
         }
 
         public Builder<T> allParams(Map<String, List<String>> params) {
-            this.params = new LinkedHashMap<>();
-            if (CollectionUtil.isNotEmpty(params)) {
-                params.forEach((k, vs) -> {
-                    if (Objects.nonNull(k) && CollectionUtil.isNotEmpty(vs)) {
-                        List<String> values = this.params.computeIfAbsent(k, key -> new ArrayList<>());
-                        vs.stream()
-                                .filter(Objects::nonNull)
-                                .forEach(values::add);
-                    }
-                });
-            }
+            this.params = FcRequestBuildSupport.sanitizeMultiValueParams(params);
             return this;
         }
 
@@ -255,22 +236,12 @@ public class FastCallClient {
         }
 
         public Builder<T> header(String key, String value) {
-            if (StrUtil.isBlank(key) || Objects.isNull(value)) {
-                return this;
-            }
-            List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
-            values.add(value);
+            FcRequestBuildSupport.addSingleHeader(this.headers, key, value);
             return this;
         }
 
         public Builder<T> header(String key, List<String> value) {
-            if (StrUtil.isBlank(key) || CollectionUtil.isEmpty(value)) {
-                return this;
-            }
-            List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
-            value.stream()
-                    .filter(Objects::nonNull)
-                    .forEach(values::add);
+            FcRequestBuildSupport.addMultiHeader(this.headers, key, value);
             return this;
         }
 
@@ -311,41 +282,9 @@ public class FastCallClient {
         public PreparedCall<T> prepared() {
             this.fullUrl = (StrUtil.isNotBlank(this.url)) ? this.url
                     : URLUtil.completeUrl(host, uri);
-
-            if (CollectionUtil.isNotEmpty(params)) {
-                String query = buildMultiValueQuery(params);
-                if (StrUtil.isNotBlank(query)) {
-                    if (StrUtil.contains(this.fullUrl, "?")) {
-                        if (StrUtil.endWithAny(this.fullUrl, "?", "&")) {
-                            this.fullUrl = this.fullUrl + query;
-                        } else {
-                            this.fullUrl = this.fullUrl + "&" + query;
-                        }
-                    } else {
-                        this.fullUrl = this.fullUrl + "?" + query;
-                    }
-                }
-            }
+            this.fullUrl = FcRequestBuildSupport.appendQuery(this.fullUrl, params);
 
             return new PreparedCall<>(this.client, this);
-        }
-
-        private String buildMultiValueQuery(Map<String, List<String>> params) {
-            StringBuilder queryBuilder = new StringBuilder();
-            params.forEach((k, values) -> {
-                if (CollectionUtil.isEmpty(values)) {
-                    return;
-                }
-                for (String value : values) {
-                    if (queryBuilder.length() > 0) {
-                        queryBuilder.append("&");
-                    }
-                    String encodedKey = URLUtil.encode(k, StandardCharsets.UTF_8);
-                    String encodedValue = (value == null) ? "" : URLUtil.encode(value, StandardCharsets.UTF_8);
-                    queryBuilder.append(encodedKey).append("=").append(encodedValue);
-                }
-            });
-            return queryBuilder.toString();
         }
 
     }
