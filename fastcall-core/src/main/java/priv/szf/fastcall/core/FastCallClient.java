@@ -255,14 +255,22 @@ public class FastCallClient {
         }
 
         public Builder<T> header(String key, String value) {
+            if (StrUtil.isBlank(key) || Objects.isNull(value)) {
+                return this;
+            }
             List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
             values.add(value);
             return this;
         }
 
         public Builder<T> header(String key, List<String> value) {
+            if (StrUtil.isBlank(key) || CollectionUtil.isEmpty(value)) {
+                return this;
+            }
             List<String> values = this.headers.computeIfAbsent(key, k -> new ArrayList<>());
-            values.addAll(value);
+            value.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(values::add);
             return this;
         }
 

@@ -76,11 +76,11 @@ public final class FcHttpResponseMapper {
             boolean isJsonPayload = isJsonMediaType(contentType) || JSONUtil.isTypeJSON(bodyStr);
             if (!isJsonPayload) {
                 throw new FcUnexpectedException(
-                        "Response content type[{}] is not JSON, cannot convert to type[{}] in url[{}], body preview: {}",
+                        "Response content type[{}] is not JSON, cannot convert to type[{}] in url[{}], body length[{}]",
                         Objects.toString(contentType, "null"),
                         dataType.getTypeName(),
                         url,
-                        abbreviateBody(bodyStr)
+                        bodyStr.length()
                 );
             }
 
@@ -89,10 +89,10 @@ public final class FcHttpResponseMapper {
             } catch (RuntimeException e) {
                 throw new FcUnexpectedException(
                         e,
-                        "JSON response cannot be converted to type[{}] in url[{}], body preview: {}",
+                        "JSON response cannot be converted to type[{}] in url[{}], body length[{}]",
                         dataType.getTypeName(),
                         url,
-                        abbreviateBody(bodyStr)
+                        bodyStr.length()
                 );
             }
         } catch (IOException e) {
@@ -107,15 +107,6 @@ public final class FcHttpResponseMapper {
 
     private static boolean isJsonMediaType(MediaType mediaType) {
         return Objects.nonNull(mediaType) && StrUtil.containsIgnoreCase(mediaType.toString(), "json");
-    }
-
-    private static String abbreviateBody(String bodyStr) {
-        String value = StrUtil.nullToEmpty(bodyStr);
-        int maxLen = 200;
-        if (value.length() <= maxLen) {
-            return value;
-        }
-        return value.substring(0, maxLen) + "...";
     }
 
     private static Class<?> getRawType(Type type) {

@@ -57,9 +57,22 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
 
     protected void checkSuccess(FastCallResponse<R> response) {
         if (!response.isSuccessful()) {
-            throw new FastCallException("Failed to obtain authentication, code[{}], message[{}], data[{}]",
-                    response.getCode(), response.getMessage(), response.getData()
+            throw new FastCallException("Failed to obtain authentication, code[{}], message[{}], trace-id[{}]",
+                    response.getCode(),
+                    response.getMessage(),
+                    getTraceId(response)
             );
         }
+    }
+
+    private static String getTraceId(FastCallResponse<?> response) {
+        String traceId = response.getSingleHeader("X-Request-Id");
+        if (traceId == null) {
+            traceId = response.getSingleHeader("X-Correlation-Id");
+        }
+        if (traceId == null) {
+            traceId = response.getSingleHeader("Trace-Id");
+        }
+        return traceId;
     }
 }

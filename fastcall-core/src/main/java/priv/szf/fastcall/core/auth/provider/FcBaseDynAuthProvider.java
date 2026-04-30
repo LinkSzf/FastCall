@@ -29,7 +29,7 @@ public abstract class FcBaseDynAuthProvider<C extends BaseDynAuthContent>
     @Override
     public Integer getAuthInNeedCode(String system) {
         FcSourcePak sourcePak = getSource().getSourcePak(system);
-        return Optional.of(sourcePak)
+        return Optional.ofNullable(sourcePak)
                 .map(FcSourcePak::getAuth)
                 .map(FcAuthPak::getStatusCode)
                 .orElse(null);
