@@ -10,6 +10,8 @@ import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.FastCallClientFactory;
+import priv.szf.fastcall.core.auth.handler.FcBaseRefreshableAuthHandler;
+import priv.szf.fastcall.core.auth.provider.FcDigestAuthProvider;
 import priv.szf.fastcall.core.config.FcAsyncConfig;
 
 import java.util.List;
@@ -23,6 +25,8 @@ public class FcSourceEventListener implements IFcSourceEventListener {
 
     private final FastCallClientFactory clientFactory;
 
+    private final FcDigestAuthProvider digestAuthProvider;
+
     @Async(FcAsyncConfig.EVENT_EXECUTOR)
     @EventListener
     @Override
@@ -34,6 +38,11 @@ public class FcSourceEventListener implements IFcSourceEventListener {
                     sources.forEach(s -> s.invalidate(system));
                     if (isClientUnavailable(event)) {
                         clientFactory.removeClient(system);
+                    }
+                    if (event.getEventType() == FcSourceEventType.DELETE) {
+                        FcBaseRefreshableAuthHandler.clearSystemLock(system);
+                        Optional.ofNullable(digestAuthProvider)
+                                .ifPresent(provider -> provider.removeNonceManager(system));
                     }
                 });
 

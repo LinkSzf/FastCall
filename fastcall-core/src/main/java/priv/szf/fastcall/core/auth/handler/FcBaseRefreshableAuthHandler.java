@@ -16,6 +16,12 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
 
     private static final Map<String, Object> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
+    public static void clearSystemLock(String system) {
+        if (system != null) {
+            SYSTEM_LOCKS.remove(system);
+        }
+    }
+
     protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
 
     @Override

@@ -34,6 +34,12 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
         return source;
     }
 
+    public void removeNonceManager(String system) {
+        if (system != null) {
+            systemNonceManagerMap.remove(system);
+        }
+    }
+
     @Override
     protected DigestCredential buildCredential(@NonNull DigestAuthContent authContent,
                                                @NonNull Request request,
