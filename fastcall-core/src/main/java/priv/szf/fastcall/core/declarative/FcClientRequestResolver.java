@@ -9,8 +9,6 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
-import okio.Okio;
-import okio.Source;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
@@ -22,7 +20,9 @@ import priv.szf.fastcall.common.source.IFcSource;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -315,6 +315,10 @@ final class FcClientRequestResolver {
 
     private RequestBody createStreamingRequestBody(InputStream inputStream, MediaType mediaType) {
         return new RequestBody() {
+            private volatile byte[] cachedPayload;
+
+            private volatile boolean loaded;
+
             @Override
             public MediaType contentType() {
                 return mediaType;
@@ -322,18 +326,48 @@ final class FcClientRequestResolver {
 
             @Override
             public long contentLength() {
-                return -1L;
+                return loaded ? cachedPayload.length : -1L;
             }
 
             @Override
             public void writeTo(BufferedSink sink) {
-                try (Source source = Okio.source(inputStream)) {
-                    sink.writeAll(source);
-                } catch (Exception e) {
-                    throw new FastCallException(e, "Failed to stream multipart input stream body");
+                byte[] payload = loadPayloadOnce();
+                try {
+                    sink.write(payload);
+                } catch (IOException e) {
+                    throw new FastCallException(e, "Failed to write cached multipart input stream body");
+                }
+            }
+
+            private byte[] loadPayloadOnce() {
+                if (loaded) {
+                    return cachedPayload;
+                }
+
+                synchronized (this) {
+                    if (loaded) {
+                        return cachedPayload;
+                    }
+                    cachedPayload = readAllBytes(inputStream);
+                    loaded = true;
+                    return cachedPayload;
                 }
             }
         };
+    }
+
+    private static byte[] readAllBytes(InputStream inputStream) {
+        try (InputStream in = inputStream;
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            byte[] chunk = new byte[8192];
+            int len;
+            while ((len = in.read(chunk)) != -1) {
+                buffer.write(chunk, 0, len);
+            }
+            return buffer.toByteArray();
+        } catch (IOException e) {
+            throw new FastCallException(e, "Failed to stream multipart input stream body");
+        }
     }
 
     private boolean isIterableValue(Object value) {
