@@ -1,6 +1,7 @@
 package priv.szf.fastcall.api.event;
 
 
+import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -12,6 +13,8 @@ import priv.szf.fastcall.api.model.dto.FcSystemDTO;
 import priv.szf.fastcall.api.service.port.IFcSourceCodeResolver;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
+
+import java.util.Objects;
 
 @Slf4j
 @Aspect
@@ -27,12 +30,16 @@ public class FcSourceEventAspect {
     public Object publishEventAfterMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         FcSourceEventCut annotation = signature.getMethod().getAnnotation(FcSourceEventCut.class);
-        String code = resolveSystemCode(annotation, joinPoint.getArgs());
+        Object[] args = joinPoint.getArgs();
+        String oldCode = resolveOldSystemCode(annotation, args);
+        String newCode = resolveSystemCode(annotation, args);
         Object result = joinPoint.proceed();
 
         FcSourceEventType type = annotation.type();
-        IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
-        sourcePublisher.publish(sourceEvent);
+        publishOne(type, newCode);
+        if (shouldPublishOldCode(type, oldCode, newCode)) {
+            publishOne(FcSourceEventType.DELETE, oldCode);
+        }
         return result;
     }
 
@@ -55,5 +62,38 @@ public class FcSourceEventAspect {
             break;
         }
         return code;
+    }
+
+    private String resolveOldSystemCode(FcSourceEventCut annotation, Object[] args) {
+        if (annotation.entity() != FcSystemDTO.class) {
+            return resolveSystemCode(annotation, args);
+        }
+
+        for (Object arg : args) {
+            if (!(arg instanceof FcSystemDTO)) {
+                continue;
+            }
+            FcSystemDTO systemDTO = (FcSystemDTO) arg;
+            Long systemId = systemDTO.getId();
+            if (Objects.nonNull(systemId)) {
+                return sourceCodeResolver.getSystemCodeBySystemId(systemId);
+            }
+            break;
+        }
+        return null;
+    }
+
+    private boolean shouldPublishOldCode(FcSourceEventType type, String oldCode, String newCode) {
+        return type == FcSourceEventType.UPDATE
+                && StrUtil.isNotBlank(oldCode)
+                && !StrUtil.equals(oldCode, newCode);
+    }
+
+    private void publishOne(FcSourceEventType type, String code) {
+        if (StrUtil.isBlank(code)) {
+            return;
+        }
+        IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
+        sourcePublisher.publish(sourceEvent);
     }
 }

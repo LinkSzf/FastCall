@@ -52,7 +52,7 @@ public class FcController {
     }
 
     @GetMapping("/{id}")
-    public FcSystemVO findOne(@PathVariable("id") Long id){
+    public FcSystemVO findOne(@PathVariable Long id){
         log.trace("{}-Web request query system[{}]", FastCallConsts.NAME, id);
         return systemService.getById(id);
     }
@@ -66,46 +66,46 @@ public class FcController {
 
     @FcSourceEventCut(entity = Long.class, type = FcSourceEventType.DELETE)
     @DeleteMapping("/{id}")
-    public void deleteOne(@PathVariable("id") Long id){
+    public void deleteOne(@PathVariable Long id){
         log.trace("{}-Web request delete system[{}]", FastCallConsts.NAME, id);
         systemService.removeById(id);
     }
 
     @GetMapping("/{id}/api/all")
-    public List<FcApiVO> listAllApiOfSystem(@PathVariable("id") Long id){
+    public List<FcApiVO> listAllApiOfSystem(@PathVariable Long id){
         log.trace("{}-Web request query api list of system[{}]", FastCallConsts.NAME, id);
         return apiService.listAllBySystemId(id);
     }
 
     @FcSourceEventCut(entity = Long.class)
     @PostMapping("/{id}/api/save")
-    public List<FcApiVO> saveApiOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiDTO> apiList){
+    public List<FcApiVO> saveApiOfSystem(@PathVariable Long id, @Valid @RequestBody List<FcApiDTO> apiList){
         log.trace("{}-Web request save api of system[{}]", FastCallConsts.NAME, id);
         return apiService.save(id, apiList);
     }
 
     @GetMapping("/api/{id}/param/all")
-    public List<FcApiParamVO> listAllApiParamsOfApi(@PathVariable("id") Long id) {
+    public List<FcApiParamVO> listAllApiParamsOfApi(@PathVariable Long id) {
         log.trace("{}-Web request query api param list of api[{}]", FastCallConsts.NAME, id);
         return apiParamService.listAllByApiId(id);
     }
 
     @FcSourceEventCut(entity = Long.class, level = IdLevel.API)
     @PostMapping("/api/{id}/param/save")
-    public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable("id") Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
+    public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
         log.trace("{}-Web request save api param list of api[{}]", FastCallConsts.NAME, id);
         return apiParamService.save(id, apiParamList);
     }
 
     @GetMapping("/{id}/header_assign/all")
-    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable("id") Long id) {
+    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable Long id) {
         log.trace("{}-Web request query header assign list of system[{}]", FastCallConsts.NAME, id);
         return headerAssignService.listAllHeaderAssignBySystemId(id);
     }
 
     @FcSourceEventCut(entity = Long.class, level = IdLevel.SYSTEM)
     @PostMapping("/{id}/header_assign/save")
-    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable("id") Long id, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
+    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable Long id, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
         log.trace("{}-Web request save header assign list of system[{}]", FastCallConsts.NAME, id);
         return headerAssignService.save(id, headerAssignList);
     }

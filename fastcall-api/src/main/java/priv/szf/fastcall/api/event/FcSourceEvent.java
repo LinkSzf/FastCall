@@ -14,11 +14,4 @@ public class FcSourceEvent extends FcBaseEvent implements IFcSourceEvent {
 
     private final FcSourceEventType eventType;
 
-
-    @Override
-    public FcSourceEventType getEventType() {
-        return eventType;
-    }
-
-
 }
