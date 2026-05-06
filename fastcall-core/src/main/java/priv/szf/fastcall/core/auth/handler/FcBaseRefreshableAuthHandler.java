@@ -17,15 +17,10 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
 
     private static final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
-    private static final Map<String, Boolean> LOCKS_PENDING_REMOVAL = new ConcurrentHashMap<>();
-
     public static void clearSystemLock(String system) {
-        if (system == null) {
-            return;
+        if (system != null) {
+            SYSTEM_LOCKS.remove(system);
         }
-        //为延迟清理标记锁。不立即移除以避免创建第二个锁对象，而另一个线程仍然持有旧的锁对象。
-        LOCKS_PENDING_REMOVAL.put(system, Boolean.TRUE);
-        tryRemoveSystemLock(system);
     }
 
     protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
@@ -66,26 +61,10 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
                 }
             } finally {
                 systemLock.unlock();
-                if (LOCKS_PENDING_REMOVAL.containsKey(system)) {
-                    tryRemoveSystemLock(system);
-                }
             }
         }
 
         return false;
-    }
-
-    private static void tryRemoveSystemLock(String system) {
-        ReentrantLock lock = SYSTEM_LOCKS.get(system);
-        if (lock == null) {
-            LOCKS_PENDING_REMOVAL.remove(system);
-            return;
-        }
-        if (!lock.isLocked()
-                && !lock.hasQueuedThreads()
-                && SYSTEM_LOCKS.remove(system, lock)) {
-            LOCKS_PENDING_REMOVAL.remove(system);
-        }
     }
 
     private boolean isCredentialInvalid(String system) {
