@@ -18,6 +18,7 @@ import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Optional;
+import java.util.Objects;
 
 public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent, R>
         extends FcBaseDynAuthProvider<C>
@@ -36,7 +37,7 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
         FcAuthPak authPak = sourcePak.getAuth();
 
         FcAuthProp authProp = Optional.ofNullable(authContent.getProp()).orElse(new FcAuthProp());
-        FastCallClient client = FastCallClientFactory.getExistedClient(system);
+        FastCallClient client = resolveRefreshClient(request, system);
         FastCallResponse<R> authResponse = client.<R>newCall()
                 .isAuth(true)
                 .host(authPak.getParticularHost())
@@ -53,6 +54,14 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
         checkSuccess(authResponse);
 
         return buildCredential(authResponse, authContent);
+    }
+
+    protected FastCallClient resolveRefreshClient(Request request, String system) {
+        FastCallClient client = request.tag(FastCallClient.class);
+        if (Objects.nonNull(client)) {
+            return client;
+        }
+        return FastCallClientFactory.getExistedClient(system);
     }
 
     protected void checkSuccess(FastCallResponse<R> response) {

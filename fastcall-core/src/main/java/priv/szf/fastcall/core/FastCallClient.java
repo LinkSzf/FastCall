@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import priv.szf.fastcall.common.event.request.IFcRequestEvent;
+import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
@@ -19,6 +20,7 @@ import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.event.FcApiRequestEvent;
 import priv.szf.fastcall.core.event.FcAuthRequestEvent;
 import priv.szf.fastcall.core.event.FcRequestEvent;
@@ -50,7 +52,7 @@ public class FastCallClient {
     private final IFcRequestEventPublisher eventPublisher;
 
     private <T> Request createRequest(Builder<T> builder) {
-        return FcHttpRequestFactory.createRequest(
+        Request request = FcHttpRequestFactory.createRequest(
                 system,
                 authType,
                 builder.callType,
@@ -60,6 +62,9 @@ public class FastCallClient {
                 builder.body,
                 builder.headers
         );
+        return request.newBuilder()
+                .tag(FastCallClient.class, this)
+                .build();
     }
 
     private <T> FastCallResponse<T> buildStandardResponse(Builder<T> builder, Response response) {
@@ -190,7 +195,11 @@ public class FastCallClient {
         private Builder(FastCallClient client, Type dataType) {
             this.client = client;
             this.dataType = dataType;
-            this.host = source.getSourcePak(system).getSystem().getHost();
+            this.host = Optional.ofNullable(source)
+                    .map(s -> s.getSourcePak(system))
+                    .map(FcSourcePak::getSystem)
+                    .map(FcSystemPak::getHost)
+                    .orElse(null);
         }
 
         private Builder<T> apiName(String apiName) {
