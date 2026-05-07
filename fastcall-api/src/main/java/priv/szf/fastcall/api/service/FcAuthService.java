@@ -31,7 +31,10 @@ public class FcAuthService {
         }
 
         if (Objects.isNull(auth.getId())) {
-            removeBySystemId(systemId);
+            FcAuthVO existing = getBySystemId(systemId);
+            if (Objects.nonNull(existing)) {
+                auth.setId(Long.parseLong(existing.getId()));
+            }
         }
 
         auth.setSysId(systemId);
