@@ -56,7 +56,7 @@ public class FcApiService {
         );
 
         List<FcApi> apiList = apiMapping.toEntityList(dtoList);
-        List<FcApi> savedApiList = apiDao.insertOrUpdateBatch(apiList);
+        List<FcApi> savedApiList = apiDao.saveBatch(apiList);
 
         return apiMapping.toVoList(savedApiList);
     }

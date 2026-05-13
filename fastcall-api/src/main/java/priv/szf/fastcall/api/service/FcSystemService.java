@@ -53,7 +53,7 @@ public class FcSystemService {
 
         FcSystem system = systemMapping.toEntity(dto);
         system.setUpdateAt(LocalDateTime.now());
-        FcSystem savedSystem = systemDao.insertOrUpdate(system);
+        FcSystem savedSystem = systemDao.saveOne(system);
 
         FcAuth auth = authMapping.toEntity(dto.getAuth());
         Long systemId = savedSystem.getId();

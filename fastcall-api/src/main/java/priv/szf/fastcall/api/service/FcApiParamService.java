@@ -45,7 +45,7 @@ public class FcApiParamService {
         );
 
         List<FcApiParam> apiParamList = apiParamMapping.toEntityList(dtoList);
-        List<FcApiParam> savedApiParamList = apiParamDao.insertOrUpdateBatch(apiParamList);
+        List<FcApiParam> savedApiParamList = apiParamDao.saveBatch(apiParamList);
 
         return apiParamMapping.toVoList(savedApiParamList);
     }

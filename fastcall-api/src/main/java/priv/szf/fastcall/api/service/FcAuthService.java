@@ -38,7 +38,7 @@ public class FcAuthService {
         }
 
         auth.setSysId(systemId);
-        FcAuth savedAuth = authDao.insertOrUpdate(auth);
+        FcAuth savedAuth = authDao.saveOne(auth);
 
         return authMapping.toVo(savedAuth);
     }

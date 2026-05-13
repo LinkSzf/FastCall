@@ -27,13 +27,13 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
     }
 
     @Override
-    default T insertOrUpdate(T entity) {
+    default T saveOne(T entity) {
         Db.saveOrUpdate(entity);
         return entity;
     }
 
     @Override
-    default List<T> insertOrUpdateBatch(List<T> entities) {
+    default List<T> saveBatch(List<T> entities) {
         Db.saveOrUpdateBatch(entities);
         return entities;
     }

@@ -30,12 +30,12 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
     }
 
     @Override
-    default T insertOrUpdate(T entity) {
+    default T saveOne(T entity) {
         return saveAndFlush(entity);
     }
 
     @Override
-    default List<T> insertOrUpdateBatch(List<T> entities) {
+    default List<T> saveBatch(List<T> entities) {
         return saveAllAndFlush(entities);
     }
 

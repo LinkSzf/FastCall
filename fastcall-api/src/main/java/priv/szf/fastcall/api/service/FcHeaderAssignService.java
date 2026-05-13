@@ -47,7 +47,7 @@ public class FcHeaderAssignService {
         );
 
         List<FcHeaderAssign> apiParamList = headerAssignMapping.toEntityList(dtoList);
-        List<FcHeaderAssign> savedApiParamList = headerAssignDao.insertOrUpdateBatch(apiParamList);
+        List<FcHeaderAssign> savedApiParamList = headerAssignDao.saveBatch(apiParamList);
 
         return headerAssignMapping.toVoList(savedApiParamList);
 
