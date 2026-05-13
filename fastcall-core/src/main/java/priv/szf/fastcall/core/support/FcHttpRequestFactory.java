@@ -81,6 +81,6 @@ public final class FcHttpRequestFactory {
                     String jsonStr = JSONUtil.toJsonStr(payload);
                     return RequestBody.create(jsonStr, mediaType);
                 })
-                .orElse(null);
+                .orElse(RequestBody.create(new byte[0], MediaType.parse(FcMediaType.APPLICATION_JSON.getName())));
     }
 }
