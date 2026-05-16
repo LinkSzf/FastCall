@@ -76,7 +76,7 @@ public class FcController {
                 .orElseThrow(() -> new FcDataNotFoundException("The system[{}] no longer exists.",  systemId));
     }
 
-    @FcSourceEventCut(entity = FcSystemDTO.class)
+    @FcSourceEventCut(idIndex = 1)
     @PostMapping("/save")
     public FcSystemVO saveOneSystem(@Valid @RequestBody FcSystemDTO dto){
         log.trace("{}-Web request save system[{}]", FastCallConsts.NAME, dto.getCode());
@@ -87,7 +87,7 @@ public class FcController {
                 .orElseThrow(() -> new FcDataNotFoundException("The system[{}] no longer exists.",  dto.getCode()));
     }
 
-    @FcSourceEventCut(entity = Long.class, type = FcSourceEventType.DELETE)
+    @FcSourceEventCut(idIndex = 1, type = FcSourceEventType.DELETE)
     @DeleteMapping("/{systemId}")
     public void deleteOneSystem(@PathVariable Long systemId){
         log.trace("{}-Web request delete system[{}]", FastCallConsts.NAME, systemId);
@@ -103,7 +103,7 @@ public class FcController {
                 .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
-    @FcSourceEventCut(entity = Long.class)
+    @FcSourceEventCut(idIndex = 1)
     @PostMapping("/{systemId}/api/save")
     public List<FcApiVO> saveApiOfSystem(@PathVariable Long systemId, @Valid @RequestBody List<FcApiDTO> apiList) {
         log.trace("{}-Web request save api of system[{}]", FastCallConsts.NAME, systemId);
@@ -123,7 +123,7 @@ public class FcController {
                 .orElseThrow(()->new FcDataNotFoundException("The api[{}] no longer exists.", apiId));
     }
 
-    @FcSourceEventCut(entity = Long.class, level = IdLevel.API)
+    @FcSourceEventCut(idIndex = 1, level = IdLevel.API)
     @PostMapping("/api/{apiId}/param/save")
     public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable Long apiId, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
         log.trace("{}-Web request save api param list of api[{}]", FastCallConsts.NAME, apiId);
@@ -143,7 +143,7 @@ public class FcController {
                 .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
-    @FcSourceEventCut(entity = Long.class, level = IdLevel.SYSTEM)
+    @FcSourceEventCut(idIndex = 1)
     @PostMapping("/{systemId}/header_assign/save")
     public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable Long systemId, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
         log.trace("{}-Web request save header assign list of system[{}]", FastCallConsts.NAME, systemId);

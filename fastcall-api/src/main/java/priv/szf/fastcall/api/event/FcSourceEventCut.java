@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FcSourceEventCut {
 
-    Class<?> entity();
+    int idIndex();
 
     IdLevel level() default IdLevel.SYSTEM;
 

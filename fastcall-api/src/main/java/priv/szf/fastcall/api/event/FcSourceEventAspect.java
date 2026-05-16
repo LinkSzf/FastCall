@@ -10,11 +10,14 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
-import priv.szf.fastcall.api.service.IFcSourceCodeResolver;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
 import priv.szf.fastcall.common.event.source.IFcSourceEvent;
+import priv.szf.fastcall.data.entity.FcApi;
+import priv.szf.fastcall.data.entity.FcSystem;
+import priv.szf.fastcall.data.mapper.FcApiDao;
+import priv.szf.fastcall.data.mapper.FcSystemDao;
 
-import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Aspect
@@ -24,7 +27,9 @@ public class FcSourceEventAspect {
 
     private final FcSourceEventPublisher sourcePublisher;
 
-    private final IFcSourceCodeResolver sourceCodeResolver;
+    private final FcSystemDao systemDao;
+
+    private final FcApiDao apiDao;
 
     @Around("@annotation(FcSourceEventCut)")
     public Object publishEventAfterMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -44,43 +49,32 @@ public class FcSourceEventAspect {
     }
 
     private String resolveSystemCode(FcSourceEventCut annotation, Object[] args) {
-        Class<?> entity = annotation.entity();
+        int index = annotation.idIndex() - 1;
+        Object idObj = args[index];
         String code = null;
-        for (Object arg : args) {
-            if (!entity.isInstance(arg)) {
-                continue;
+        if (idObj instanceof FcSystemDTO) {
+            code = ((FcSystemDTO) idObj).getCode();
+        } else if (idObj instanceof Long) {
+            if (annotation.level() == IdLevel.API) {
+                code = getSystemCodeByApiId((Long) idObj);
+            } else if (annotation.level() == IdLevel.SYSTEM) {
+                code = getSystemCodeBySystemId((Long) idObj);
             }
-            if (entity == FcSystemDTO.class) {
-                code = ((FcSystemDTO) arg).getCode();
-            } else if (entity == Long.class) {
-                if (annotation.level() == IdLevel.API) {
-                    code = sourceCodeResolver.getSystemCodeByApiId((Long) arg);
-                } else if (annotation.level() == IdLevel.SYSTEM) {
-                    code = sourceCodeResolver.getSystemCodeBySystemId((Long) arg);
-                }
-            }
-            break;
         }
         return code;
     }
 
     private String resolveOldSystemCode(FcSourceEventCut annotation, Object[] args) {
-        if (annotation.entity() != FcSystemDTO.class) {
+        int index = annotation.idIndex() - 1;
+        Object idObj = args[index];
+        if (!(idObj instanceof FcSystemDTO)) {
             return resolveSystemCode(annotation, args);
         }
-
-        for (Object arg : args) {
-            if (!(arg instanceof FcSystemDTO)) {
-                continue;
-            }
-            FcSystemDTO systemDTO = (FcSystemDTO) arg;
-            Long systemId = systemDTO.getId();
-            if (Objects.nonNull(systemId)) {
-                return sourceCodeResolver.getSystemCodeBySystemId(systemId);
-            }
-            break;
-        }
-        return null;
+        FcSystemDTO systemDTO = (FcSystemDTO) idObj;
+        return Optional.of(systemDTO)
+                .map(FcSystemDTO::getId)
+                .map(this::getSystemCodeBySystemId)
+                .orElse(null);
     }
 
     private boolean shouldPublishOldCode(FcSourceEventType type, String oldCode, String newCode) {
@@ -95,5 +89,20 @@ public class FcSourceEventAspect {
         }
         IFcSourceEvent sourceEvent = new FcSourceEvent(code, type);
         sourcePublisher.publish(sourceEvent);
+    }
+
+    private String getSystemCodeBySystemId(Long systemId) {
+        return Optional.ofNullable(systemId)
+                .map(systemDao::getOneById)
+                .map(FcSystem::getCode)
+                .orElse(null);
+    }
+
+    private String getSystemCodeByApiId(Long apiId) {
+        return Optional.ofNullable(apiId)
+                .map(apiDao::getOneById)
+                .map(FcApi::getSysId)
+                .map(this::getSystemCodeBySystemId)
+                .orElse(null);
     }
 }
