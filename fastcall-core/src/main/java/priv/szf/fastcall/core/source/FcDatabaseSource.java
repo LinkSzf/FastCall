@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core.source;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.common.FcFuncScope;
@@ -17,7 +16,6 @@ import priv.szf.fastcall.common.source.IFcSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -58,7 +56,7 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
     }
 
     @Override
-    public void tryUpdateCredential(String systemCode, ICredential credential) {
+    public void tryUpdateCredential(String system, ICredential credential) {
     }
 
     @Override

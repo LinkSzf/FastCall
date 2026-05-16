@@ -9,8 +9,8 @@ public class FastCall {
 
     private final FastCallClientFactory clientFactory;
 
-    public FastCallClient getClient(String systemCode) {
-        return clientFactory.getClient(systemCode);
+    public FastCallClient getClient(String system) {
+        return clientFactory.getClient(system);
     }
 
     public FastCallClient getExistedClient(String system) {

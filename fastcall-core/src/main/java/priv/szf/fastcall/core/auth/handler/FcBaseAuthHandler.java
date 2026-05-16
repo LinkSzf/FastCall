@@ -39,8 +39,8 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
     @Override
     public Request modifyRequest(Request request) {
-        String systemCode = getSystem(request);
-        ICredential credential = getCredential(systemCode);
+        String system = getSystem(request);
+        ICredential credential = getCredential(system);
 
         if (Objects.isNull(credential)) {
             return request;

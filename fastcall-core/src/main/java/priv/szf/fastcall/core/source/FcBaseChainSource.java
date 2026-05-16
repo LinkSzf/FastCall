@@ -46,10 +46,10 @@ public abstract class FcBaseChainSource implements IFcChainSource {
     }
 
     @Override
-    public void updateCredential(String systemCode, ICredential credential) {
-        tryUpdateCredential(systemCode, credential);
+    public void updateCredential(String system, ICredential credential) {
+        tryUpdateCredential(system, credential);
         Optional.ofNullable(getNextSource())
-                .ifPresent(s -> s.updateCredential(systemCode, credential));
+                .ifPresent(s -> s.updateCredential(system, credential));
     }
 
 

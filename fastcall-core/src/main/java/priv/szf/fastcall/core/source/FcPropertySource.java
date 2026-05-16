@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.source;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.common.model.FcAuthPak;
@@ -31,12 +32,18 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
                         .auth(getFcAuthPak(es))
                         .build()
                 )
-                .forEach(pak -> pakMap.put(pak.getSystem().getCode(), pak));
+                .forEach(pak -> {
+                    String code = pak.getSystem().getCode();
+                    if (pakMap.containsKey(code)) {
+                        throw new FcUnexpectedException("Duplicated system code in fast-call.easy-source: {}", code);
+                    }
+                    pakMap.put(code, pak);
+                });
     }
 
     @Override
-    protected FcSourcePak tryGetSourcePak(String systemCode) {
-        return pakMap.get(systemCode);
+    protected FcSourcePak tryGetSourcePak(String system) {
+        return pakMap.get(system);
     }
 
     @Override
