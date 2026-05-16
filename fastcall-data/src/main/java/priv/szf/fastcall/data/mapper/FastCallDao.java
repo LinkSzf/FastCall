@@ -25,4 +25,6 @@ public interface FastCallDao<T> {
     void removeBatchByIds(Collection<Long> ids);
 
     void removeBatchNotInIds(Collection<Long> ids);
+
+    boolean exists(Long id);
 }

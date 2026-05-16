@@ -62,5 +62,8 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
 
     void deleteAllByIdNotIn(Collection<Long> ids);
 
-
+    @Override
+    default boolean exists(Long id) {
+        return existsById(id);
+    }
 }

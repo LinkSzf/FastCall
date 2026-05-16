@@ -16,19 +16,26 @@ import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.api.model.dto.FcHeaderAssignDTO;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
+import priv.szf.fastcall.api.model.mapping.FcApiMapping;
+import priv.szf.fastcall.api.model.mapping.FcApiParamMapping;
+import priv.szf.fastcall.api.model.mapping.FcHeaderAssignMapping;
+import priv.szf.fastcall.api.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
 import priv.szf.fastcall.api.model.vo.FcHeaderAssignVO;
 import priv.szf.fastcall.api.model.vo.FcSystemVO;
-import priv.szf.fastcall.api.service.FcApiParamService;
-import priv.szf.fastcall.api.service.FcApiService;
-import priv.szf.fastcall.api.service.FcHeaderAssignService;
-import priv.szf.fastcall.api.service.FcSystemService;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
+import priv.szf.fastcall.common.exception.FcDataNotFoundException;
+import priv.szf.fastcall.data.entity.FcSystem;
+import priv.szf.fastcall.data.manager.FcApiManager;
+import priv.szf.fastcall.data.manager.FcApiParamManager;
+import priv.szf.fastcall.data.manager.FcHeaderAssignManager;
+import priv.szf.fastcall.data.manager.FcSystemManager;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Validated
@@ -37,77 +44,114 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FcController {
 
-    private final FcSystemService systemService;
+    private final FcSystemManager systemManager;
 
-    private final FcApiService apiService;
+    private final FcApiManager apiManager;
 
-    private final FcApiParamService apiParamService;
+    private final FcApiParamManager apiParamManager;
 
-    private final FcHeaderAssignService headerAssignService;
+    private final FcHeaderAssignManager headerAssignManager;
+
+    private final FcSystemMapping systemMapping;
+
+    private final FcApiMapping apiMapping;
+
+    private final FcApiParamMapping apiParamMapping;
+
+    private final FcHeaderAssignMapping headerAssignMapping;
 
     @GetMapping("/all")
-    public List<FcSystemVO> listAll(){
+    public List<FcSystemVO> listAllSystem(){
         log.trace("{}-Web request query system list", FastCallConsts.NAME);
-        return systemService.listAll();
+        List<FcSystem> systemList = systemManager.listAllWithAuth();
+        return systemMapping.toVoList(systemList);
     }
 
-    @GetMapping("/{id}")
-    public FcSystemVO findOne(@PathVariable Long id){
-        log.trace("{}-Web request query system[{}]", FastCallConsts.NAME, id);
-        return systemService.getById(id);
+    @GetMapping("/{systemId}")
+    public FcSystemVO findOneSystem(@PathVariable Long systemId){
+        log.trace("{}-Web request query system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(systemId)
+                .map(systemManager::getByIdWithAuth)
+                .map(systemMapping::toVo)
+                .orElseThrow(() -> new FcDataNotFoundException("The system[{}] no longer exists.",  systemId));
     }
 
     @FcSourceEventCut(entity = FcSystemDTO.class)
     @PostMapping("/save")
-    public FcSystemVO saveOne(@Valid @RequestBody FcSystemDTO dto){
+    public FcSystemVO saveOneSystem(@Valid @RequestBody FcSystemDTO dto){
         log.trace("{}-Web request save system[{}]", FastCallConsts.NAME, dto.getCode());
-        return systemService.save(dto);
+        return Optional.of(dto)
+                .map(systemMapping::toEntity)
+                .map(systemManager::save)
+                .map(systemMapping::toVo)
+                .orElseThrow(() -> new FcDataNotFoundException("The system[{}] no longer exists.",  dto.getCode()));
     }
 
     @FcSourceEventCut(entity = Long.class, type = FcSourceEventType.DELETE)
-    @DeleteMapping("/{id}")
-    public void deleteOne(@PathVariable Long id){
-        log.trace("{}-Web request delete system[{}]", FastCallConsts.NAME, id);
-        systemService.removeById(id);
+    @DeleteMapping("/{systemId}")
+    public void deleteOneSystem(@PathVariable Long systemId){
+        log.trace("{}-Web request delete system[{}]", FastCallConsts.NAME, systemId);
+        systemManager.removeById(systemId);
     }
 
-    @GetMapping("/{id}/api/all")
-    public List<FcApiVO> listAllApiOfSystem(@PathVariable Long id){
-        log.trace("{}-Web request query api list of system[{}]", FastCallConsts.NAME, id);
-        return apiService.listAllBySystemId(id);
+    @GetMapping("/{systemId}/api/all")
+    public List<FcApiVO> listAllApiOfSystem(@PathVariable Long systemId){
+        log.trace("{}-Web request query api list of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(systemId)
+                .map(apiManager::listAllBySystemId)
+                .map(apiMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
     @FcSourceEventCut(entity = Long.class)
-    @PostMapping("/{id}/api/save")
-    public List<FcApiVO> saveApiOfSystem(@PathVariable Long id, @Valid @RequestBody List<FcApiDTO> apiList){
-        log.trace("{}-Web request save api of system[{}]", FastCallConsts.NAME, id);
-        return apiService.save(id, apiList);
+    @PostMapping("/{systemId}/api/save")
+    public List<FcApiVO> saveApiOfSystem(@PathVariable Long systemId, @Valid @RequestBody List<FcApiDTO> apiList) {
+        log.trace("{}-Web request save api of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(apiList)
+                .map(apiMapping::toEntityList)
+                .map(apis -> apiManager.save(systemId, apis))
+                .map(apiMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
-    @GetMapping("/api/{id}/param/all")
-    public List<FcApiParamVO> listAllApiParamsOfApi(@PathVariable Long id) {
-        log.trace("{}-Web request query api param list of api[{}]", FastCallConsts.NAME, id);
-        return apiParamService.listAllByApiId(id);
+    @GetMapping("/api/{apiId}/param/all")
+    public List<FcApiParamVO> listAllApiParamsOfApi(@PathVariable Long apiId) {
+        log.trace("{}-Web request query api param list of api[{}]", FastCallConsts.NAME, apiId);
+        return Optional.of(apiId)
+                .map(apiParamManager::listAllByApiId)
+                .map(apiParamMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The api[{}] no longer exists.", apiId));
     }
 
     @FcSourceEventCut(entity = Long.class, level = IdLevel.API)
-    @PostMapping("/api/{id}/param/save")
-    public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable Long id, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
-        log.trace("{}-Web request save api param list of api[{}]", FastCallConsts.NAME, id);
-        return apiParamService.save(id, apiParamList);
+    @PostMapping("/api/{apiId}/param/save")
+    public List<FcApiParamVO> saveApiParamsOfApi(@PathVariable Long apiId, @Valid @RequestBody List<FcApiParamDTO> apiParamList) {
+        log.trace("{}-Web request save api param list of api[{}]", FastCallConsts.NAME, apiId);
+        return Optional.of(apiParamList)
+                .map(apiParamMapping::toEntityList)
+                .map(params -> apiParamManager.save(apiId, params))
+                .map(apiParamMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The api[{}] no longer exists.", apiId));
     }
 
-    @GetMapping("/{id}/header_assign/all")
-    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable Long id) {
-        log.trace("{}-Web request query header assign list of system[{}]", FastCallConsts.NAME, id);
-        return headerAssignService.listAllHeaderAssignBySystemId(id);
+    @GetMapping("/{systemId}/header_assign/all")
+    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable Long systemId) {
+        log.trace("{}-Web request query header assign list of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(systemId)
+                .map(headerAssignManager::listAllHeaderAssignBySystemId)
+                .map(headerAssignMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
     @FcSourceEventCut(entity = Long.class, level = IdLevel.SYSTEM)
-    @PostMapping("/{id}/header_assign/save")
-    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable Long id, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
-        log.trace("{}-Web request save header assign list of system[{}]", FastCallConsts.NAME, id);
-        return headerAssignService.save(id, headerAssignList);
+    @PostMapping("/{systemId}/header_assign/save")
+    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable Long systemId, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
+        log.trace("{}-Web request save header assign list of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(headerAssignList)
+                .map(headerAssignMapping::toEntityList)
+                .map(list -> headerAssignManager.save(systemId, list))
+                .map(headerAssignMapping::toVoList)
+                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
 

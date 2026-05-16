@@ -1,4 +1,4 @@
-package priv.szf.fastcall.api.service.support;
+package priv.szf.fastcall.data.manager.support;
 
 import org.springframework.util.CollectionUtils;
 

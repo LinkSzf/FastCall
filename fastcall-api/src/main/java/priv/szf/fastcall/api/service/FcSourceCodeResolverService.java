@@ -2,7 +2,6 @@ package priv.szf.fastcall.api.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import priv.szf.fastcall.api.service.port.IFcSourceCodeResolver;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcApiDao;

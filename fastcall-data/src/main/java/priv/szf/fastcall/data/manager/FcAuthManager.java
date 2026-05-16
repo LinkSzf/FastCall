@@ -1,0 +1,59 @@
+package priv.szf.fastcall.data.manager;
+
+import cn.hutool.core.collection.CollectionUtil;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.data.entity.FcAuth;
+import priv.szf.fastcall.data.mapper.FcAuthDao;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+@Transactional
+@Service
+@RequiredArgsConstructor
+public class FcAuthManager {
+
+    private final FcAuthDao authDao;
+
+    public List<FcAuth> listAllBySystemIds(Collection<Long> systemIds) {
+        if (CollectionUtil.isEmpty(systemIds)) {
+            return Collections.emptyList();
+        }
+        return authDao.listBySystemIds(systemIds);
+    }
+
+    public FcAuth getBySystemId(Long systemId) {
+        if (Objects.isNull(systemId)) {
+            return null;
+        }
+        return authDao.getBySystemId(systemId);
+    }
+
+    public FcAuth save(@NonNull Long systemId, FcAuth auth) {
+        if (Objects.isNull(auth)) {
+            removeBySystemId(systemId);
+            return null;
+        }
+
+        if (Objects.isNull(auth.getId())) {
+            FcAuth existing = getBySystemId(systemId);
+            if (Objects.nonNull(existing)) {
+                auth.setId(existing.getId());
+            }
+        }
+
+        auth.setSysId(systemId);
+        return authDao.saveOne(auth);
+    }
+
+    public void removeBySystemId(Long systemId) {
+        if (Objects.nonNull(systemId)) {
+            authDao.removeBySystemId(systemId);
+        }
+    }
+}

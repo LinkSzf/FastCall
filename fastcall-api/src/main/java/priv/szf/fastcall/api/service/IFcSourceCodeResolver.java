@@ -1,4 +1,4 @@
-package priv.szf.fastcall.api.service.port;
+package priv.szf.fastcall.api.service;
 
 public interface IFcSourceCodeResolver {
 

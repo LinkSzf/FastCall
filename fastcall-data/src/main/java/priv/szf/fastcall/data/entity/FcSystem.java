@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.time.LocalDateTime;
 
 @Entity
@@ -64,5 +65,9 @@ public class FcSystem {
     @Column(name = "update_at")
     @TableField("update_at")
     private LocalDateTime updateAt;
+
+    @TableField(exist = false)
+    @Transient
+    private FcAuth auth;
 
 }

@@ -1,5 +1,6 @@
 package priv.szf.fastcall.data.mapper.mybatisplus;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -61,5 +62,12 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
         QueryWrapper<T> qw = Wrappers.<T>query()
                 .notIn("id", ids);
         delete(qw);
+    }
+
+    @Override
+    default boolean exists(Long id) {
+        Wrapper<T> wrapper = Wrappers.<T>query()
+                .eq("id", id);
+        return exists(wrapper);
     }
 }

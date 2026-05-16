@@ -1,78 +1,88 @@
-package priv.szf.fastcall.api.service;
+package priv.szf.fastcall.data.manager;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import priv.szf.fastcall.api.model.dto.FcApiDTO;
-import priv.szf.fastcall.api.model.mapping.FcApiMapping;
-import priv.szf.fastcall.api.service.support.FcShrinkSupport;
-import priv.szf.fastcall.api.model.vo.FcApiVO;
 import priv.szf.fastcall.common.exception.FcDataDuplicatedException;
-import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.entity.FcApi;
+import priv.szf.fastcall.data.manager.support.FcShrinkSupport;
+import priv.szf.fastcall.data.mapper.FcApiDao;
+import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class FcApiService {
+public class FcApiManager {
 
     private final FcApiDao apiDao;
 
-    private final FcApiMapping apiMapping;
+    private final FcSystemDao systemDao;
 
-    private final FcApiParamService apiParamService;
+    private final FcApiParamManager apiParamManager;
 
-    public List<FcApiVO> listAllBySystemId(Long systemId) {
-        List<FcApi> list = apiDao.listBySystemId(systemId);
-        return apiMapping.toVoList(list);
+    public List<FcApi> listAllBySystemId(Long systemId) {
+        if (Objects.isNull(systemId)) {
+            return Collections.emptyList();
+        }
+        return apiDao.listBySystemId(systemId);
     }
 
-    public List<FcApiVO> save(Long systemId, List<FcApiDTO> dtoList) {
-        if (CollectionUtils.isEmpty(dtoList)) {
+    public List<FcApi> save(@NonNull Long systemId, List<FcApi> apiList) {
+        if (!systemDao.exists(systemId)) {
+            return Collections.emptyList();
+        }
+
+        if (CollectionUtils.isEmpty(apiList)) {
             removeBySystemId(systemId);
             return Collections.emptyList();
         }
 
-        FcShrinkSupport.assignParentId(dtoList, systemId, FcApiDTO::setSysId);
+        FcShrinkSupport.assignParentId(apiList, systemId, FcApi::setSysId);
 
-        checkData(dtoList);
+        checkData(apiList);
 
         FcShrinkSupport.shrinkToIncoming(
                 apiDao.listBySystemId(systemId),
                 FcApi::getId,
-                dtoList,
-                FcApiDTO::getId,
+                apiList,
+                FcApi::getId,
                 removeIds -> {
-                    apiParamService.removeByApiIds(removeIds);
+                    apiParamManager.removeByApiIds(removeIds);
                     apiDao.removeBatchByIds(removeIds);
                 }
         );
 
-        List<FcApi> apiList = apiMapping.toEntityList(dtoList);
-        List<FcApi> savedApiList = apiDao.saveBatch(apiList);
-
-        return apiMapping.toVoList(savedApiList);
+        return apiDao.saveBatch(apiList);
     }
 
     public void removeBySystemId(Long systemId) {
+        if (Objects.isNull(systemId)) {
+            return;
+        }
+
         List<FcApi> apiList = apiDao.listBySystemId(systemId);
+        if (CollectionUtils.isEmpty(apiList)) {
+            return;
+        }
         List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
-        apiParamService.removeByApiIds(apiIds);
+        apiParamManager.removeByApiIds(apiIds);
         apiDao.removeBatchByIds(apiIds);
     }
 
-    private void checkData(List<FcApiDTO> dtoList) {
+    private void checkData(List<FcApi> apiList) {
         Set<String> nameSet = new HashSet<>();
         Set<String> duplicateNames = new HashSet<>();
 
-        for (FcApiDTO api : dtoList) {
+        for (FcApi api : apiList) {
             if (api == null) {
                 continue;
             }
