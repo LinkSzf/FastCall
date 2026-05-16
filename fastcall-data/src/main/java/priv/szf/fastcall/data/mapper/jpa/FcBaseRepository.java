@@ -5,6 +5,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Transactional;
 import priv.szf.fastcall.data.mapper.FastCallDao;
 
+import java.util.Collection;
 import java.util.List;
 
 @NoRepositoryBean
@@ -13,6 +14,11 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
     @Override
     default List<T> list() {
         return findAll();
+    }
+
+    @Override
+    default List<T> listByIds(Collection<Long> ids) {
+        return findAllById(ids);
     }
 
     @Override
@@ -35,7 +41,7 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
     }
 
     @Override
-    default List<T> saveBatch(List<T> entities) {
+    default List<T> saveBatch(Collection<T> entities) {
         return saveAllAndFlush(entities);
     }
 
@@ -45,16 +51,16 @@ public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao
     }
 
     @Override
-    default void removeBatchByIds(List<Long> ids) {
+    default void removeBatchByIds(Collection<Long> ids) {
         deleteAllById(ids);
     }
 
     @Override
-    default void removeBatchNotInIds(List<Long> ids) {
+    default void removeBatchNotInIds(Collection<Long> ids) {
         deleteAllByIdNotIn(ids);
     }
 
-    void deleteAllByIdNotIn(List<Long> ids);
+    void deleteAllByIdNotIn(Collection<Long> ids);
 
 
 }

@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import priv.szf.fastcall.data.mapper.FastCallDao;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
@@ -14,6 +17,11 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
     @Override
     default List<T> list() {
         return selectList(Wrappers.emptyWrapper());
+    }
+
+    @Override
+    default List<T> listByIds(Collection<Long> ids) {
+        return selectList(Wrappers.<T>query().in("id", ids));
     }
 
     @Override
@@ -33,9 +41,9 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
     }
 
     @Override
-    default List<T> saveBatch(List<T> entities) {
+    default List<T> saveBatch(Collection<T> entities) {
         Db.saveOrUpdateBatch(entities);
-        return entities;
+        return new ArrayList<>(entities);
     }
 
     @Override
@@ -44,12 +52,12 @@ public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
     }
 
     @Override
-    default void removeBatchByIds(List<Long> ids) {
+    default void removeBatchByIds(Collection<Long> ids) {
         deleteBatchIds(ids);
     }
 
     @Override
-    default void removeBatchNotInIds(List<Long> ids) {
+    default void removeBatchNotInIds(Collection<Long> ids) {
         QueryWrapper<T> qw = Wrappers.<T>query()
                 .notIn("id", ids);
         delete(qw);
