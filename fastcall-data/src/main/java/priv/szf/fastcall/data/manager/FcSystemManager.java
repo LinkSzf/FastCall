@@ -11,6 +11,7 @@ import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,21 +36,17 @@ public class FcSystemManager {
 
     public List<FcSystem> listAllWithAuth() {
         List<FcSystem> systemList = listAll();
-        List<Long> systemIds = systemList.stream()
-                .map(FcSystem::getId)
-                .collect(Collectors.toList());
-        List<FcAuth> authList = authManager.listAllBySystemIds(systemIds);
-        if (CollectionUtil.isEmpty(authList)) {
-            return systemList;
-        }
+        fillWithAuth(systemList);
+        return systemList;
+    }
 
-        Map<Long, FcAuth> authMap = authList.stream()
-                .collect(Collectors.toMap(FcAuth::getSysId, Function.identity()));
+    public List<FcSystem> listByIds(Collection<Long> ids) {
+        return systemDao.listByIds(ids);
+    }
 
-        for (FcSystem system : systemList) {
-            FcAuth auth = authMap.get(system.getId());
-            system.setAuth(auth);
-        }
+    public List<FcSystem> listByIdsWithAuth(Collection<Long> ids) {
+        List<FcSystem> systemList = listByIds(ids);
+        fillWithAuth(systemList);
         return systemList;
     }
 
@@ -97,4 +94,26 @@ public class FcSystemManager {
             throw new FcDataDuplicatedException("The system code[{}] already exists.", system.getCode());
         }
     }
+
+    private void fillWithAuth(List<FcSystem> systemList) {
+        if (CollectionUtil.isEmpty(systemList)) {
+            return;
+        }
+        List<Long> systemIds = systemList.stream()
+                .map(FcSystem::getId)
+                .collect(Collectors.toList());
+        List<FcAuth> authList = authManager.listAllBySystemIds(systemIds);
+        if (CollectionUtil.isEmpty(authList)) {
+            return;
+        }
+
+        Map<Long, FcAuth> authMap = authList.stream()
+                .collect(Collectors.toMap(FcAuth::getSysId, Function.identity()));
+
+        for (FcSystem system : systemList) {
+            FcAuth auth = authMap.get(system.getId());
+            system.setAuth(auth);
+        }
+    }
+
 }
