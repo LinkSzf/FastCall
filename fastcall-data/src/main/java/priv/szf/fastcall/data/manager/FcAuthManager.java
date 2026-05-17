@@ -1,10 +1,13 @@
 package priv.szf.fastcall.data.manager;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.common.FcAuthType;
+import priv.szf.fastcall.common.model.content.NoneAuthContent;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 
@@ -48,6 +51,10 @@ public class FcAuthManager {
         }
 
         auth.setSysId(systemId);
+        if (auth.getType() == FcAuthType.NONE) {
+            NoneAuthContent noneAuthContent = NoneAuthContent.getInstance();
+            auth.setContent(JSONUtil.toJsonStr(noneAuthContent));
+        }
         return authDao.saveOne(auth);
     }
 
