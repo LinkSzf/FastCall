@@ -34,11 +34,7 @@ public class DeclarativeController {
 
     @PostMapping("/payload")
     public FastCallResponse<Map<String, Object>> payload(@RequestBody(required = false) Map<String, Object> payload) {
-        Map<String, Object> body = (payload == null) ? new LinkedHashMap<>() : payload;
-        if (!body.containsKey("time")) {
-            body.put("time", System.currentTimeMillis());
-        }
-        return client.postPayload(body);
+        return client.postPayload(payload);
     }
 
     @GetMapping("/anonymous")

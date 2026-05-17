@@ -32,7 +32,7 @@ public class DeclarativeTargetController {
     }
 
     @PostMapping("/payload")
-    public Map<String, Object> payload(@RequestBody Map<String, Object> body,
+    public Map<String, Object> payload(@RequestBody(required = false) Map<String, Object> body,
                                        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization
     ) {
         Map<String, Object> result = new LinkedHashMap<>();

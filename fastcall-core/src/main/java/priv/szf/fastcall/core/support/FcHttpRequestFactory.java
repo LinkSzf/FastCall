@@ -33,7 +33,7 @@ public final class FcHttpRequestFactory {
             Map<String, List<String>> headers
     ) {
         Headers requestHeaders = buildHeaders(headers);
-        RequestBody requestBody = buildRequestBody(body, contentType);
+        RequestBody requestBody = buildRequestBody(body, contentType, method);
         FcRequestContext requestContext = FcRequestContext.builder()
                 .system(system)
                 .authType(authType)
@@ -61,7 +61,7 @@ public final class FcHttpRequestFactory {
         return headerBuilder.build();
     }
 
-    private static RequestBody buildRequestBody(Object body, FcMediaType contentType) {
+    private static RequestBody buildRequestBody(Object body, FcMediaType contentType, FcRequestMethod method) {
         return Optional.ofNullable(body)
                 .map(payload -> {
                     if (payload instanceof RequestBody) {
@@ -81,6 +81,9 @@ public final class FcHttpRequestFactory {
                     String jsonStr = JSONUtil.toJsonStr(payload);
                     return RequestBody.create(jsonStr, mediaType);
                 })
-                .orElse(RequestBody.create(new byte[0], MediaType.parse(FcMediaType.APPLICATION_JSON.getName())));
+                .orElse(
+                        method == FcRequestMethod.GET ? null
+                                : RequestBody.create(new byte[0])
+                );
     }
 }
