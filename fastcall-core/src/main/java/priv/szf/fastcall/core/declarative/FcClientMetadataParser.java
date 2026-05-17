@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.core.FastCallResponse;
+import priv.szf.fastcall.core.declarative.annotation.FcAppointedSystem;
 import priv.szf.fastcall.core.declarative.annotation.FcBody;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
 import priv.szf.fastcall.core.declarative.annotation.FcHeader;
@@ -260,6 +261,18 @@ final class FcClientMetadataParser {
                         partAnno.mediaType(),
                         false
                 );
+            } else if (annotation instanceof FcAppointedSystem) {
+                FcAppointedSystem systemAno = (FcAppointedSystem) annotation;
+//                String systemName = resolveSystemName(method, index, parameter);
+                current = new FcClientMethodMetadata.ParamBinding(
+                        FcClientMethodMetadata.ParamKind.SYSTEM,
+                        index,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false
+                );
             }
 
             if (Objects.nonNull(current)) {
@@ -280,6 +293,23 @@ final class FcClientMetadataParser {
             );
         }
         return binding;
+    }
+
+    private String resolveSystemName(Method method, int index, Parameter parameter) {
+        if (!parameter.isNamePresent()) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] @FcAppointedSystem requires explicit value or javac -parameters for parameter name discovery",
+                    interfaceType.getName(), method.getName(), index);
+        }
+
+        String systemName = StrUtil.trim(parameter.getName());
+        if (StrUtil.isBlank(systemName)) {
+            throw new FastCallException(
+                    "Method[{}#{}] parameter[{}] @FcAppointedSystem cannot resolve parameter name",
+                    interfaceType.getName(), method.getName(), index);
+        }
+
+        return systemName;
     }
 
     private String resolvePathName(

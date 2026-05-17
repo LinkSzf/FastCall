@@ -27,9 +27,10 @@ public class DeclarativeController {
 
     @GetMapping("/echo")
     public String echo(@RequestParam(defaultValue = "1001") String id,
-                       @RequestParam(defaultValue = "hello") String q
+                       @RequestParam(defaultValue = "hello") String q,
+                       @RequestParam(required = false) String system
     ) {
-        return client.echo(id, q, "req-" + id);
+        return client.echo(id, q, "req-" + id, system);
     }
 
     @PostMapping("/payload")

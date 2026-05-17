@@ -3,6 +3,7 @@ package priv.szf.fastcall.test.client;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.core.FastCallResponse;
+import priv.szf.fastcall.core.declarative.annotation.FcAppointedSystem;
 import priv.szf.fastcall.core.declarative.annotation.FcBody;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
 import priv.szf.fastcall.core.declarative.annotation.FcHeader;
@@ -22,7 +23,8 @@ public interface DeclarativeDemoClient {
     @FcMethod(uri = "/declarative/target/echo/{id}", method = FcRequestMethod.GET)
     String echo(@FcPath("id") String id,
                 @FcQuery("q") String q,
-                @FcHeader("X-Req-Id") String reqId
+                @FcHeader("X-Req-Id") String reqId,
+                @FcAppointedSystem String system
     );
 
     @FcMethod(uri = "/declarative/target/payload", method = FcRequestMethod.POST)

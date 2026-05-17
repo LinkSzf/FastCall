@@ -65,6 +65,7 @@ final class FcClientMethodMetadata {
         HEADER,
         PATH,
         BODY,
-        PART
+        PART,
+        SYSTEM
     }
 }

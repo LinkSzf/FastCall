@@ -113,6 +113,9 @@ final class FcClientRequestResolver {
                     hasPart = true;
                     addPartValues(partValues, binding, arg);
                     break;
+                case SYSTEM:
+                    system = String.valueOf(arg);
+                    break;
                 default:
                     throw new UnsupportedOperationException("Unsupported param kind: " + binding.getKind());
             }
