@@ -25,6 +25,10 @@ public class FastCallResponse<T> {
 
     private final String mediaType;
 
+    private final boolean isConnected;
+
+    private final Exception exception;
+
     public String getSingleHeader(String name) {
         return Optional.ofNullable(headers)
                 .map(map -> map.get(name))

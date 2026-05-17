@@ -44,6 +44,7 @@ public final class FcHttpResponseMapper {
                 .data(data)
                 .mediaType(mediaType)
                 .headers(headersMap)
+                .isConnected(true)
                 .build();
     }
 
@@ -96,7 +97,7 @@ public final class FcHttpResponseMapper {
                 );
             }
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "IO exception occured when reading response body in url[{}]", url);
+            throw new FcUnexpectedException(e, "IO exception occurred when reading response body in url[{}]", url);
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
                     "Response body cannot be converted to type[{}] in url[{}]",

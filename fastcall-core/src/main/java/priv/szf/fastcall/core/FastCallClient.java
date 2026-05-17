@@ -16,7 +16,6 @@ import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
@@ -31,6 +30,7 @@ import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,7 +79,11 @@ public class FastCallClient {
         try (Response response = call.execute()) {
             return buildStandardResponse(builder, response);
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "IO exception occurred when executing url[{}]", builder.fullUrl);
+            return FastCallResponse.<T>builder()
+                    .isSuccessful(false)
+                    .isConnected(false)
+                    .exception(e)
+                    .build();
         }
     }
 
