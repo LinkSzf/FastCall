@@ -28,18 +28,14 @@ fast-call:
     prefix: /fc_forward_proxy
   easy-source:
     - system:
-        code: none-system
-        name: 测试无认证的系统
+        code: local
+        name: 测试系统
         enable: true
-        host: http://127.0.0.1:8080
+        host: http://127.0.0.1:${server.port}
       auth:
         type: NONE
-        path: /
         content: |
-          {
-            "username": "admin",
-            "password": "123456"
-          }
+          {}
     - system:
         code: declarative-system
         name: 声明式调用演示系统

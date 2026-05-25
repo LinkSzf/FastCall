@@ -2,6 +2,11 @@ package priv.szf.fastcall.core.support;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Response;
@@ -21,7 +26,19 @@ import java.util.Optional;
 
 public final class FcHttpResponseMapper {
 
+    private static final ObjectMapper OBJECT_MAPPER = initObjectMapper();
+
     private FcHttpResponseMapper() {
+    }
+
+    private static ObjectMapper initObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        return objectMapper;
     }
 
     public static <T> FastCallResponse<T> buildStandardResponse(Type dataType, String url, Response response) {
@@ -86,7 +103,7 @@ public final class FcHttpResponseMapper {
             }
 
             try {
-                return JSONUtil.toBean(bodyStr, dataType, false);
+                return (T) OBJECT_MAPPER.readValue(bodyStr, rawType);
             } catch (RuntimeException e) {
                 throw new FcUnexpectedException(
                         e,

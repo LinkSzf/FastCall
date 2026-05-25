@@ -5,10 +5,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.FastCallResponse;
+import priv.szf.fastcall.test.model.JsonObject;
+import priv.szf.fastcall.test.model.JsonObject2;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/a")
@@ -38,5 +42,22 @@ public class AController {
         String header3 = request.getHeader("host");
         return header3;
     }
+
+    @GetMapping("/cast/test/trigger")
+    public JsonObject2 jsonObjectTestTrigger(@RequestParam(defaultValue = "local") String systemCode) {
+        return fastCall.getClient(systemCode)
+                .newCall(JsonObject2.class)
+                .uri("/a/cast/test")
+                .method(FcRequestMethod.GET)
+                .prepared()
+                .callIt()
+                .getData();
+    }
+
+   @GetMapping("/cast/test")
+    public JsonObject jsonObjectTestSource() {
+        return new JsonObject("test", 123, LocalDateTime.now());
+    }
+
 
 }
