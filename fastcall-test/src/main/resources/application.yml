@@ -32,17 +32,14 @@ fast-call:
         name: 测试系统
         enable: true
         host: http://127.0.0.1:${server.port}
-      auth:
-        type: NONE
-        content: |
-          {}
+        auth-type: NONE
     - system:
         code: declarative-system
         name: 声明式调用演示系统
         enable: true
         host: http://127.0.0.1:${server.port}
+        auth-type: NONE
       auth:
-        type: NONE
         path: /
         content: |
           {

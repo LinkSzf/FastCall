@@ -18,7 +18,7 @@ public class NoneAuthController extends BaseAuthController {
 
     @Override
     protected String getSystemCode() {
-        return "none-system";
+        return "noauth-system";
     }
 
     @Override

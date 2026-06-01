@@ -77,6 +77,9 @@ public class FastCallProperties {
             /** 系统访问地址 */
             private String host;
 
+            /** 认证类型 */
+            private FcAuthType authType = FcAuthType.NONE;
+
             /** 连接超时 */
             private Integer connectTimeout;
 
@@ -89,8 +92,6 @@ public class FastCallProperties {
 
         @Data
         public static class Auth {
-            /** 认证方式 */
-            private FcAuthType type;
 
             /** 认证路径 */
             private String path;

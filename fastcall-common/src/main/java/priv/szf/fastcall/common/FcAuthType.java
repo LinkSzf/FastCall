@@ -2,19 +2,20 @@ package priv.szf.fastcall.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
 import priv.szf.fastcall.common.model.content.BasicAuthContent;
 import priv.szf.fastcall.common.model.content.CookieAuthContent;
 import priv.szf.fastcall.common.model.content.DigestAuthContent;
-import priv.szf.fastcall.common.model.content.NoneAuthContent;
 import priv.szf.fastcall.common.model.content.TokenAuthContent;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 public enum FcAuthType {
 
-    NONE(NoneAuthContent.class),
+    NONE,
 
     APIKEY(ApiKeyAuthContent.class),
 

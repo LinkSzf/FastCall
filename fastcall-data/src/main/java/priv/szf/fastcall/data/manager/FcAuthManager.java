@@ -1,13 +1,10 @@
 package priv.szf.fastcall.data.manager;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.json.JSONUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.model.content.NoneAuthContent;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 
@@ -15,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -37,24 +35,13 @@ public class FcAuthManager {
         return authDao.getBySystemId(systemId);
     }
 
-    public FcAuth save(@NonNull Long systemId, FcAuth auth) {
-        if (Objects.isNull(auth)) {
-            removeBySystemId(systemId);
-            return null;
-        }
-
+    public FcAuth save(@NonNull Long systemId, @NonNull FcAuth auth) {
         if (Objects.isNull(auth.getId())) {
-            FcAuth existing = getBySystemId(systemId);
-            if (Objects.nonNull(existing)) {
-                auth.setId(existing.getId());
-            }
+            Optional.ofNullable(getBySystemId(systemId))
+                    .ifPresent(existing -> auth.setId(existing.getId()));
         }
 
         auth.setSysId(systemId);
-        if (auth.getType() == FcAuthType.NONE) {
-            NoneAuthContent noneAuthContent = NoneAuthContent.getInstance();
-            auth.setContent(JSONUtil.toJsonStr(noneAuthContent));
-        }
         return authDao.saveOne(auth);
     }
 

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcDataDuplicatedException;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
@@ -74,8 +75,13 @@ public class FcSystemManager {
         FcSystem savedSystem = systemDao.saveOne(system);
 
         Long systemId = savedSystem.getId();
-        FcAuth auth = system.getAuth();
-        authManager.save(systemId, auth);
+
+        if (system.getAuthType() == FcAuthType.NONE) {
+            authManager.removeBySystemId(systemId);
+        } else {
+            FcAuth auth = system.getAuth();
+            authManager.save(systemId, auth);
+        }
 
         return system;
     }

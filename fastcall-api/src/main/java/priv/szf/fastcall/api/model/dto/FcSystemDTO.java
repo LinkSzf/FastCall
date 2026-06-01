@@ -1,6 +1,7 @@
 package priv.szf.fastcall.api.model.dto;
 
 import lombok.Data;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcFuncScope;
 
 import javax.validation.Valid;
@@ -31,6 +32,9 @@ public class FcSystemDTO {
     @NotNull(message = "主机地址不能为空")
     @Size(min = 1, max = 50, message = "主机地址长度必须在1到100个字符之间")
     private String host;
+
+    @NotNull(message = "认证类型不能为空")
+    private FcAuthType authType;
 
     @Min(value = 1, message = "连接超时不能小于1")
     @Max(value = Integer.MAX_VALUE, message = "连接超时过大")

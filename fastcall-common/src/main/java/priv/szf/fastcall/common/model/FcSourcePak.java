@@ -43,9 +43,8 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
 
     @Override
     public List<Function<FcSourcePak, ?>> requireNonNull() {
-        return Arrays.asList(
-                FcSourcePak::getSystem,
-                FcSourcePak::getAuth
+        return Collections.singletonList(
+                FcSourcePak::getSystem
         );
     }
 }

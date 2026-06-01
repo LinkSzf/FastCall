@@ -16,7 +16,6 @@ import javax.validation.constraints.NotNull;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = NoneAuthDTO.class, name = "NONE"),
         @JsonSubTypes.Type(value = ApiKeyAuthDTO.class, name = "APIKEY"),
         @JsonSubTypes.Type(value = DigestAuthDTO.class, name = "DIGEST"),
         @JsonSubTypes.Type(value = BasicAuthDTO.class, name = "BASIC"),

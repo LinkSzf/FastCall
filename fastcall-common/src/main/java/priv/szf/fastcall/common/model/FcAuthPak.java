@@ -1,11 +1,10 @@
 package priv.szf.fastcall.common.model;
 
 import lombok.Data;
-import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -13,8 +12,6 @@ import java.util.function.Function;
 public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
     private static final long serialVersionUID = 8346425238219909450L;
-
-    private FcAuthType type;
 
     private BaseAuthContent content;
 
@@ -29,8 +26,7 @@ public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
     @Override
     public List<Function<FcAuthPak, ?>> requireNonNull() {
-        return Arrays.asList(
-                FcAuthPak::getType,
+        return Collections.singletonList(
                 FcAuthPak::getContent
         );
     }

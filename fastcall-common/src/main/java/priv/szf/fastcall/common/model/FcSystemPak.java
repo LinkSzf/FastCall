@@ -1,6 +1,7 @@
 package priv.szf.fastcall.common.model;
 
 import lombok.Data;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcFuncScope;
 
 import java.io.Serializable;
@@ -26,6 +27,8 @@ public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
 
     private String host;
 
+    private FcAuthType authType;
+
     private FcClientSettingPak clientSetting;
 
     @Override
@@ -33,7 +36,8 @@ public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
         return Arrays.asList(
                 FcSystemPak::getName,
                 FcSystemPak::getCode,
-                FcSystemPak::getHost
+                FcSystemPak::getHost,
+                FcSystemPak::getAuthType
         );
     }
 

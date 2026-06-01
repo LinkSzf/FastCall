@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.source;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
@@ -71,12 +72,18 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
     }
 
     private FcAuthPak getFcAuthPak(FastCallProperties.EasySource es) {
+        FastCallProperties.EasySource.System esSystem = es.getSystem();
+        FcAuthType authType = esSystem.getAuthType();
+        if (authType == FcAuthType.NONE) {
+            return null;
+        }
+
         FastCallProperties.EasySource.Auth esAuth = es.getAuth();
-        FcAuthPak auth = new FcAuthPak();
-        auth.setType(esAuth.getType());
         String authContentStr = esAuth.getContent();
-        BaseAuthContent authContent = JSONUtil.toBean(authContentStr, esAuth.getType().getClazz());
-        authContent.setType(esAuth.getType());
+        BaseAuthContent authContent = JSONUtil.toBean(authContentStr, authType.getClazz());
+        authContent.setType(authType);
+
+        FcAuthPak auth = new FcAuthPak();
         auth.setContent(authContent);
         auth.setPath(esAuth.getPath());
         auth.setParticularHost(esAuth.getParticularHost());

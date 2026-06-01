@@ -21,6 +21,8 @@ public class FcSystemVO {
 
     private String host;
 
+    private String authType;
+
     private Integer connectTimeout;
 
     private Integer readTimeout;

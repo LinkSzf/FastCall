@@ -3,10 +3,13 @@ package priv.szf.fastcall.data.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -45,6 +48,11 @@ public class FcSystem {
     @Column(name = "host")
     @TableField("host")
     private String host;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_type")
+    @TableField("auth_type")
+    private FcAuthType authType;
 
     @Column(name = "connect_timeout")
     @TableField("connect_timeout")
