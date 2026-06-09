@@ -63,8 +63,8 @@ public class DigestCredential extends BaseCredential implements ICredential {
     }
 
     @Override
-    public boolean isInvalid() {
-        return super.isInvalid() || !this.nonceManager.exist(this.nonce);
+    public boolean isValid() {
+        return this.nonceManager.exist(this.nonce);
     }
 
     @Override

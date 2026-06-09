@@ -7,12 +7,16 @@ public abstract class BaseCredential implements ICredential {
     private volatile boolean invalid = false;
 
     @Override
-    public boolean isInvalid() {
-        return this.invalid;
+    public final boolean isInvalid() {
+        return this.invalid || !isValid();
     }
 
     @Override
     public void invalidate() {
         this.invalid = true;
+    }
+
+    public boolean isValid() {
+        return true;
     }
 }

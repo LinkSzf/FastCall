@@ -23,8 +23,8 @@ public class TokenCredential extends BaseCredential implements ICredential {
     }
 
     @Override
-    public boolean isInvalid() {
-        return super.isInvalid() || Objects.isNull(estimatedExpiration)
-                || estimatedExpiration.isBefore(LocalDateTime.now());
+    public boolean isValid() {
+        return Objects.nonNull(estimatedExpiration)
+                && estimatedExpiration.isBefore(LocalDateTime.now());
     }
 }
