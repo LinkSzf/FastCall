@@ -63,6 +63,7 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
         system.setCode(esSystem.getCode());
         system.setHost(esSystem.getHost());
         system.setEnable(esSystem.isEnable());
+        system.setAuthType(esSystem.getAuthType());
         FcClientSettingPak cs = new FcClientSettingPak();
         cs.setConnectTimeout(esSystem.getConnectTimeout());
         cs.setReadTimeout(esSystem.getReadTimeout());
