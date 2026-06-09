@@ -2,7 +2,7 @@ package priv.szf.fastcall.common.source;
 
 public interface IFcChainSource extends IFcSource {
 
-    int getWeight();
+    ChainSourceType getType();
 
     void setNextSource(IFcSource source);
 

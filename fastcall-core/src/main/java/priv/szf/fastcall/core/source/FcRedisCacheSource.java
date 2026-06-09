@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.source;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
@@ -20,6 +21,11 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, 
     private final RedisTemplate<Object, Object> redisTemplate;
 
     private final FastCallProperties properties;
+
+    @Override
+    public ChainSourceType getType() {
+        return ChainSourceType.REDIS;
+    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
@@ -46,11 +52,6 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, 
             sourcePak.setCredential(credential);
             this.redisTemplate.opsForValue().set(redisKey, sourcePak, getExpire(), TimeUnit.MINUTES);
         }
-    }
-
-    @Override
-    public int getWeight() {
-        return 210;
     }
 
     @Override

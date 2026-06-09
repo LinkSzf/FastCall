@@ -25,18 +25,19 @@ public class FcSourceDelegate implements IFcSource {
             throw new FcUnexpectedException("No available sources");
         }
 
-        List<IFcChainSource> sortedSources = availableSources.stream()
-                .sorted(Comparator.comparingInt(IFcChainSource::getWeight))
+        List<IFcChainSource> descSortedSourceList = availableSources.stream()
+                .sorted(Comparator.<IFcChainSource>comparingInt(source -> source.getType().getPriority())
+                        .reversed())
                 .collect(Collectors.toList());
 
-        IFcChainSource previous = null;
-        for (IFcChainSource sortedSource : sortedSources) {
-            sortedSource.setNextSource(previous);
-            previous = sortedSource;
+        IFcChainSource last = null;
+        for (IFcChainSource sortedSource : descSortedSourceList) {
+            sortedSource.setNextSource(last);
+            last = sortedSource;
             sortedSource.init();
         }
 
-        this.source = previous;
+        this.source = last;
     }
 
     @Override

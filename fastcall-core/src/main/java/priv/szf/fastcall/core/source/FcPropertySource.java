@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.common.model.FcAuthPak;
@@ -43,17 +44,17 @@ public class FcPropertySource extends FcBaseChainSource implements IFcSource {
     }
 
     @Override
+    public ChainSourceType getType() {
+        return ChainSourceType.PROPERTY;
+    }
+
+    @Override
     protected FcSourcePak tryGetSourcePak(String system) {
         return pakMap.get(system);
     }
 
     @Override
     protected void tryUpdateCredential(String system, ICredential credential) {
-    }
-
-    @Override
-    public int getWeight() {
-        return Integer.MIN_VALUE;
     }
 
     private FcSystemPak getFcSystemPak(FastCallProperties.EasySource es) {

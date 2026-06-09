@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.source;
 import lombok.RequiredArgsConstructor;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.common.source.IFcSource;
 
@@ -15,6 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcSource, IFcCacheSource {
 
     private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
+
+    @Override
+    public ChainSourceType getType() {
+        return ChainSourceType.IN_MEMORY;
+    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
@@ -31,11 +37,6 @@ public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcSourc
         if (Objects.nonNull(sourcePak)) {
             sourcePak.setCredential(credential);
         }
-    }
-
-    @Override
-    public int getWeight() {
-        return 200;
     }
 
     @Override

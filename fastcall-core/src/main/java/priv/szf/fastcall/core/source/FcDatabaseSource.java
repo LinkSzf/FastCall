@@ -9,6 +9,7 @@ import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcDatabaseSource;
 import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.common.source.IFcSource;
@@ -24,6 +25,11 @@ import java.util.Set;
 public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSource, IFcSource {
 
     private final IFcPakProvider pakProvider;
+
+    @Override
+    public ChainSourceType getType() {
+        return ChainSourceType.DATABASE;
+    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
@@ -57,11 +63,6 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
 
     @Override
     public void tryUpdateCredential(String system, ICredential credential) {
-    }
-
-    @Override
-    public int getWeight() {
-        return 100;
     }
 
 }
