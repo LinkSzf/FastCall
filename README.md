@@ -21,11 +21,15 @@ FastCall是一款专用于进行调用三方系统HTTP接口的便捷访问工�
 * 支持定义并发请求数量及单系统并发请求数量限制。
 * 支持定义链接超时，写入超时，读取超时。
 * 支持接口缓存。
-* 支持的认证方式：Basic，ApiKey，Digest，Cookie，Token。
+* 支持的认证方式：Basic，ApiKey，Digest，Cookie，Token，JWT。
+* 支持Feign风格的声明式客户端调用。
 * 支持的配置缓存：Redis，InMemory。会根据引用项目的环境自动选择。
 * 支持的数据源：数据库，配置文件。
 * 支持的持久化框架：Hibernate，MybatisPlus。会根据引用项目的环境自动选择。
 * 支持发布请求事件。
+
+## 计划清单
+* 增加以系统或API为粒度的请求频率控制
 
 ## 环境依赖
 JDK 1.8 +

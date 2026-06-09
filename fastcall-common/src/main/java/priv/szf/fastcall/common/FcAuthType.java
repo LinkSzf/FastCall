@@ -8,6 +8,7 @@ import priv.szf.fastcall.common.model.content.BaseAuthContent;
 import priv.szf.fastcall.common.model.content.BasicAuthContent;
 import priv.szf.fastcall.common.model.content.CookieAuthContent;
 import priv.szf.fastcall.common.model.content.DigestAuthContent;
+import priv.szf.fastcall.common.model.content.JwtAuthContent;
 import priv.szf.fastcall.common.model.content.TokenAuthContent;
 
 @Getter
@@ -25,7 +26,9 @@ public enum FcAuthType {
 
     BEARER(TokenAuthContent.class, "Bearer "),
 
-    COOKIE(CookieAuthContent.class);
+    COOKIE(CookieAuthContent.class),
+
+    JWT(JwtAuthContent.class, "Bearer ");
 
     FcAuthType(Class<? extends BaseAuthContent> clazz) {
         this(clazz, null);

@@ -1,6 +1,7 @@
 package priv.szf.fastcall.test.controller;
 
 import cn.hutool.core.util.RandomUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public abstract class BaseAuthController {
 
     protected abstract boolean checkAuth(HttpServletRequest request);
 
+    @Getter
     @Autowired
     private FastCall fastCall;
 

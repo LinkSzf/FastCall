@@ -39,13 +39,31 @@ fast-call:
         enable: true
         host: http://127.0.0.1:${server.port}
         auth-type: NONE
+    - system:
+        code: weather-system
+        name: 获取天气数据系统
+        enable: true
+        host: https://pc5vxpedaq.re.qweatherapi.com
+        auth-type: JWT
       auth:
-        path: /
         content: |
           {
-            "username": "demo",
-            "password": "demo"
-          }
+            "type": "JWT",
+            "positionOn": "HEADER",
+            "algorithm": "Ed25519",
+            "secret": "MC4CAQAwBQYDK2VwBCIEINxyQ0QWXSdqCh20hqMIsrzGEDBBF7t+I8J7/aKGVf+V",
+            "issueAtOffset": -30,
+            "expiresIn": 10,
+            "header": {
+              "alg": "EdDSA",
+              "kid": "T5B8UFRR36"
+            },
+            "payload": {
+              "sub": "248C7MFGFY",
+            }
+          } 
+
+
 
 spring:
   application:
