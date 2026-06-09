@@ -86,7 +86,7 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         return refreshableAuthHandler.refresh(response);
     }
 
-    protected void invalidateCredential(Request request) {
+    private void invalidateCredential(Request request) {
         ICredential credential = request.tag(ICredential.class);
         if (Objects.nonNull(credential)) {
             credential.invalidate();

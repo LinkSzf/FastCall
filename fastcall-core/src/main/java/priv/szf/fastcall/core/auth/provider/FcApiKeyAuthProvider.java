@@ -8,6 +8,7 @@ import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.Objects;
 
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class FcApiKeyAuthProvider extends FcBaseAuthProvider<ApiKeyAuthContent>
         implements IFcAuthProvider {
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     @Override
     protected IFcSource getSource() {

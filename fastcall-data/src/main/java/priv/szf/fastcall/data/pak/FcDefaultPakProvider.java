@@ -63,6 +63,12 @@ public class FcDefaultPakProvider implements IFcPakProvider {
         return fillWithApiParams(apiList);
     }
 
+    @Override
+    public List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
+        List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
+        return pakMapping.toHeaderAssignPak(headerAssignList);
+    }
+
     private Map<String, FcApiPak> fillWithApiParams(List<FcApi> apiList) {
         List<Long> apiIds = apiList.stream().map(FcApi::getId).distinct().collect(Collectors.toList());
         List<FcApiParam> apiParamList = apiParamDao.listByApiIds(apiIds);
@@ -77,11 +83,5 @@ public class FcDefaultPakProvider implements IFcPakProvider {
                     return apiPak;
                 })
                 .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
-    }
-
-    @Override
-    public List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
-        List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
-        return pakMapping.toHeaderAssignPak(headerAssignList);
     }
 }

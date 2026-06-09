@@ -21,7 +21,7 @@ public class FcRequestContext implements IEssentialCheck<FcRequestContext> {
 
     private final FcCallType callType;
 
-    private final InterceptorContext  interceptorContext = new InterceptorContext();
+    private final InterceptorContext interceptorContext = new InterceptorContext();
 
     @Override
     public List<Function<FcRequestContext, ?>> requireNonNull() {

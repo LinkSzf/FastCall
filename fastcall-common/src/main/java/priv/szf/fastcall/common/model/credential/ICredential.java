@@ -1,6 +1,8 @@
 package priv.szf.fastcall.common.model.credential;
 
-public interface ICredential {
+import java.io.Serializable;
+
+public interface ICredential extends Serializable {
 
     String getAuthString();
 

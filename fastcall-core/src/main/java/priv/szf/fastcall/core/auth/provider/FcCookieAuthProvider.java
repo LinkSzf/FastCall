@@ -10,6 +10,7 @@ import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.model.credential.CookieCredential;
 import priv.szf.fastcall.common.source.IFcSource;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class FcCookieAuthProvider extends FcBaseInteractiveAuthProvider<CookieAuthContent, Object>
         implements IFcAuthProvider {
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     @Override
     protected CookieCredential buildCredential(@NonNull FastCallResponse<Object> response,

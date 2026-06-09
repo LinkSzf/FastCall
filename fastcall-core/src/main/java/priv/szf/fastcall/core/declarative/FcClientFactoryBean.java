@@ -10,6 +10,7 @@ import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.lang.reflect.Proxy;
 import java.util.Objects;
@@ -58,7 +59,7 @@ public class FcClientFactoryBean implements FactoryBean<Object>, BeanFactoryAwar
             }
 
             FastCall fastCall = beanFactory.getBean(FastCall.class);
-            IFcSource source = beanFactory.getBean(IFcSource.class);
+            IFcSource source = beanFactory.getBean(FcSourceDelegate.class);
 
             FcClientInvocationHandler handler = new FcClientInvocationHandler(interfaceType, fastCall, source);
             singletonProxy = Proxy.newProxyInstance(

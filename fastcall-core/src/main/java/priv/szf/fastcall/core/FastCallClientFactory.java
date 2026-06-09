@@ -16,11 +16,11 @@ import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.FcClientSettingPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
-import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.io.File;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class FastCallClientFactory {
     private static final Map<String, FastCallClient> CLIENT_MAP = new ConcurrentHashMap<>();
     private static final Object CACHE_LOCK = new Object();
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     private final FastCallProperties properties;
 

@@ -1,9 +1,8 @@
 package priv.szf.fastcall.core.source;
 
 import cn.hutool.core.collection.CollectionUtil;
-import lombok.RequiredArgsConstructor;
+import cn.hutool.core.util.ObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcSourcePak;
@@ -15,10 +14,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-@Primary
 @Component
-public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
+public class FcSourceDelegate implements IFcSource {
+
+    private final IFcSource source;
 
     @Autowired
     public FcSourceDelegate(List<IFcChainSource> availableSources) {
@@ -36,22 +35,20 @@ public class FcSourceDelegate extends FcBaseChainSource implements IFcSource {
             previous = sortedSource;
             sortedSource.init();
         }
-        this.setNextSource(previous);
+
+        this.source = previous;
     }
 
     @Override
-    public int getWeight() {
-        return Integer.MAX_VALUE;
+    public FcSourcePak getSourcePak(String system) {
+        FcSourcePak sourcePak = this.source.getSourcePak(system);
+        FcSourcePak cloned = ObjectUtil.clone(sourcePak);
+        cloned.setCredential(sourcePak.getCredential());
+        return cloned;
     }
 
     @Override
-    protected FcSourcePak tryGetSourcePak(String system) {
-        return null;
+    public void updateCredential(String system, ICredential credential) {
+        this.source.updateCredential(system, credential);
     }
-
-    @Override
-    protected void tryUpdateCredential(String system, ICredential credential) {
-    }
-
-
 }

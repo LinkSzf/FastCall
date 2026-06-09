@@ -15,6 +15,7 @@ import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.content.TokenAuthContent;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
 
     private static final long DEFAULT_EXPIRES_IN = 60 * 60 * 24 * 7;
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     @Override
     protected IFcSource getSource() {

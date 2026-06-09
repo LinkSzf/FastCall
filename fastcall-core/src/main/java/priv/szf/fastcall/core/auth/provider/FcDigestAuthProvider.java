@@ -18,6 +18,7 @@ import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.model.content.DigestAuthContent;
 import priv.szf.fastcall.core.model.credential.DigestCredential;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +30,7 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
 
     private final Map<String, ClientNonceManager> systemNonceManagerMap = new ConcurrentHashMap<>();
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     @Override
     protected IFcSource getSource() {

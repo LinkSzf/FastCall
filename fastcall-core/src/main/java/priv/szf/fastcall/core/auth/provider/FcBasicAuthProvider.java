@@ -7,13 +7,14 @@ import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.model.credential.BasicCredential;
 import priv.szf.fastcall.common.model.content.BasicAuthContent;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 @RequiredArgsConstructor
 @Component
 public class FcBasicAuthProvider extends FcBaseAuthProvider<BasicAuthContent>
         implements IFcAuthProvider {
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     @Override
     protected IFcSource getSource() {

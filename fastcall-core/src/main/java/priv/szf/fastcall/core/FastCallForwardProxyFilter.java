@@ -25,7 +25,7 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.IEssentialCheck;
-import priv.szf.fastcall.common.source.IFcSource;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import javax.servlet.FilterChain;
@@ -56,7 +56,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
 
     private final FastCallProperties properties;
 
-    private final IFcSource source;
+    private final FcSourceDelegate source;
 
     private final FastCall fastCall;
 
