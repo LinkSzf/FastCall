@@ -21,7 +21,7 @@ public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
     private String particularHost;
 
-    private Integer statusCode;
+    private Integer unauthorizedCode;
 
 
     @Override

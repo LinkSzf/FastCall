@@ -20,7 +20,7 @@ public class FcDigestAuthHandler extends FcBaseRefreshableAuthHandler
     }
 
     @Override
-    protected FcDigestAuthProvider getInteractiveAuthProvider() {
+    protected FcDigestAuthProvider getAuthProvider() {
         return authProvider;
     }
 

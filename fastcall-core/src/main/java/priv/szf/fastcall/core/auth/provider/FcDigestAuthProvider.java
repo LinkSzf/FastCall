@@ -5,8 +5,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.provider.digest.ClientNonceManager;
@@ -23,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Component
 public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthContent>
-    implements IFcDynAuthProvider<DigestAuthContent> {
+    implements IFcDynAuthProvider {
 
     private final Map<String, ClientNonceManager> systemNonceManagerMap = new ConcurrentHashMap<>();
 
@@ -68,6 +70,11 @@ public class FcDigestAuthProvider extends FcBaseDynAuthProvider<DigestAuthConten
                 .body(body)
                 .nonceManager(systemNonceManagerMap.computeIfAbsent(system, v -> new ClientNonceManager()))
                 .build();
+    }
+
+    @Override
+    protected ICredential buildCredential(@NotNull DigestAuthContent authContent) {
+        return null;
     }
 
 }

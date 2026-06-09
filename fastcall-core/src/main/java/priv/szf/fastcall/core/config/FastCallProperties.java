@@ -101,6 +101,9 @@ public class FastCallProperties {
 
             /** 特定主机认证 */
             private String particularHost;
+
+            /** 未认证状态码 */
+            private Integer unauthorizedCode;
         }
     }
 

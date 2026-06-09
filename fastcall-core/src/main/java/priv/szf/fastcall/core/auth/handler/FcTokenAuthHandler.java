@@ -19,7 +19,7 @@ public class FcTokenAuthHandler extends FcBaseRefreshableAuthHandler
     }
 
     @Override
-    protected FcTokenAuthProvider getInteractiveAuthProvider() {
+    protected FcTokenAuthProvider getAuthProvider() {
         return tokenAuthProvider;
     }
 

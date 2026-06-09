@@ -60,8 +60,8 @@ public class FcAuth {
     @TableField("particular_host")
     private String particularHost;
 
-    @Column(name = "status_code")
-    @TableField("status_code")
-    private Integer statusCode;
+    @Column(name = "unauthorized_code")
+    @TableField("unauthorized_code")
+    private Integer unauthorizedCode;
 
 }

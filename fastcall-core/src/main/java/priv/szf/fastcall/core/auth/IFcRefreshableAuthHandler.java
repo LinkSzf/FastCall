@@ -9,5 +9,5 @@ public interface IFcRefreshableAuthHandler extends IFcAuthHandler {
 
     boolean refresh(Response response);
 
-    Integer getAuthInNeedCode(Request request);
+    Integer getUnauthorizedCode(Request request);
 }

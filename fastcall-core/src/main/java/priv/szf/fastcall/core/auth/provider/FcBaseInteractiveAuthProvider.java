@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.auth.provider;
 import lombok.NonNull;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
@@ -22,13 +23,12 @@ import java.util.Objects;
 
 public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent, R>
         extends FcBaseDynAuthProvider<C>
-        implements IFcDynAuthProvider<C>
-{
+        implements IFcDynAuthProvider {
 
     protected abstract ICredential buildCredential(@NonNull FastCallResponse<R> response, @NonNull C authContent);
 
     @Override
-    protected ICredential buildCredential(@NonNull C authContent,
+    protected final ICredential buildCredential(@NonNull C authContent,
                                                    @NonNull Request request,
                                                    Response response,
                                                    @NonNull String system)
@@ -56,7 +56,12 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
         return buildCredential(authResponse, authContent);
     }
 
-    protected FastCallClient resolveRefreshClient(Request request, String system) {
+    @Override
+    protected final ICredential buildCredential(@NotNull C authContent) {
+        return null;
+    }
+
+    protected final FastCallClient resolveRefreshClient(Request request, String system) {
         FastCallClient client = request.tag(FastCallClient.class);
         if (Objects.nonNull(client)) {
             return client;
@@ -64,7 +69,7 @@ public abstract class FcBaseInteractiveAuthProvider<C extends BaseDynAuthContent
         return FastCallClientFactory.getExistedClient(system);
     }
 
-    protected void checkSuccess(FastCallResponse<R> response) {
+    protected final void checkSuccess(FastCallResponse<R> response) {
         if (!response.isSuccessful()) {
             throw new FastCallException("Failed to obtain authentication, code[{}], message[{}], trace-id[{}]",
                     response.getCode(),

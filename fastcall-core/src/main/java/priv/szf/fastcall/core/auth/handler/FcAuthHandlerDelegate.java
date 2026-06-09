@@ -5,7 +5,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
@@ -78,8 +77,8 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
             return false;
         }
         IFcRefreshableAuthHandler refreshableAuthHandler = (IFcRefreshableAuthHandler) handler;
-        Integer statusCode = refreshableAuthHandler.getAuthInNeedCode(request);
-        if (Objects.isNull(statusCode) || statusCode != response.code()) {
+        Integer unauthorizedCode = refreshableAuthHandler.getUnauthorizedCode(request);
+        if (Objects.isNull(unauthorizedCode) || unauthorizedCode != response.code()) {
             return false;
         }
 

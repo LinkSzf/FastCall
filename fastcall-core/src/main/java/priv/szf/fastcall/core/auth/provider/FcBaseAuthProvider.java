@@ -23,7 +23,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
     protected abstract ICredential buildCredential(@NonNull C authContent);
 
     @Override
-    public ICredential getCredential(String system) {
+    public final ICredential getCredential(String system) {
         FcSourcePak sourcePak = getSource().getSourcePak(system);
         if (Objects.isNull(sourcePak)) {
             throw new FastCallException("Source infos of system[{}] not found", system);
@@ -33,7 +33,7 @@ public abstract class FcBaseAuthProvider<C extends BaseAuthContent> implements I
                 : buildCredential(system);
     }
 
-    protected C getAuthContent(String system) {
+    protected final C getAuthContent(String system) {
         BaseAuthContent content = Optional.ofNullable(getSource().getSourcePak(system))
                 .map(FcSourcePak::getAuth)
                 .map(FcAuthPak::getContent)

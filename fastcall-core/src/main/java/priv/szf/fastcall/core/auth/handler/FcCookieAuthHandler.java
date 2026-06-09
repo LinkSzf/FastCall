@@ -23,7 +23,7 @@ public class FcCookieAuthHandler extends FcBaseRefreshableAuthHandler
     }
 
     @Override
-    protected FcCookieAuthProvider getInteractiveAuthProvider() {
+    protected FcCookieAuthProvider getAuthProvider() {
         return authProvider;
     }
 

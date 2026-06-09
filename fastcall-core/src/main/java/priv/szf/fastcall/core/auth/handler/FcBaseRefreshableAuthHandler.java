@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.auth.handler;
 import okhttp3.Request;
 import okhttp3.Response;
 import priv.szf.fastcall.common.model.credential.ICredential;
-import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 
@@ -17,23 +16,13 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
 
     private static final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
-    public static void clearSystemLock(String system) {
-        if (system != null) {
-            SYSTEM_LOCKS.remove(system);
-        }
-    }
-
-    protected abstract IFcDynAuthProvider<?> getInteractiveAuthProvider();
+    @Override
+    protected abstract IFcDynAuthProvider getAuthProvider();
 
     @Override
-    protected IFcAuthProvider getAuthProvider() {
-        return getInteractiveAuthProvider();
-    }
-
-    @Override
-    public Integer getAuthInNeedCode(Request request) {
+    public final Integer getUnauthorizedCode(Request request) {
         String system = getSystem(request);
-        return getInteractiveAuthProvider().getAuthInNeedCode(system);
+        return getAuthProvider().getUnauthorizedCode(system);
     }
 
     @Override
@@ -47,7 +36,13 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
         return doRefreshToken(request, response);
     }
 
-    protected boolean doRefreshToken(Request request, Response response) {
+    public static void clearSystemLock(String system) {
+        if (system != null) {
+            SYSTEM_LOCKS.remove(system);
+        }
+    }
+
+    private boolean doRefreshToken(Request request, Response response) {
         String system = getSystem(request);
 
         ReentrantLock systemLock = SYSTEM_LOCKS.computeIfAbsent(system, k -> new ReentrantLock());
@@ -56,7 +51,7 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
             systemLock.lock();
             try {
                 if (isCredentialInvalid(system)) {
-                    getInteractiveAuthProvider().refreshCredential(request, response, system);
+                    getAuthProvider().refreshCredential(request, response, system);
                     return true;
                 }
             } finally {
