@@ -1,15 +1,14 @@
 package priv.szf.fastcall.core.model.credential;
 
 
+import lombok.RequiredArgsConstructor;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
+@RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class CookieCredential extends BaseCredential implements ICredential {
 
     private final String cookie;
 
-    private CookieCredential(String cookie) {
-        this.cookie = cookie;
-    }
 
     public static CookieCredential create(String cookie) {
         return new CookieCredential(cookie);

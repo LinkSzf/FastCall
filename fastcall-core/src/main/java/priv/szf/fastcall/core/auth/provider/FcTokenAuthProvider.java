@@ -24,7 +24,7 @@ import java.util.Objects;
 public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuthContent, String>
         implements IFcAuthProvider {
 
-    private static final long DEFAULT_EXPIRED_IN = 3600 * 24 * 7;
+    private static final long DEFAULT_EXPIRES_IN = 60 * 60 * 24 * 7;
 
     private final IFcSource source;
 
@@ -55,9 +55,9 @@ public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuth
     }
 
     private LocalDateTime getEstimatedExpiration(JSONObject jsonData, String fieldPath, LocalDateTime issuance) {
-        Long expiredIn = jsonData.getByPath(fieldPath, Long.class);
-        long expiredInNum = (Objects.isNull(expiredIn)) ? DEFAULT_EXPIRED_IN : expiredIn;
-        return issuance.plusSeconds(expiredInNum);
+        Long expiresIn = jsonData.getByPath(fieldPath, Long.class);
+        long expiresInNum = (Objects.isNull(expiresIn)) ? DEFAULT_EXPIRES_IN : expiresIn;
+        return issuance.plusSeconds(expiresInNum);
     }
 
     private LocalDateTime getIssuance(JSONObject jsonData, String fieldPath) {

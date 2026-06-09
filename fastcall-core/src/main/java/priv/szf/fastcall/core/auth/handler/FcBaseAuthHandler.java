@@ -66,5 +66,10 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
         return (T) credential;
     }
 
+    protected final String concatAuthString(ICredential credential) {
+        String authString = credential.getAuthString();
+        return StrUtil.prependIfMissingIgnoreCase(authString, getAuthType().getPrefix());
+    }
+
 
 }

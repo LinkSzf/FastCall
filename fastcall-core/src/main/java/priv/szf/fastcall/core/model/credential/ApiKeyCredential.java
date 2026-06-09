@@ -1,26 +1,21 @@
 package priv.szf.fastcall.core.model.credential;
 
 import cn.hutool.core.util.StrUtil;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
+import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
+@AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 @Getter
 public class ApiKeyCredential extends BaseCredential implements ICredential {
 
     private final String key;
     private final String value;
-    private final ApiKeyAuthContent.In addTo;
+    private final FcAuthPosition positionOn;
 
-
-    private ApiKeyCredential(String key, String value, ApiKeyAuthContent.In addTo) {
-        this.key = key;
-        this.value = value;
-        this.addTo = addTo;
-    }
-
-    public static ApiKeyCredential create(String key, String value, ApiKeyAuthContent.In addTo) {
-        return new ApiKeyCredential(key, value, addTo);
+    public static ApiKeyCredential create(String key, String value, FcAuthPosition positionOn) {
+        return new ApiKeyCredential(key, value, positionOn);
     }
 
     @Override

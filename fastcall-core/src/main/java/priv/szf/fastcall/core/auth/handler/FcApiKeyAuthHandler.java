@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.provider.FcApiKeyAuthProvider;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
 
 import java.util.Optional;
@@ -36,12 +36,12 @@ public class FcApiKeyAuthHandler extends FcBaseAuthHandler implements IFcAuthHan
         ApiKeyCredential apiKeyCredential = (ApiKeyCredential) credential;
         String key = apiKeyCredential.getKey();
         String value = apiKeyCredential.getValue();
-        ApiKeyAuthContent.In addTo = apiKeyCredential.getAddTo();
+        FcAuthPosition positionOn = apiKeyCredential.getPositionOn();
 
-        if (addTo == ApiKeyAuthContent.In.HEADER) {
+        if (positionOn == FcAuthPosition.HEADER) {
             builder.header(key, value);
         }
-        else if (addTo == ApiKeyAuthContent.In.QUERY) {
+        else if (positionOn == FcAuthPosition.QUERY) {
             String url = Optional.ofNullable(builder.getUrl$okhttp())
                     .map(HttpUrl::toString)
                     .orElseThrow(() -> new FcUnexpectedException("Url 为空"));

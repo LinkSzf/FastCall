@@ -2,6 +2,7 @@ package priv.szf.fastcall.common.model.content;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import priv.szf.fastcall.common.FcAuthPosition;
 
 import java.io.Serializable;
 
@@ -15,10 +16,6 @@ public class ApiKeyAuthContent extends BaseAuthContent implements Serializable {
 
     private String value;
 
-    private In addTo;
+    private FcAuthPosition positionOn;
 
-    public enum In {
-        HEADER,
-        QUERY
-    }
 }
