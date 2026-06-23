@@ -133,10 +133,12 @@ public class FastCallClient {
             return response;
         }
         finally {
-            if (Objects.isNull(requestEvent)) {
-                requestEvent = new FcRequestEvent(builder.fullUrl, false);
+            if (Objects.nonNull(eventPublisher)) {
+                if (Objects.isNull(requestEvent)) {
+                    requestEvent = new FcRequestEvent(builder.fullUrl, false);
+                }
+                eventPublisher.publish(requestEvent);
             }
-            eventPublisher.publish(requestEvent);
         }
     }
 

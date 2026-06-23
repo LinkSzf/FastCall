@@ -1,4 +1,4 @@
-package priv.szf.fastcall.data;
+package priv.szf.fastcall.data.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -11,8 +11,8 @@ import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
-import priv.szf.fastcall.data.pak.FcDefaultPakProvider;
-import priv.szf.fastcall.data.pak.FcPakMapping;
+import priv.szf.fastcall.data.provider.FcDefaultPakProvider;
+import priv.szf.fastcall.data.provider.FcPakMapping;
 
 @Slf4j
 @Configuration

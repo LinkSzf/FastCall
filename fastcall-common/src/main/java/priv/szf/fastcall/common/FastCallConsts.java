@@ -14,5 +14,9 @@ public final class FastCallConsts {
 
     public static final int AUTO_CONFIGURATION_CORE_ORDER = AUTO_CONFIGURATION_ORDER + 2;
 
+    public static final String ASYNC_EXECUTOR = FastCallConsts.NAME + "AsyncExecutor";
+
+    public static final String EVENT_ENABLE = FastCallConsts.NAME + "EventEnable";
+
 
 }

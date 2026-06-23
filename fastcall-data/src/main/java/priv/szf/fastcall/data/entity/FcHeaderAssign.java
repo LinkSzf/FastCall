@@ -8,7 +8,6 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import priv.szf.fastcall.common.FcHeaderOperation;
 import priv.szf.fastcall.common.FcHeaderType;
-import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

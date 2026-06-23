@@ -1,5 +1,7 @@
 package priv.szf.fastcall.core;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -9,9 +11,8 @@ import priv.szf.fastcall.core.auth.FcRequestContext;
 import java.io.IOException;
 import java.util.Objects;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FcUtils {
-
-    private FcUtils() {}
 
     public static byte[] readRequestBody(Request request) {
         RequestBody body = request.body();

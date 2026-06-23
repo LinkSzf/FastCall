@@ -12,7 +12,6 @@ import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.FastCallClientFactory;
 import priv.szf.fastcall.core.auth.handler.FcBaseRefreshableAuthHandler;
 import priv.szf.fastcall.core.auth.provider.FcDigestAuthProvider;
-import priv.szf.fastcall.core.config.FcAsyncConfig;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,7 @@ public class FcSourceEventListener implements IFcSourceEventListener {
 
     private final FcDigestAuthProvider digestAuthProvider;
 
-    @Async(FcAsyncConfig.EVENT_EXECUTOR)
+    @Async(FastCallConsts.ASYNC_EXECUTOR)
     @EventListener
     @Override
     public void listen(IFcSourceEvent event) {

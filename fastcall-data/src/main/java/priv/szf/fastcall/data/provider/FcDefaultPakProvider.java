@@ -1,4 +1,4 @@
-package priv.szf.fastcall.data.pak;
+package priv.szf.fastcall.data.provider;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;

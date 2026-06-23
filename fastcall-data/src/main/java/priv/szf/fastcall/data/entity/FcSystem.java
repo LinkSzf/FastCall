@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.data.FcEntityConsts;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

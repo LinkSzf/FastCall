@@ -16,20 +16,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class FcAsyncConfig {
 
-    public static final String EVENT_EXECUTOR = FastCallConsts.NAME + "-event-executor";
+    private static final String THREAD_NAME_PREFIX = FastCallConsts.NAME + "-async-";
+    private static final int QUEUE_CAPACITY = 10000;
 
-    private static final String EVENT_EXECUTOR_THREAD_NAME_PREFIX = FastCallConsts.NAME + "-event-";
-    private static final int EVENT_EXECUTOR_QUEUE_CAPACITY = 10000;
-
-    @ConditionalOnMissingBean(name = EVENT_EXECUTOR)
-    @Bean(EVENT_EXECUTOR)
-    public Executor eventExecutor() {
+    @ConditionalOnMissingBean(name = FastCallConsts.ASYNC_EXECUTOR)
+    @Bean({FastCallConsts.ASYNC_EXECUTOR})
+    public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(EVENT_EXECUTOR_QUEUE_CAPACITY);
+        executor.setQueueCapacity(QUEUE_CAPACITY);
+        executor.setThreadNamePrefix(THREAD_NAME_PREFIX);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setThreadNamePrefix(EVENT_EXECUTOR_THREAD_NAME_PREFIX);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
         log.info("{} default event executor initialized.", FastCallConsts.NAME);
         return executor;

@@ -3,7 +3,8 @@ package priv.szf.fastcall.data.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Async;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.event.request.IFcAuthRequestEvent;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcSystem;
@@ -14,13 +15,13 @@ import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class FcAuthRequestEventListener implements IFcAuthRequestEventListener {
-
-    private final FcAuthDao authDao;
 
     private final FcSystemDao systemDao;
 
+    private final FcAuthDao authDao;
+
+    @Async(FastCallConsts.ASYNC_EXECUTOR)
     @EventListener
     @Override
     public void listen(IFcAuthRequestEvent event) {

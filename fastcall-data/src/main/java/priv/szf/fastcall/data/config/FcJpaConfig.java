@@ -1,4 +1,4 @@
-package priv.szf.fastcall.data;
+package priv.szf.fastcall.data.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

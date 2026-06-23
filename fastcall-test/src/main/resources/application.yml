@@ -6,7 +6,7 @@ server:
 fast-call:
   max-requests: 200
   max-requests-per-host: 20
-  allow-event: true
+  enable-event: true
   pool:
     max-idle-connections: 50
     keep-alive-minutes: 5

@@ -1,4 +1,4 @@
-package priv.szf.fastcall.data;
+package priv.szf.fastcall.data.entity;
 
 public class FcEntityConsts {
 

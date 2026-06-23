@@ -3,7 +3,6 @@ package priv.szf.fastcall.data.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.event.request.IFcApiRequestEvent;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcSystem;
@@ -14,12 +13,11 @@ import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class FcApiRequestEventListener implements IFcApiRequestEventListener {
 
-    private final FcApiDao apiDao;
-
     private final FcSystemDao systemDao;
+
+    private final FcApiDao apiDao;
 
     @EventListener
     @Override
