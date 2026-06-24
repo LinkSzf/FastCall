@@ -6,17 +6,20 @@ import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
+import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcHeaderAssign;
+import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
+import priv.szf.fastcall.data.mapper.FcRateLimitDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 
 import java.util.Collections;
@@ -37,6 +40,8 @@ public class FcDefaultPakProvider implements IFcPakProvider {
     private final FcApiParamDao apiParamDao;
 
     private final FcHeaderAssignDao headerAssignDao;
+
+    private final FcRateLimitDao rateLimitDao;
 
     private final FcPakMapping pakMapping;
 
@@ -67,6 +72,18 @@ public class FcDefaultPakProvider implements IFcPakProvider {
     public List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
         List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
         return pakMapping.toHeaderAssignPak(headerAssignList);
+    }
+
+    @Override
+    public List<FcRateLimitPak> getAllRateLimits() {
+        List<FcRateLimit> list = rateLimitDao.listAllEnable();
+        return pakMapping.toRateLimitPak(list);
+    }
+
+    @Override
+    public void saveRateLimits(List<FcRateLimitPak> rateLimitPaks) {
+        List<FcRateLimit> list = pakMapping.toRateLimit(rateLimitPaks);
+        rateLimitDao.saveBatch(list);
     }
 
     private Map<String, FcApiPak> fillWithApiParams(List<FcApi> apiList) {

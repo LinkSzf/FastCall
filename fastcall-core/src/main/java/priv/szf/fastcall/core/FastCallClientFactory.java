@@ -21,6 +21,7 @@ import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
+import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.io.File;
@@ -52,6 +53,8 @@ public class FastCallClientFactory {
 
     @Autowired(required = false)
     private IFcRequestEventPublisher eventPublisher;
+
+    private final FcFilterManager filterManager;
 
     private volatile Cache sharedCache;
 
@@ -92,6 +95,7 @@ public class FastCallClientFactory {
                 .authType(authType)
                 .source(source)
                 .eventPublisher(eventPublisher)
+                .filterManager(filterManager)
                 .build();
     }
 

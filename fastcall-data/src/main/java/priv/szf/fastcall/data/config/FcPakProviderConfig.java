@@ -10,6 +10,7 @@ import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
 import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
+import priv.szf.fastcall.data.mapper.FcRateLimitDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
 import priv.szf.fastcall.data.provider.FcDefaultPakProvider;
 import priv.szf.fastcall.data.provider.FcPakMapping;
@@ -28,6 +29,7 @@ public class FcPakProviderConfig {
             FcApiDao apiDao,
             FcApiParamDao apiParamDao,
             FcHeaderAssignDao headerAssignDao,
+            FcRateLimitDao rateLimitDao,
             FcPakMapping pakMapping
     ) {
         log.info("{} default pak provider initialized.", FastCallConsts.NAME);
@@ -37,6 +39,7 @@ public class FcPakProviderConfig {
                 apiDao,
                 apiParamDao,
                 headerAssignDao,
+                rateLimitDao,
                 pakMapping
         );
     }

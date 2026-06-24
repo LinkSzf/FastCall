@@ -24,13 +24,13 @@ import priv.szf.fastcall.core.event.FcApiRequestEvent;
 import priv.szf.fastcall.core.event.FcAuthRequestEvent;
 import priv.szf.fastcall.core.event.FcRequestEvent;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
+import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.support.FcHttpRequestFactory;
 import priv.szf.fastcall.core.support.FcHttpResponseMapper;
 import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,6 +50,8 @@ public class FastCallClient {
     private final IFcSource source;
 
     private final IFcRequestEventPublisher eventPublisher;
+
+    private final FcFilterManager filterManager;
 
     private <T> Request createRequest(Builder<T> builder) {
         Request request = FcHttpRequestFactory.createRequest(
@@ -128,6 +130,7 @@ public class FastCallClient {
     private <T> FastCallResponse<T> callIt(Builder<T> builder) {
         IFcRequestEvent requestEvent = null;
         try {
+            filterManager.doFilter(source.getSourcePak(system));
             FastCallResponse<T> response = doCall(builder);
             requestEvent = createRequestEvent(builder, response);
             return response;

@@ -4,6 +4,7 @@ package priv.szf.fastcall.core.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import priv.szf.fastcall.common.FcAuthType;
+import priv.szf.fastcall.common.FcTimeSpan;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,8 +20,11 @@ public class FastCallProperties {
     /** 每主机最大并发请求数 */
     private int maxRequestsPerHost = 30;
 
-    /** 是否允许事件 */
-    private boolean allowEvent = false;
+    /** 是否启用事件 */
+    private boolean enableEvent = false;
+
+    /** 是否允许限流*/
+    private boolean enableRateLimit = true;
 
     /** 客户端配置 */
     private Client client = new Client();
@@ -63,6 +67,9 @@ public class FastCallProperties {
         /** 认证配置 */
         private Auth auth = new Auth();
 
+        /** 限流配置 */
+        private List<RateLimit> rateLimits = new ArrayList<>();
+
         @Data
         public static class System {
             /** 系统名称 */
@@ -104,6 +111,16 @@ public class FastCallProperties {
 
             /** 未认证状态码 */
             private Integer unauthorizedCode;
+        }
+
+        @Data
+        public static class RateLimit {
+
+            /** 次数*/
+            private Long maximum;
+
+            /** 时间跨度 */
+            private FcTimeSpan span;
         }
     }
 

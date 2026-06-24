@@ -14,6 +14,8 @@ public class FcEntityConsts {
 
     public static final String HEADER_ASSIGN_TABLE = TABLE_PREFIX + "header_assign";
 
+    public static final String RATE_LIMIT_TABLE = TABLE_PREFIX + "rate_limit";
+
 
 
 }

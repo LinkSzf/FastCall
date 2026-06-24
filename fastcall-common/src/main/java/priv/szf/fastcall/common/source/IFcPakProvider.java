@@ -3,6 +3,7 @@ package priv.szf.fastcall.common.source;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
+import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 
 import java.util.List;
@@ -17,5 +18,9 @@ public interface IFcPakProvider {
     Map<String, FcApiPak> getApisBySysId(Long sysId);
 
     List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId);
+
+    List<FcRateLimitPak> getAllRateLimits();
+
+    void saveRateLimits(List<FcRateLimitPak> rateLimitPaks);
 
 }

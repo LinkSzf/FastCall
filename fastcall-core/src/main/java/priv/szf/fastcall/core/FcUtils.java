@@ -2,6 +2,7 @@ package priv.szf.fastcall.core;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -59,7 +60,9 @@ public final class FcUtils {
                 .build();
     }
 
-
+    public static int encodeId(@NonNull String id) {
+        return id.hashCode();
+    }
 
 
 }
