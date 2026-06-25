@@ -21,7 +21,7 @@ public class FcDataEventConfig {
 
     private static final String ApiRequestEventListener = FastCallConsts.NAME + "ApiRequestEventListener";
 
-    @ConditionalOnProperty(prefix = "fast-call", name = "enable-event", havingValue = "true")
+    @ConditionalOnProperty(prefix = "fast-call.filter", name = "enable-request-event", havingValue = "true")
     @Bean(FastCallConsts.EVENT_ENABLE)
     public Object fcEventEnable() {
         return new Object();

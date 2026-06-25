@@ -7,7 +7,6 @@ import okhttp3.Cache;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.exception.FcDataNotFoundException;
@@ -20,7 +19,6 @@ import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
-import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
 
@@ -50,9 +48,6 @@ public class FastCallClientFactory {
     private final FcAuthInterceptor authInterceptor;
 
     private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
-
-    @Autowired(required = false)
-    private IFcRequestEventPublisher eventPublisher;
 
     private final FcFilterManager filterManager;
 
@@ -94,7 +89,6 @@ public class FastCallClientFactory {
                 .system(system)
                 .authType(authType)
                 .source(source)
-                .eventPublisher(eventPublisher)
                 .filterManager(filterManager)
                 .build();
     }

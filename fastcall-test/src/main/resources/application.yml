@@ -6,8 +6,9 @@ server:
 fast-call:
   max-requests: 200
   max-requests-per-host: 20
-  enable-event: true
-  enable-rate-limit: true
+  filter:
+    enable-rate-limit: true
+    enable-request-event: true
   pool:
     max-idle-connections: 50
     keep-alive-minutes: 5
@@ -64,12 +65,8 @@ fast-call:
             }
           }
       rate-limits:
-        - maximum: 3
+        - maximum: 30
           span: MINUTES
-        - maximum: 5
-          span: HOURS
-        - maximum: 8
-          span: DAYS
 
 
 

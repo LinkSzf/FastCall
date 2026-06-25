@@ -2,9 +2,12 @@ package priv.szf.fastcall.core.filter;
 
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.FcTimeSpan;
 import priv.szf.fastcall.common.exception.FcRateLimitedException;
 import priv.szf.fastcall.common.filter.FcFilter;
+import priv.szf.fastcall.common.filter.FcFilterChain;
+import priv.szf.fastcall.common.filter.FcFilterContext;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.FcSystemPak;
@@ -17,22 +20,20 @@ import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
+@Order(10)
 public class FcRateLimitFilter implements FcFilter {
 
     private final FcRateLimitSupport support;
 
     @Override
-    public int getOrder() {
-        return 100;
-    }
-
-    @Override
-    public void doFilter(FcSourcePak sourcePak) {
+    public void doFilter(FcFilterContext context, FcFilterChain chain) {
+        FcSourcePak sourcePak = context.getSourcePak();
         FcSystemPak system = sourcePak.getSystem();
         Long id = system.getId();
         Long systemId = Objects.nonNull(id) ? id : FcUtils.encodeId(system.getCode());
         List<FcRateLimitPak> rateLimits = this.support.getLimits(systemId);
         if (CollectionUtil.isEmpty(rateLimits)) {
+            chain.doFilter(context);
             return;
         }
 
@@ -42,6 +43,7 @@ public class FcRateLimitFilter implements FcFilter {
         }
 
         this.support.calculateAndAddCurrent(systemId, rateLimits, now);
+        chain.doFilter(context);
     }
 
     private void check(FcRateLimitPak rateLimit, LocalDateTime now) {

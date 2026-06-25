@@ -8,7 +8,7 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import priv.szf.fastcall.common.event.request.IFcRequestEvent;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.common.FcAuthType;
@@ -16,14 +16,11 @@ import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.filter.FcFilterContext;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
-import priv.szf.fastcall.core.event.FcApiRequestEvent;
-import priv.szf.fastcall.core.event.FcAuthRequestEvent;
-import priv.szf.fastcall.core.event.FcRequestEvent;
-import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.support.FcHttpRequestFactory;
 import priv.szf.fastcall.core.support.FcHttpResponseMapper;
@@ -37,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Builder
 public class FastCallClient {
@@ -48,8 +46,6 @@ public class FastCallClient {
     private final FcAuthType authType;
 
     private final IFcSource source;
-
-    private final IFcRequestEventPublisher eventPublisher;
 
     private final FcFilterManager filterManager;
 
@@ -73,14 +69,17 @@ public class FastCallClient {
         return FcHttpResponseMapper.buildStandardResponse(builder.dataType, builder.fullUrl, response);
     }
 
-    private <T> FastCallResponse<T> doCall(Builder<T> builder) {
+    private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
         Request request = createRequest(builder);
 
         Call call = client.newCall(request);
 
         try (Response response = call.execute()) {
             return buildStandardResponse(builder, response);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            if (throwException) {
+                throw new FcUnexpectedException(e, "Unexpected exception occurred when calling url[{}]", request.url());
+            }
             return FastCallResponse.<T>builder()
                     .isSuccessful(false)
                     .isConnected(false)
@@ -127,48 +126,41 @@ public class FastCallClient {
         return newApiCall(apiName, null);
     }
 
-    private <T> FastCallResponse<T> callIt(Builder<T> builder) {
-        IFcRequestEvent requestEvent = null;
-        try {
-            filterManager.doFilter(source.getSourcePak(system));
-            FastCallResponse<T> response = doCall(builder);
-            requestEvent = createRequestEvent(builder, response);
-            return response;
-        }
-        finally {
-            if (Objects.nonNull(eventPublisher)) {
-                if (Objects.isNull(requestEvent)) {
-                    requestEvent = new FcRequestEvent(builder.fullUrl, false);
+    private <T> FastCallResponse<T> callIt(Builder<T> builder, boolean throwException) {
+        FcFilterContext context = createFilterContext(builder);
+        AtomicReference<FastCallResponse<T>> responseRef = new AtomicReference<>();
+        this.filterManager.doFilter(context, ctx -> {
+            try {
+                FastCallResponse<T> response = doCall(builder, throwException);
+                responseRef.set(response);
+                if (response.getCode() > 0) {
+                    ctx.setResponseCode(response.getCode());
                 }
-                eventPublisher.publish(requestEvent);
+                if (Objects.nonNull(response.getException())) {
+                    ctx.setThrowable(response.getException());
+                    ctx.setExceptionType(response.getException().getClass());
+                }
+                ctx.setSuccess(response.isSuccessful());
             }
-        }
+            catch (Throwable throwable) {
+                ctx.setThrowable(throwable);
+                ctx.setExceptionType(throwable.getClass());
+                ctx.setSuccess(false);
+                throw throwable;
+            }
+        });
+        return responseRef.get();
     }
 
-    private <T> IFcRequestEvent createRequestEvent(Builder<T> builder, FastCallResponse<T> response) {
-        IFcRequestEvent requestEvent;
-
-        String apiName = builder.apiName;
-        if (Objects.nonNull(apiName)) {
-            requestEvent = FcApiRequestEvent.builder()
-                    .system(system)
-                    .api(apiName)
-                    .url(builder.fullUrl)
-                    .success(response.isSuccessful())
-                    .build();
-        }
-        else if (builder.isAuth) {
-            requestEvent = FcAuthRequestEvent.builder()
-                    .system(system)
-                    .url(builder.fullUrl)
-                    .success(response.isSuccessful())
-                    .build();
-        }
-        else {
-            requestEvent = new FcRequestEvent(builder.fullUrl, response.isSuccessful());
-        }
-
-        return requestEvent;
+    private <T> FcFilterContext createFilterContext(Builder<T> builder) {
+        return FcFilterContext.builder()
+                .system(system)
+                .apiName(builder.apiName)
+                .auth(builder.isAuth)
+                .url(builder.fullUrl)
+                .callType(builder.callType)
+                .sourcePak(source.getSourcePak(system))
+                .build();
     }
 
     public class Builder<T> {
@@ -319,20 +311,21 @@ public class FastCallClient {
         }
 
         public FastCallResponse<T> callIt() {
-            return client.callIt(builder);
+            return this.client.callIt(builder, false);
         }
 
         public FastCallResponse<T> anonymousCallIt() {
-            builder.callType = FcCallType.ANONYMOUS;
+            this.builder.callType = FcCallType.ANONYMOUS;
             return callIt();
         }
 
         public T call() {
-            return callIt().getData();
+            return this.client.callIt(builder, true).getData();
         }
 
         public T anonymousCall() {
-            return anonymousCallIt().getData();
+            this.builder.callType = FcCallType.ANONYMOUS;
+            return call();
         }
     }
 

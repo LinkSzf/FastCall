@@ -21,10 +21,7 @@ public class FastCallProperties {
     private int maxRequestsPerHost = 30;
 
     /** 是否启用事件 */
-    private boolean enableEvent = false;
-
-    /** 是否允许限流*/
-    private boolean enableRateLimit = true;
+    private Filter filter = new Filter();
 
     /** 客户端配置 */
     private Client client = new Client();
@@ -45,6 +42,17 @@ public class FastCallProperties {
     private List<EasySource> easySource = new ArrayList<>();
 
     private Retry retry = new Retry();
+
+    @Data
+    public static class Filter {
+
+        /** 是否启用限流 */
+        private boolean enableRateLimit = false;
+
+        /** 是否启用请求事件 */
+        private boolean enableRequestEvent = false;
+
+    }
 
     @Data
     public static class ForwardProxy {
