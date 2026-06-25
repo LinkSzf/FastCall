@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import priv.szf.fastcall.common.FastCallConsts;
-import priv.szf.fastcall.common.filter.FcFilter;
+import priv.szf.fastcall.core.filter.FcFilter;
 import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.filter.FcRateLimitFilter;
@@ -31,9 +31,7 @@ public class FcFilterConfig {
     @ConditionalOnProperty(prefix = "fast-call.filter", name = "enable-rate-limit", havingValue = "true")
     @Bean
     public FcRateLimitSupport fcRateLimitSupport(IFcPakProvider pakProvider, FastCallProperties properties) {
-        FcRateLimitSupport rateLimitSupport = new FcRateLimitSupport(pakProvider, properties);
-        rateLimitSupport.init();
-        return rateLimitSupport;
+        return new FcRateLimitSupport(pakProvider, properties);
     }
 
 

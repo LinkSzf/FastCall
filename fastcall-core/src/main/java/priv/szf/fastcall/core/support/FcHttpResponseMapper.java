@@ -12,6 +12,7 @@ import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.utils.FcTimeUtil;
 import priv.szf.fastcall.core.FastCallResponse;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,6 +55,10 @@ public final class FcHttpResponseMapper {
                 .orElse(null);
         Headers headers = response.headers();
         Map<String, List<String>> headersMap = headers.toMultimap();
+        LocalDateTime requestTime = FcTimeUtil.ofMillis(response.sentRequestAtMillis());
+        LocalDateTime responseTime = FcTimeUtil.ofMillis(response.receivedResponseAtMillis());
+        boolean isRedirect = response.isRedirect();
+        boolean isCached = Objects.nonNull(response.cacheResponse());
 
         return FastCallResponse.<T>builder()
                 .code(code)
@@ -62,6 +68,10 @@ public final class FcHttpResponseMapper {
                 .mediaType(mediaType)
                 .headers(headersMap)
                 .isConnected(true)
+                .isCached(isCached)
+                .isRedirect(isRedirect)
+                .requestTime(requestTime)
+                .responseTime(responseTime)
                 .build();
     }
 

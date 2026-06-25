@@ -3,16 +3,11 @@ package priv.szf.fastcall.core.filter;
 
 import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import priv.szf.fastcall.common.filter.FcFilter;
-import priv.szf.fastcall.common.filter.FcFilterChain;
-import priv.szf.fastcall.common.filter.FcFilterContext;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class FcFilterManager {
-
 
     private final List<FcFilter> filters;
 
@@ -22,12 +17,14 @@ public class FcFilterManager {
             this.filters = Collections.emptyList();
             return;
         }
-        this.filters = new ArrayList<>(filters);
-        AnnotationAwareOrderComparator.sort(this.filters);
+
+        AnnotationAwareOrderComparator.sort(filters);
+        filters.forEach(FcFilter::init);
+        this.filters = Collections.unmodifiableList(filters);
     }
 
     public void doFilter(FcFilterContext context, FcFilterChain terminalChain) {
-        new DefaultFcFilterChain(filters, terminalChain).doFilter(context);
+        DefaultFcFilterChain.create(filters, terminalChain).doFilter(context);
     }
 
     private static final class DefaultFcFilterChain implements FcFilterChain {
@@ -41,6 +38,10 @@ public class FcFilterManager {
         private DefaultFcFilterChain(List<FcFilter> filters, FcFilterChain terminalChain) {
             this.filters = filters;
             this.terminalChain = terminalChain;
+        }
+
+        private static DefaultFcFilterChain create(List<FcFilter> filters, FcFilterChain terminalChain) {
+            return new DefaultFcFilterChain(filters, terminalChain);
         }
 
         @Override

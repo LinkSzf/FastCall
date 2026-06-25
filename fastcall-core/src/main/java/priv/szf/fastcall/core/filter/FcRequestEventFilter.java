@@ -3,18 +3,17 @@ package priv.szf.fastcall.core.filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.event.request.IFcRequestEvent;
-import priv.szf.fastcall.common.filter.FcFilter;
-import priv.szf.fastcall.common.filter.FcFilterChain;
-import priv.szf.fastcall.common.filter.FcFilterContext;
+import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.event.FcApiRequestEvent;
 import priv.szf.fastcall.core.event.FcAuthRequestEvent;
 import priv.szf.fastcall.core.event.FcRequestEvent;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
-@Order(100)
+@Order(1000)
 public class FcRequestEventFilter implements FcFilter {
 
     private final IFcRequestEventPublisher eventPublisher;
@@ -29,21 +28,25 @@ public class FcRequestEventFilter implements FcFilter {
     }
 
     private IFcRequestEvent createEvent(FcFilterContext context) {
+        boolean successful = Optional.of(context)
+                .map(FcFilterContext::getResponse)
+                .map(FastCallResponse::isSuccessful)
+                .orElse(false);
         if (Objects.nonNull(context.getApiName())) {
             return FcApiRequestEvent.builder()
                     .system(context.getSystem())
                     .api(context.getApiName())
                     .url(context.getUrl())
-                    .success(context.isSuccess())
+                    .success(successful)
                     .build();
         }
         if (context.isAuth()) {
             return FcAuthRequestEvent.builder()
                     .system(context.getSystem())
                     .url(context.getUrl())
-                    .success(context.isSuccess())
+                    .success(successful)
                     .build();
         }
-        return new FcRequestEvent(context.getUrl(), context.isSuccess());
+        return new FcRequestEvent(context.getUrl(), successful);
     }
 }

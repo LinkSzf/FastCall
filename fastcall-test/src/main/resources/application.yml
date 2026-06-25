@@ -6,9 +6,6 @@ server:
 fast-call:
   max-requests: 200
   max-requests-per-host: 20
-  filter:
-    enable-rate-limit: true
-    enable-request-event: true
   pool:
     max-idle-connections: 50
     keep-alive-minutes: 5
@@ -16,6 +13,9 @@ fast-call:
     connect-timeout: 15
     read-timeout: 45
     write-timeout: 45
+  filter:
+    enable-rate-limit: true
+    enable-request-event: true
   cache:
     enable: false
     max-size: 10485760

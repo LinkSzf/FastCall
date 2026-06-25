@@ -6,10 +6,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import priv.szf.fastcall.common.FastCallConsts;
-import priv.szf.fastcall.common.FcTimeSpan;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.source.IFcPakProvider;
-import priv.szf.fastcall.common.utils.FcTimeUtil;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.config.FastCallProperties;
 
@@ -17,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -65,20 +64,24 @@ public class FcRateLimitSupport {
     }
 
     @Async(FastCallConsts.ASYNC_EXECUTOR)
-    public void calculateAndAddCurrent(Long systemId, List<FcRateLimitPak> rateLimits, LocalDateTime newTime) {
+    public void updateLimits(Long systemId, LocalDateTime currentTime) {
+        List<FcRateLimitPak> rateLimits = getLimits(systemId);
+        if (CollectionUtil.isEmpty(rateLimits)) {
+            return;
+        }
+
         ReentrantLock lock = this.lockMap.computeIfAbsent(systemId, key -> new ReentrantLock(true));
         try {
             lock.lock();
             for (FcRateLimitPak rateLimit : rateLimits) {
-                FcTimeSpan span = rateLimit.getSpan();
-                LocalDateTime time = rateLimit.getTime();
-                boolean isSame = FcTimeUtil.isInSameTimeSpan(span, time, newTime);
-                if (isSame) {
+                LocalDateTime lastTime = rateLimit.getLastTime();
+                boolean hasLastTime = Objects.nonNull(lastTime);
+                if (hasLastTime) {
                     long current = rateLimit.getCurrent();
                     current++;
                     rateLimit.setCurrent(current);
                 } else {
-                    rateLimit.setTime(newTime);
+                    rateLimit.setLastTime(currentTime);
                     rateLimit.setCurrent(1);
                 }
             }

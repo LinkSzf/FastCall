@@ -1,4 +1,4 @@
-package priv.szf.fastcall.common.filter;
+package priv.szf.fastcall.core.filter;
 
 @FunctionalInterface
 public interface FcFilterChain {

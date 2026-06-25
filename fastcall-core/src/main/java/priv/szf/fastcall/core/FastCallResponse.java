@@ -2,32 +2,41 @@ package priv.szf.fastcall.core;
 
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Builder
-@Data
+@Getter
 public class FastCallResponse<T> {
 
     private final int code;
 
     private final String message;
 
-    private final boolean isSuccessful;
+    private final T data;
 
     private final Map<String, List<String>> headers;
 
-    private final T data;
-
     private final String mediaType;
+
+    private final boolean isSuccessful;
 
     private final boolean isConnected;
 
+    private final boolean isCached;
+
+    private final boolean isRedirect;
+
     private final Exception exception;
+
+    private final LocalDateTime requestTime;
+
+    private final LocalDateTime responseTime;
 
     public String getSingleHeader(String name) {
         return Optional.ofNullable(headers)

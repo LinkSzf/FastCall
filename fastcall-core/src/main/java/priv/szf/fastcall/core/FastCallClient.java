@@ -16,7 +16,7 @@ import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.exception.FastCallException;
-import priv.szf.fastcall.common.filter.FcFilterContext;
+import priv.szf.fastcall.core.filter.FcFilterContext;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
@@ -26,8 +26,8 @@ import priv.szf.fastcall.core.support.FcHttpRequestFactory;
 import priv.szf.fastcall.core.support.FcHttpResponseMapper;
 import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,17 +65,13 @@ public class FastCallClient {
                 .build();
     }
 
-    private <T> FastCallResponse<T> buildStandardResponse(Builder<T> builder, Response response) {
-        return FcHttpResponseMapper.buildStandardResponse(builder.dataType, builder.fullUrl, response);
-    }
-
     private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
         Request request = createRequest(builder);
 
         Call call = client.newCall(request);
 
         try (Response response = call.execute()) {
-            return buildStandardResponse(builder, response);
+            return FcHttpResponseMapper.buildStandardResponse(builder.dataType, builder.fullUrl, response);
         } catch (Exception e) {
             if (throwException) {
                 throw new FcUnexpectedException(e, "Unexpected exception occurred when calling url[{}]", request.url());
@@ -84,6 +80,7 @@ public class FastCallClient {
                     .isSuccessful(false)
                     .isConnected(false)
                     .exception(e)
+                    .requestTime(LocalDateTime.now())
                     .build();
         }
     }
@@ -127,26 +124,17 @@ public class FastCallClient {
     }
 
     private <T> FastCallResponse<T> callIt(Builder<T> builder, boolean throwException) {
-        FcFilterContext context = createFilterContext(builder);
         AtomicReference<FastCallResponse<T>> responseRef = new AtomicReference<>();
+        FcFilterContext context = createFilterContext(builder);
         this.filterManager.doFilter(context, ctx -> {
             try {
                 FastCallResponse<T> response = doCall(builder, throwException);
                 responseRef.set(response);
-                if (response.getCode() > 0) {
-                    ctx.setResponseCode(response.getCode());
-                }
-                if (Objects.nonNull(response.getException())) {
-                    ctx.setThrowable(response.getException());
-                    ctx.setExceptionType(response.getException().getClass());
-                }
-                ctx.setSuccess(response.isSuccessful());
+                ctx.setResponse(response);
             }
-            catch (Throwable throwable) {
-                ctx.setThrowable(throwable);
-                ctx.setExceptionType(throwable.getClass());
-                ctx.setSuccess(false);
-                throw throwable;
+            catch (Exception e) {
+                ctx.setException(e);
+                throw e;
             }
         });
         return responseRef.get();
@@ -160,6 +148,7 @@ public class FastCallClient {
                 .url(builder.fullUrl)
                 .callType(builder.callType)
                 .sourcePak(source.getSourcePak(system))
+                .currentTime(LocalDateTime.now())
                 .build();
     }
 

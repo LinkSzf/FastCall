@@ -43,9 +43,9 @@ public class FcRateLimit {
     @TableField("span")
     private FcTimeSpan span;
 
-    @Column(name = "time")
-    @TableField("time")
-    private LocalDateTime time;
+    @Column(name = "last_time")
+    @TableField("last_time")
+    private LocalDateTime lastTime;
 
     @Column(name = "maximum")
     @TableField("maximum")

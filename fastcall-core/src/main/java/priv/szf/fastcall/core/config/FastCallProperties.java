@@ -20,14 +20,17 @@ public class FastCallProperties {
     /** 每主机最大并发请求数 */
     private int maxRequestsPerHost = 30;
 
-    /** 是否启用事件 */
-    private Filter filter = new Filter();
-
     /** 客户端配置 */
     private Client client = new Client();
 
     /** 连接池配置 */
     private Pool pool = new Pool();
+
+    /** 是否启用事件 */
+    private Filter filter = new Filter();
+
+    /** 重试配置 */
+    private Retry retry = new Retry();
 
     /** 请求缓存配置 */
     private Cache cache = new Cache();
@@ -40,8 +43,6 @@ public class FastCallProperties {
 
     /** 快捷源配置 */
     private List<EasySource> easySource = new ArrayList<>();
-
-    private Retry retry = new Retry();
 
     @Data
     public static class Filter {

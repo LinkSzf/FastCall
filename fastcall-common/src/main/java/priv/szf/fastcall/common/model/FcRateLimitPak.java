@@ -20,7 +20,7 @@ public class FcRateLimitPak implements IEssentialCheck<FcRateLimitPak>, Serializ
 
     private FcTimeSpan span;
 
-    private LocalDateTime time;
+    private LocalDateTime lastTime;
 
     private Long maximum;
 

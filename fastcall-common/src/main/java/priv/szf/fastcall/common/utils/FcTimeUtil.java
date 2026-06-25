@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjUtil;
 import lombok.NoArgsConstructor;
 import priv.szf.fastcall.common.FcTimeSpan;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -28,6 +30,15 @@ public final class FcTimeUtil {
         return Math.abs(until) <= duration;
     }
 
+    public static LocalDateTime ofMillis(long millis, String zoneId) {
+        return Instant.ofEpochMilli(millis)
+                .atZone(ZoneId.of(zoneId))
+                .toLocalDateTime();
+    }
+
+    public static LocalDateTime ofMillis(long millis) {
+        return ofMillis(millis, ZoneId.systemDefault().getId());
+    }
 
 
 }
