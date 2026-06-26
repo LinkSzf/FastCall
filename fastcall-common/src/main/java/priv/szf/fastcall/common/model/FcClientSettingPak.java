@@ -3,11 +3,13 @@ package priv.szf.fastcall.common.model;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
-public class FcClientSettingPak implements Serializable {
+public class FcClientSettingPak implements IFcPak {
 
     private static final long serialVersionUID = -7562993860194630639L;
 
@@ -17,4 +19,8 @@ public class FcClientSettingPak implements Serializable {
 
     private final Integer writeTimeout;
 
+    @Override
+    public List<Supplier<?>> requireNonNull() {
+        return Collections.emptyList();
+    }
 }

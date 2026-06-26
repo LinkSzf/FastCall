@@ -5,14 +5,13 @@ import lombok.Getter;
 import priv.szf.fastcall.common.FcHeaderOperation;
 import priv.szf.fastcall.common.FcHeaderType;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
-public class FcHeaderAssignPak implements IEssentialCheck<FcHeaderAssignPak>, Serializable {
+public class FcHeaderAssignPak implements IFcPak {
 
     private static final long serialVersionUID = 514535964634501136L;
 
@@ -27,11 +26,11 @@ public class FcHeaderAssignPak implements IEssentialCheck<FcHeaderAssignPak>, Se
     private String path;
 
     @Override
-    public List<Function<FcHeaderAssignPak, ?>> requireNonNull() {
+    public List<Supplier<?>> requireNonNull() {
         return Arrays.asList(
-                FcHeaderAssignPak::getName,
-                FcHeaderAssignPak::getOperation,
-                FcHeaderAssignPak::getType
+                this::getName,
+                this::getOperation,
+                this::getType
         );
     }
 }

@@ -4,11 +4,13 @@ import lombok.Builder;
 import lombok.Getter;
 import priv.szf.fastcall.common.FcRequestMethod;
 
-import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
-public class FcApiPak implements Serializable {
+public class FcApiPak implements IFcPak {
 
     private static final long serialVersionUID = -3294588741274820809L;
 
@@ -24,4 +26,12 @@ public class FcApiPak implements Serializable {
 
     private final FcApiParamPak paramPak;
 
+    @Override
+    public List<Supplier<?>> requireNonNull() {
+        return Arrays.asList(
+                this::getName,
+                this::getPath,
+                this::getMethod
+        );
+    }
 }

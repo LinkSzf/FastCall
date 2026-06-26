@@ -3,14 +3,13 @@ package priv.szf.fastcall.common.model;
 import lombok.Data;
 import priv.szf.fastcall.common.FcTimeSpan;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Data
-public class FcRateLimitPak implements IEssentialCheck<FcRateLimitPak>, Serializable {
+public class FcRateLimitPak implements IFcPak {
 
     private static final long serialVersionUID = 5704305981571184483L;
 
@@ -28,11 +27,11 @@ public class FcRateLimitPak implements IEssentialCheck<FcRateLimitPak>, Serializ
 
 
     @Override
-    public List<Function<FcRateLimitPak, ?>> requireNonNull() {
+    public List<Supplier<?>> requireNonNull() {
         return Arrays.asList(
-                FcRateLimitPak::getSystemId,
-                FcRateLimitPak::getSpan,
-                FcRateLimitPak::getMaximum
+                this::getSystemId,
+                this::getSpan,
+                this::getMaximum
         );
     }
 }

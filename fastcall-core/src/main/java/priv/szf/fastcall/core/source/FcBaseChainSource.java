@@ -1,14 +1,12 @@
 package priv.szf.fastcall.core.source;
 
 import lombok.extern.slf4j.Slf4j;
-import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.model.FcSourcePak;
-import priv.szf.fastcall.common.model.IEssentialCheck;
+import priv.szf.fastcall.common.model.IFcNonNullModel;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.common.source.IFcChainSource;
 import priv.szf.fastcall.common.source.IFcSource;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -32,16 +30,12 @@ public abstract class FcBaseChainSource implements IFcChainSource {
 
     @Override
     public FcSourcePak getSourcePak(String system) {
-        FcSourcePak sourcePak = tryGetSourcePak(system);
-        if (Objects.nonNull(sourcePak)) {
-            return sourcePak;
-        }
-
-        log.debug("{}-source pak is not found in {}: system[{}]", FastCallConsts.NAME, this.getClass().getSimpleName(), system);
-
-        return Optional.ofNullable(getNextSource())
+        return Optional.ofNullable(system)
+                .map(this::tryGetSourcePak)
+                .map(pak -> getNextSource())
                 .map(s -> s.getSourcePak(system))
-                .map(IEssentialCheck::check)
+                .map(IFcNonNullModel::<FcSourcePak>check)
+                .map(pak -> doAfterGetFromNextSource(system, pak))
                 .orElse(null);
     }
 
@@ -50,6 +44,10 @@ public abstract class FcBaseChainSource implements IFcChainSource {
         tryUpdateCredential(system, credential);
         Optional.ofNullable(getNextSource())
                 .ifPresent(s -> s.updateCredential(system, credential));
+    }
+
+    protected FcSourcePak doAfterGetFromNextSource(String system, FcSourcePak sourcePak) {
+        return sourcePak;
     }
 
 

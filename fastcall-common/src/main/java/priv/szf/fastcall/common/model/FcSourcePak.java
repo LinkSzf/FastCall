@@ -6,16 +6,15 @@ import lombok.Setter;
 import priv.szf.fastcall.common.FcHeaderType;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Builder
 @Getter
-public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
+public class FcSourcePak implements IFcPak {
 
     private static final long serialVersionUID = 1169371931895544090L;
 
@@ -41,9 +40,9 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
     }
 
     @Override
-    public List<Function<FcSourcePak, ?>> requireNonNull() {
+    public List<Supplier<?>> requireNonNull() {
         return Collections.singletonList(
-                FcSourcePak::getSystem
+                this::getSystem
         );
     }
 }

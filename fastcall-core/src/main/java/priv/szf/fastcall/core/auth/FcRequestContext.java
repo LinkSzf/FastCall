@@ -5,15 +5,15 @@ import lombok.Data;
 import lombok.Getter;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
-import priv.szf.fastcall.common.model.IEssentialCheck;
+import priv.szf.fastcall.common.model.IFcNonNullModel;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
-public class FcRequestContext implements IEssentialCheck<FcRequestContext> {
+public class FcRequestContext implements IFcNonNullModel {
 
     private final String system;
 
@@ -24,16 +24,16 @@ public class FcRequestContext implements IEssentialCheck<FcRequestContext> {
     private final InterceptorContext interceptorContext = new InterceptorContext();
 
     @Override
-    public List<Function<FcRequestContext, ?>> requireNonNull() {
+    public List<Supplier<?>> requireNonNull() {
         return Arrays.asList(
-                FcRequestContext::getSystem,
-                FcRequestContext::getAuthType,
-                FcRequestContext::getCallType
+                this::getSystem,
+                this::getAuthType,
+                this::getCallType
         );
     }
 
     @Data
-    public class InterceptorContext {
+    public static class InterceptorContext {
 
         private boolean skipAuth = false;
 

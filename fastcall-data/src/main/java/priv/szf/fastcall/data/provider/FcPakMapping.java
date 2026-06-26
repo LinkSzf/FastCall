@@ -22,9 +22,7 @@ import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcSystem;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +68,7 @@ public interface FcPakMapping {
 
     default Set<FcFuncScope> toEnumSet(String scope) {
         if (StrUtil.isBlank(scope)) {
-            return Collections.emptySet();
+            return null;
         }
         return Arrays.stream(scope.split(FcDataConsts.SYSTEM_FUNC_SCOPE_DELIMITER))
                 .map(String::trim)
@@ -80,11 +78,7 @@ public interface FcPakMapping {
 
     default FcApiParamPak toApiParamPak(List<FcApiParam> apiParams) {
         if (CollectionUtil.isEmpty(apiParams)) {
-            return FcApiParamPak.builder()
-                    .headers(Collections.emptyMap())
-                    .params(Collections.emptyMap())
-                    .body(null)
-                    .build();
+            return null;
         }
 
         Map<String, String> headers = new HashMap<>(apiParams.size());
@@ -108,8 +102,8 @@ public interface FcPakMapping {
                 });
 
         return FcApiParamPak.builder()
-                .headers(Collections.unmodifiableMap(headers))
-                .params(Collections.unmodifiableMap(params))
+                .headers(headers)
+                .params(params)
                 .body(bodyRef.get())
                 .build();
     }

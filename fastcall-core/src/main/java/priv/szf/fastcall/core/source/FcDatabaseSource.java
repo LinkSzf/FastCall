@@ -31,23 +31,16 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
 
     @Override
     protected FcSourcePak tryGetSourcePak(String systemCode) {
-        FcSystemPak system = pakProvider.getSystemByCode(systemCode);
+        FcSystemPak system = getSystemByCode(systemCode);
         if (Objects.isNull(system)) {
             return null;
         }
 
-        Set<FcFuncScope> scopes = Optional.ofNullable(system.getScope())
-                .orElse(Collections.emptySet());
-
         Long systemId = system.getId();
-        FcAuthPak auth = (scopes.contains(FcFuncScope.AUTH)) ?
-                pakProvider.getAuthBySysId(systemId) : null;
-
-        Map<String, FcApiPak> apis = (scopes.contains(FcFuncScope.API)) ?
-                Collections.unmodifiableMap(pakProvider.getApisBySysId(systemId)) : Collections.emptyMap();
-
-        List<FcHeaderAssignPak> headerAssigns = (scopes.contains(FcFuncScope.HEADER_ASSIGN)) ?
-                Collections.unmodifiableList(pakProvider.getHeaderAssignsBySysId(systemId)) : Collections.emptyList();
+        Set<FcFuncScope> scopes = getScopes(system);
+        FcAuthPak auth = getAuth(scopes, systemId);
+        Map<String, FcApiPak> apis = getApis(scopes, systemId);
+        List<FcHeaderAssignPak> headerAssigns = getHeaderAssigns(scopes, systemId);
 
         return FcSourcePak.builder()
                 .system(system)
@@ -59,6 +52,30 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
 
     @Override
     public void tryUpdateCredential(String system, ICredential credential) {
+    }
+
+    private List<FcHeaderAssignPak> getHeaderAssigns(Set<FcFuncScope> scopes, Long systemId) {
+        return (scopes.contains(FcFuncScope.HEADER_ASSIGN)) ?
+                Collections.unmodifiableList(this.pakProvider.getHeaderAssignsBySysId(systemId)) : Collections.emptyList();
+    }
+
+    private Map<String, FcApiPak> getApis(Set<FcFuncScope> scopes, Long systemId) {
+        return (scopes.contains(FcFuncScope.API)) ?
+                Collections.unmodifiableMap(this.pakProvider.getApisBySysId(systemId)) : Collections.emptyMap();
+    }
+
+    private FcAuthPak getAuth(Set<FcFuncScope> scopes, Long systemId) {
+        return (scopes.contains(FcFuncScope.AUTH)) ?
+                this.pakProvider.getAuthBySysId(systemId) : null;
+    }
+
+    private Set<FcFuncScope> getScopes(FcSystemPak system) {
+        return Optional.ofNullable(system.getScope())
+                .orElse(Collections.emptySet());
+    }
+
+    private FcSystemPak getSystemByCode(String systemCode) {
+        return this.pakProvider.getSystemByCode(systemCode);
     }
 
 }

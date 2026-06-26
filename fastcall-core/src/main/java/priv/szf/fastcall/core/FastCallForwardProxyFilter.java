@@ -24,7 +24,7 @@ import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
-import priv.szf.fastcall.common.model.IEssentialCheck;
+import priv.szf.fastcall.common.model.IFcNonNullModel;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
 import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
@@ -269,7 +269,7 @@ public class FastCallForwardProxyFilter extends OncePerRequestFilter {
         String system = StrUtil.subBetween(requestUri, prefix,"/");
 
         return Optional.ofNullable(source.getSourcePak(system))
-                .map(IEssentialCheck::check)
+                .map(IFcNonNullModel::<FcSourcePak>check)
                 .orElseThrow(() -> new FcDataNotFoundException("Source infos of System[{}] do not exist", system));
     }
 

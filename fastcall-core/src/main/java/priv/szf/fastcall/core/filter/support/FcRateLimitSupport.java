@@ -35,7 +35,7 @@ public class FcRateLimitSupport {
         Map<Long, List<FcRateLimitPak>> systemRateLimitMap = this.pakProvider.getAllRateLimits()
                 .stream()
                 .filter(l -> l.getMaximum() > 0)
-                .map(FcRateLimitPak::check)
+                .map(FcRateLimitPak::<FcRateLimitPak>check)
                 .collect(Collectors.groupingBy(FcRateLimitPak::getSystemId));
 
         this.properties.getEasySource()
@@ -51,7 +51,7 @@ public class FcRateLimitSupport {
                                 pak.setSystemId(systemId);
                                 pak.setSpan(r.getSpan());
                                 pak.setMaximum(r.getMaximum());
-                                return pak.check();
+                                return pak.<FcRateLimitPak>check();
                             })
                             .collect(Collectors.toList()));
                 });

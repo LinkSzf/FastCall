@@ -4,14 +4,13 @@ import lombok.Builder;
 import lombok.Getter;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Builder
 @Getter
-public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
+public class FcAuthPak implements IFcPak {
 
     private static final long serialVersionUID = 8346425238219909450L;
 
@@ -27,9 +26,9 @@ public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
 
     @Override
-    public List<Function<FcAuthPak, ?>> requireNonNull() {
+    public List<Supplier<?>> requireNonNull() {
         return Collections.singletonList(
-                FcAuthPak::getContent
+                this::getContent
         );
     }
 }
