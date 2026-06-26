@@ -23,11 +23,16 @@ public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcCache
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
-        FcSourcePak sourcePak = this.cache.computeIfAbsent(system, getNextSource()::getSourcePak);
+        return this.cache.get(system);
+    }
+
+    @Override
+    protected void doAfterGetFromNextSource(String system, FcSourcePak sourcePak) {
         if (Objects.isNull(sourcePak)) {
             this.cache.remove(system);
+        } else {
+            this.cache.put(system, sourcePak);
         }
-        return sourcePak;
     }
 
     @Override

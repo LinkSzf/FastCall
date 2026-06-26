@@ -47,7 +47,8 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
                 .auth(auth)
                 .apiMap(apis)
                 .headerAssigns(headerAssigns)
-                .build();
+                .build()
+                .init();
     }
 
     @Override

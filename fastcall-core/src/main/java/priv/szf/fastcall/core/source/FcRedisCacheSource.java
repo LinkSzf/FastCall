@@ -27,17 +27,17 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSou
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
         String redisKey = buildRedisKey(system);
-        FcSourcePak sourcePak = (FcSourcePak) this.redisTemplate.opsForValue().get(redisKey);
-        if (Objects.isNull(sourcePak)) {
-            sourcePak = getNextSource().getSourcePak(system);
+        return (FcSourcePak) this.redisTemplate.opsForValue().get(redisKey);
+    }
+
+    @Override
+    protected void doAfterGetFromNextSource(String system, FcSourcePak sourcePak) {
+            String redisKey = buildRedisKey(system);
             if (Objects.nonNull(sourcePak)) {
                 this.redisTemplate.opsForValue().set(redisKey, sourcePak, getExpire(), TimeUnit.MINUTES);
             } else {
                 this.redisTemplate.delete(redisKey);
             }
-        }
-
-        return sourcePak;
     }
 
     @Override

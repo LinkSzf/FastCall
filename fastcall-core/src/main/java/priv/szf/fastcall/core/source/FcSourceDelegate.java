@@ -1,9 +1,7 @@
 package priv.szf.fastcall.core.source;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.common.source.IFcChainSource;
@@ -21,10 +19,6 @@ public class FcSourceDelegate implements IFcSource {
 
     @Override
     public void init() {
-        if (CollectionUtil.isEmpty(this.chainSources)) {
-            throw new FcUnexpectedException("No available sources");
-        }
-
         AnnotationAwareOrderComparator.sort(this.chainSources);
         Collections.reverse(this.chainSources);
 
@@ -47,4 +41,5 @@ public class FcSourceDelegate implements IFcSource {
     public void updateCredential(String system, ICredential credential) {
         this.source.updateCredential(system, credential);
     }
+
 }

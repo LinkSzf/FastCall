@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.model.IFcPak;
 import priv.szf.fastcall.common.source.IFcChainSource;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.FcUtils;
@@ -32,6 +33,7 @@ public class FcPropertySource extends FcBaseChainSource implements IFcChainSourc
     public void init() {
         this.sources.stream()
                 .map(this::buildToPak)
+                .map(IFcPak::<FcSourcePak>init)
                 .forEach(pak -> {
                     String code = pak.getSystem().getCode();
                     if (this.pakMap.containsKey(code)) {
