@@ -1,6 +1,7 @@
 package priv.szf.fastcall.common.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcFuncScope;
 
@@ -10,26 +11,27 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-@Data
+@Builder
+@Getter
 public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
 
     private static final long serialVersionUID = -3705370467972208682L;
 
-    private Long id;
+    private final Long id;
 
-    private String name;
+    private final String name;
 
-    private String code;
+    private final String code;
 
-    private boolean enable;
+    private final boolean enable;
 
-    private Set<FcFuncScope> scope;
+    private final Set<FcFuncScope> scope;
 
-    private String host;
+    private final String host;
 
-    private FcAuthType authType;
+    private final FcAuthType authType;
 
-    private FcClientSettingPak clientSetting;
+    private final FcClientSettingPak clientSetting;
 
     @Override
     public List<Function<FcSystemPak, ?>> requireNonNull() {

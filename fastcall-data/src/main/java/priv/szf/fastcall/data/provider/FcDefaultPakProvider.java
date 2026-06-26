@@ -93,11 +93,9 @@ public class FcDefaultPakProvider implements IFcPakProvider {
 
         return apiList.stream()
                 .map(api -> {
-                    FcApiPak apiPak = pakMapping.toApiPak(api);
                     List<FcApiParam> apiParams = apiParamMap.get(api.getId());
                     FcApiParamPak params = pakMapping.toApiParamPak(apiParams);
-                    apiPak.setParams(params);
-                    return apiPak;
+                    return pakMapping.toApiPak(api, params);
                 })
                 .collect(Collectors.toMap(FcApiPak::getName, Function.identity()));
     }

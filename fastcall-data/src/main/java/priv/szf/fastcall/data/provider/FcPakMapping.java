@@ -22,12 +22,15 @@ import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcSystem;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Mapper(
@@ -43,10 +46,10 @@ public interface FcPakMapping {
     @Mapping(target = "content", source = "auth")
     FcAuthPak toAuthPak(FcAuth auth);
 
-    @Mapping(target = "clientSetting.connectTimeout", source = "connectTimeout")
-    @Mapping(target = "clientSetting.readTimeout", source = "readTimeout")
-    @Mapping(target = "clientSetting.writeTimeout", source = "writeTimeout")
-    FcApiPak toApiPak(FcApi api);
+    @Mapping(target = "clientSetting.connectTimeout", source = "api.connectTimeout")
+    @Mapping(target = "clientSetting.readTimeout", source = "api.readTimeout")
+    @Mapping(target = "clientSetting.writeTimeout", source = "api.writeTimeout")
+    FcApiPak toApiPak(FcApi api, FcApiParamPak paramPak);
 
     @Mapping(target = "systemId", source = "sysId")
     FcRateLimitPak toRateLimitPak(FcRateLimit rateLimit);
@@ -77,14 +80,16 @@ public interface FcPakMapping {
 
     default FcApiParamPak toApiParamPak(List<FcApiParam> apiParams) {
         if (CollectionUtil.isEmpty(apiParams)) {
-            return FcApiParamPak.empty();
+            return FcApiParamPak.builder()
+                    .headers(Collections.emptyMap())
+                    .params(Collections.emptyMap())
+                    .body(null)
+                    .build();
         }
 
-        FcApiParamPak paramPak = FcApiParamPak.builder()
-                .headers(new HashMap<>())
-                .params(new HashMap<>())
-                .build();
-
+        Map<String, String> headers = new HashMap<>(apiParams.size());
+        Map<String, String> params = new HashMap<>(apiParams.size());
+        AtomicReference<Object> bodyRef = new AtomicReference<>();
         apiParams.stream()
                 .filter(Objects::nonNull)
                 .forEach(param -> {
@@ -92,18 +97,20 @@ public interface FcPakMapping {
                     String name = param.getName();
                     String defaultValue = param.getDefaultValue();
                     if (position == FcParamPos.HEADER) {
-                        paramPak.addHeader(name, defaultValue);
+                        headers.put(name, defaultValue);
                     } else if (position == FcParamPos.QUERY) {
-                        paramPak.addParam(name, defaultValue);
+                        params.put(name, defaultValue);
                     } else if (position == FcParamPos.BODY) {
-                        Object body = defaultValue;
-                        if (Boolean.TRUE.equals(param.getJsonObj())) {
-                            body = JSONUtil.parse(defaultValue);
-                        }
-                        paramPak.setBody(body);
+                        Object body = (Boolean.TRUE.equals(param.getJsonObj())) ?
+                                JSONUtil.parse(defaultValue) : defaultValue;
+                        bodyRef.set(body);
                     }
                 });
 
-        return paramPak;
+        return FcApiParamPak.builder()
+                .headers(Collections.unmodifiableMap(headers))
+                .params(Collections.unmodifiableMap(params))
+                .body(bodyRef.get())
+                .build();
     }
 }

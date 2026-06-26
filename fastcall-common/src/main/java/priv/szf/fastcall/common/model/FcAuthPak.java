@@ -1,6 +1,7 @@
 package priv.szf.fastcall.common.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
 
 import java.io.Serializable;
@@ -8,20 +9,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-@Data
+@Builder
+@Getter
 public class FcAuthPak implements IEssentialCheck<FcAuthPak>, Serializable {
 
     private static final long serialVersionUID = 8346425238219909450L;
 
-    private BaseAuthContent content;
+    private final BaseAuthContent content;
 
-    private Integer expiration;
+    private final Integer expiration;
 
-    private String path;
+    private final String path;
 
-    private String particularHost;
+    private final String particularHost;
 
-    private Integer unauthorizedCode;
+    private final Integer unauthorizedCode;
 
 
     @Override

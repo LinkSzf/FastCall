@@ -1,6 +1,7 @@
 package priv.szf.fastcall.common.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import priv.szf.fastcall.common.FcHeaderOperation;
 import priv.szf.fastcall.common.FcHeaderType;
 
@@ -9,18 +10,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-@Data
+@Builder
+@Getter
 public class FcHeaderAssignPak implements IEssentialCheck<FcHeaderAssignPak>, Serializable {
 
     private static final long serialVersionUID = 514535964634501136L;
 
-    private String name;
+    private final String name;
 
-    private String value;
+    private final String value;
 
-    private FcHeaderOperation operation;
+    private final FcHeaderOperation operation;
 
-    private FcHeaderType type;
+    private final FcHeaderType type;
 
     private String path;
 

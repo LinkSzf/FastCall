@@ -71,7 +71,7 @@ final class FcClientRequestResolver {
             method = Optional.ofNullable(api.getMethod()).orElse(method);
             resolvedHost = StrUtil.isNotBlank(metadata.getHost()) ? metadata.getHost() : api.getParticularHost();
 
-            FcApiParamPak defaultParams = api.getParams();
+            FcApiParamPak defaultParams = api.getParamPak();
             if (Objects.nonNull(defaultParams)) {
                 putSingleValueMap(queries, defaultParams.getParams());
                 putSingleValueMap(headers, defaultParams.getHeaders());

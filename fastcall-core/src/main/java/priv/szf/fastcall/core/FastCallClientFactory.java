@@ -96,18 +96,20 @@ public class FastCallClientFactory {
     private FcClientSettingPak getClientSetting(FcSystemPak system) {
         FcClientSettingPak systemSetting = system.getClientSetting();
         FastCallProperties.Client globalSetting = properties.getClient();
-
-        FcClientSettingPak unifiedSetting = new FcClientSettingPak();
-        unifiedSetting.setConnectTimeout(Optional.ofNullable(systemSetting)
+        Integer connectTimeout = Optional.ofNullable(systemSetting)
                 .map(FcClientSettingPak::getConnectTimeout)
-                .orElse(globalSetting.getConnectTimeout()));
-        unifiedSetting.setReadTimeout(Optional.ofNullable(systemSetting)
+                .orElse(globalSetting.getConnectTimeout());
+        Integer readTimeout = Optional.ofNullable(systemSetting)
                 .map(FcClientSettingPak::getReadTimeout)
-                .orElse(globalSetting.getReadTimeout()));
-        unifiedSetting.setWriteTimeout(Optional.ofNullable(systemSetting)
+                .orElse(globalSetting.getReadTimeout());
+        Integer writeTimeout = Optional.ofNullable(systemSetting)
                 .map(FcClientSettingPak::getWriteTimeout)
-                .orElse(globalSetting.getWriteTimeout()));
-        return unifiedSetting;
+                .orElse(globalSetting.getWriteTimeout());
+        return FcClientSettingPak.builder()
+                .connectTimeout(connectTimeout)
+                .readTimeout(readTimeout)
+                .writeTimeout(writeTimeout)
+                .build();
     }
 
     private OkHttpClient initCoreClient(FcClientSettingPak settingPak) {

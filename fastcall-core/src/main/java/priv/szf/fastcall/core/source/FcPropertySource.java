@@ -59,19 +59,21 @@ public class FcPropertySource extends FcBaseChainSource implements IFcChainSourc
 
     private FcSystemPak getFcSystemPak(FastCallProperties.EasySource es) {
         FastCallProperties.EasySource.System esSystem = es.getSystem();
-        FcSystemPak system = new FcSystemPak();
-        system.setId(FcUtils.encodeId(esSystem.getCode()));
-        system.setName(esSystem.getName());
-        system.setCode(esSystem.getCode());
-        system.setHost(esSystem.getHost());
-        system.setEnable(esSystem.isEnable());
-        system.setAuthType(esSystem.getAuthType());
-        FcClientSettingPak cs = new FcClientSettingPak();
-        cs.setConnectTimeout(esSystem.getConnectTimeout());
-        cs.setReadTimeout(esSystem.getReadTimeout());
-        cs.setWriteTimeout(esSystem.getWriteTimeout());
-        system.setClientSetting(cs);
-        return system;
+        FcClientSettingPak cs = FcClientSettingPak.builder()
+                .connectTimeout(esSystem.getConnectTimeout())
+                .readTimeout(esSystem.getReadTimeout())
+                .writeTimeout(esSystem.getWriteTimeout())
+                .build();
+
+        return FcSystemPak.builder()
+                .clientSetting(cs)
+                .id(FcUtils.encodeId(esSystem.getCode()))
+                .name(esSystem.getName())
+                .code(esSystem.getCode())
+                .host(esSystem.getHost())
+                .enable(esSystem.isEnable())
+                .authType(esSystem.getAuthType())
+                .build();
     }
 
     private FcAuthPak getFcAuthPak(FastCallProperties.EasySource es) {
@@ -86,11 +88,12 @@ public class FcPropertySource extends FcBaseChainSource implements IFcChainSourc
         BaseAuthContent authContent = JSONUtil.toBean(authContentStr, authType.getClazz());
         authContent.setType(authType);
 
-        FcAuthPak auth = new FcAuthPak();
-        auth.setContent(authContent);
-        auth.setPath(esAuth.getPath());
-        auth.setParticularHost(esAuth.getParticularHost());
-        return auth;
+        return FcAuthPak.builder()
+                .path(esAuth.getPath())
+                .particularHost(esAuth.getParticularHost())
+                .unauthorizedCode(esAuth.getUnauthorizedCode())
+                .content(authContent)
+                .build();
     }
 }
 

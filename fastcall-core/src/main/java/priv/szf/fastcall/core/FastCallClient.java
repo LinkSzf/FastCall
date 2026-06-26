@@ -97,30 +97,22 @@ public class FastCallClient {
         return new Builder<>(this, Object.class);
     }
 
-    public PreparedCall<Object> newApiCall(String apiName, FcApiParamPak params) {
-        Map<String, FcApiPak> apiMap = source.getSourcePak(system).getApiMap();
-        FcApiPak api = apiMap.get(apiName);
-        if (Objects.isNull(api)) {
-            throw new FastCallException("Source infos of api[{}] do not exist", apiName);
-        }
-
-        FcApiParamPak defaultParams = api.getParams();
-        FcApiParamPak finalParams = (Objects.nonNull(params)) ? params
-                : Optional.ofNullable(defaultParams).orElse(FcApiParamPak.empty());
-
+    public PreparedCall<Object> newApiCall(String apiName) {
+        FcApiPak api = Optional.of(system)
+                .map(source::getSourcePak)
+                .map(FcSourcePak::getApiMap)
+                .map(apiMap -> apiMap.get(apiName))
+                .orElseThrow(() -> new FastCallException("Source infos of api[{}] do not exist", apiName));
+        FcApiParamPak paramPak = api.getParamPak();
         return newCall(Object.class)
                 .apiName(apiName)
                 .host(api.getParticularHost())
                 .uri(api.getPath())
                 .method(api.getMethod())
-                .headers(finalParams.getHeaders())
-                .params(finalParams.getParams())
-                .body(finalParams.getBody())
+                .headers(paramPak.getHeaders())
+                .params(paramPak.getParams())
+                .body(paramPak.getBody())
                 .prepared();
-    }
-
-    public PreparedCall<Object> newApiCall(String apiName) {
-        return newApiCall(apiName, null);
     }
 
     private <T> FastCallResponse<T> callIt(Builder<T> builder, boolean throwException) {

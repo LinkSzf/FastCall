@@ -1,18 +1,20 @@
 package priv.szf.fastcall.common.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.io.Serializable;
 
-@Data
+@Builder
+@Getter
 public class FcClientSettingPak implements Serializable {
 
     private static final long serialVersionUID = -7562993860194630639L;
 
-    private Integer connectTimeout;
+    private final Integer connectTimeout;
 
-    private Integer readTimeout;
+    private final Integer readTimeout;
 
-    private Integer writeTimeout;
+    private final Integer writeTimeout;
 
 }
