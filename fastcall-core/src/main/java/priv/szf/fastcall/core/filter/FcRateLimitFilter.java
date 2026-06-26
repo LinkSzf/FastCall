@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.FcTimeSpan;
 import priv.szf.fastcall.common.exception.FcRateLimitedException;
+import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.utils.FcTimeUtil;
 import priv.szf.fastcall.core.FastCallResponse;
-import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.filter.support.FcRateLimitSupport;
 
 import java.time.LocalDateTime;
@@ -71,7 +71,7 @@ public class FcRateLimitFilter implements FcFilter {
             long current = rateLimit.getCurrent();
             long limit = rateLimit.getMaximum();
             if (current >= limit) {
-                Long systemId = rateLimit.getSystemId();
+                long systemId = rateLimit.getSystemId();
                 throw new FcRateLimitedException("系统请求频率超出限制，systemId: {}, span: {}, limit: {}, time: {}",
                         systemId, span, limit, time);
             }
@@ -79,10 +79,11 @@ public class FcRateLimitFilter implements FcFilter {
     }
 
     private Long getSystemId(FcFilterContext context) {
-        FcSourcePak sourcePak = context.getSourcePak();
-        FcSystemPak system = sourcePak.getSystem();
-        Long systemId = system.getId();
-        return Objects.nonNull(systemId) ? systemId : FcUtils.encodeId(system.getCode());
+        return Optional.of(context)
+                .map(FcFilterContext::getSourcePak)
+                .map(FcSourcePak::getSystem)
+                .map(FcSystemPak::getId)
+                .orElseThrow(() -> new FcUnexpectedException("SystemId not found"));
     }
 
 

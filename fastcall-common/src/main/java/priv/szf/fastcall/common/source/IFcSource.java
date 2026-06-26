@@ -10,4 +10,6 @@ public interface IFcSource {
 
     void updateCredential(String system, ICredential credential);
 
+    default void init() {}
+
 }

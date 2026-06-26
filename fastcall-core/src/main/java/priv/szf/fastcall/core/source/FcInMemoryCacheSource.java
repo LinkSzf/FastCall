@@ -1,26 +1,25 @@
 package priv.szf.fastcall.core.source;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
-import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.common.source.IFcSource;
+import priv.szf.fastcall.core.config.FastCallProperties;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+@Order(100)
 @RequiredArgsConstructor
-public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcSource, IFcCacheSource {
+public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcCacheSource, IFcSource {
+
+    private final FastCallProperties.SourceCache sourceCache;
 
     private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
-
-    @Override
-    public ChainSourceType getType() {
-        return ChainSourceType.IN_MEMORY;
-    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {

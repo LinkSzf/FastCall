@@ -1,5 +1,6 @@
 package priv.szf.fastcall.core.config;
 
+import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -7,32 +8,38 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
-import priv.szf.fastcall.common.FastCallConsts;
+import priv.szf.fastcall.common.source.IFcCacheSource;
+import priv.szf.fastcall.common.source.IFcChainSource;
+import priv.szf.fastcall.common.source.IFcDatabaseSource;
 import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.core.source.FcDatabaseSource;
 import priv.szf.fastcall.core.source.FcInMemoryCacheSource;
+import priv.szf.fastcall.core.source.FcPropertySource;
 import priv.szf.fastcall.core.source.FcRedisCacheSource;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
+
+import java.util.List;
 
 @Configuration
 public class FcSourceConfig {
 
-    private static final String REDIS_CACHE_SOURCE = FastCallConsts.NAME + "RedisCacheSource";
-
-    private static final String IN_MEMORY_CACHE_SOURCE = FastCallConsts.NAME + "InMemoryCacheSource";
-
-    private static final String DATABASE_SOURCE = FastCallConsts.NAME + "DatabaseSource";
+    @Bean(initMethod = "init")
+    public FcSourceDelegate fcSourceDelegate(List<IFcChainSource> chainSources) {
+        return new FcSourceDelegate(chainSources);
+    }
 
     @ConditionalOnExpression(
             "'${fast-call.source-cache.enable:true}' == 'true' and " +
                     "'${fast-call.source-cache.engine:memory}' == 'redis'"
     )
     @ConditionalOnBean(RedisTemplate.class)
-    @Bean(REDIS_CACHE_SOURCE)
+    @Bean
     public FcRedisCacheSource fcRedisCacheSource(
             FastCallProperties properties,
             RedisTemplate<Object,Object> redisTemplate
     ) {
-        return new FcRedisCacheSource(redisTemplate, properties);
+        FastCallProperties.SourceCache sourceCache = properties.getSourceCache();
+        return new FcRedisCacheSource(redisTemplate, sourceCache);
     }
 
     @ConditionalOnProperty(
@@ -41,16 +48,27 @@ public class FcSourceConfig {
             havingValue = "true",
             matchIfMissing = true
     )
-    @ConditionalOnMissingBean(FcRedisCacheSource.class)
-    @Bean(IN_MEMORY_CACHE_SOURCE)
-    public FcInMemoryCacheSource fcInMemoryCacheSource() {
-        return new FcInMemoryCacheSource();
+    @ConditionalOnMissingBean(IFcCacheSource.class)
+    @Bean
+    public FcInMemoryCacheSource fcInMemoryCacheSource(FastCallProperties properties) {
+        FastCallProperties.SourceCache sourceCache = properties.getSourceCache();
+        return new FcInMemoryCacheSource(sourceCache);
     }
 
     @ConditionalOnBean(IFcPakProvider.class)
-    @Bean(DATABASE_SOURCE)
+    @ConditionalOnMissingBean(IFcDatabaseSource.class)
+    @Bean
     public FcDatabaseSource fcDatabaseSource(IFcPakProvider pakProvider) {
          return new FcDatabaseSource(pakProvider);
+    }
+
+    @Bean
+    public FcPropertySource fcPropertySource(FastCallProperties properties) {
+        List<FastCallProperties.EasySource> sources = properties.getEasySource();
+        if (CollectionUtil.isEmpty(sources)) {
+            return null;
+        }
+        return new FcPropertySource(sources);
     }
 
 

@@ -19,16 +19,16 @@ public class FcSourcePak implements IEssentialCheck<FcSourcePak>, Serializable {
 
     private static final long serialVersionUID = 1169371931895544090L;
 
-    private FcSystemPak system;
+    private final FcSystemPak system;
 
-    private FcAuthPak auth;
+    private final FcAuthPak auth;
 
     @Setter
     private volatile ICredential credential;
 
-    private Map<String, FcApiPak> apiMap;
+    private final Map<String, FcApiPak> apiMap;
 
-    private List<FcHeaderAssignPak> headerAssigns;
+    private final List<FcHeaderAssignPak> headerAssigns;
 
 
     public List<FcHeaderAssignPak> getHeaderAssigns(FcHeaderType type) {

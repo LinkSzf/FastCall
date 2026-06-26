@@ -43,7 +43,7 @@ public class FcRateLimitSupport {
                 .filter(s -> CollectionUtil.isNotEmpty(s.getRateLimits()))
                 .forEach(s -> {
                     String code = s.getSystem().getCode();
-                    Long systemId = (long) FcUtils.encodeId(code);
+                    Long systemId = FcUtils.encodeId(code);
                     systemRateLimitMap.computeIfAbsent(systemId, k ->
                             s.getRateLimits().stream()
                             .map(r -> {

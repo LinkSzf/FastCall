@@ -34,6 +34,7 @@ public class FcSystemPak implements IEssentialCheck<FcSystemPak>, Serializable {
     @Override
     public List<Function<FcSystemPak, ?>> requireNonNull() {
         return Arrays.asList(
+                FcSystemPak::getId,
                 FcSystemPak::getName,
                 FcSystemPak::getCode,
                 FcSystemPak::getHost,

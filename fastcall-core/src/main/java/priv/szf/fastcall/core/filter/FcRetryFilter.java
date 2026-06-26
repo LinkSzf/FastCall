@@ -1,7 +1,9 @@
 package priv.szf.fastcall.core.filter;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
+import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.FastCallResponse;
@@ -10,6 +12,7 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Order(Integer.MAX_VALUE)
 @RequiredArgsConstructor
 public class FcRetryFilter implements FcFilter {
@@ -49,6 +52,7 @@ public class FcRetryFilter implements FcFilter {
         int attempts = 0;
         while (attempts < this.maxAttempts) {
             attempts++;
+            log.warn("{}-Retrying call, attempt: {}, system: {}, url: {}", FastCallConsts.NAME, attempts, context.getSystem(), context.getUrl());
             try {
                 TimeUnit.MILLISECONDS.sleep(retryInterval);
             } catch (InterruptedException e) {

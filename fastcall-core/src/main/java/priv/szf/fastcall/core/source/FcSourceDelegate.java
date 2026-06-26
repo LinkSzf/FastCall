@@ -2,39 +2,36 @@ package priv.szf.fastcall.core.source;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.common.source.IFcChainSource;
 import priv.szf.fastcall.common.source.IFcSource;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Component
+@RequiredArgsConstructor
 public class FcSourceDelegate implements IFcSource {
 
-    private final IFcSource source;
+    private final List<IFcChainSource> chainSources;
 
-    @Autowired
-    public FcSourceDelegate(List<IFcChainSource> availableSources) {
-        if (CollectionUtil.isEmpty(availableSources)) {
+    private IFcSource source;
+
+    @Override
+    public void init() {
+        if (CollectionUtil.isEmpty(this.chainSources)) {
             throw new FcUnexpectedException("No available sources");
         }
 
-        List<IFcChainSource> descSortedSourceList = availableSources.stream()
-                .sorted(Comparator.<IFcChainSource>comparingInt(source -> source.getType().getPriority())
-                        .reversed())
-                .collect(Collectors.toList());
+        AnnotationAwareOrderComparator.sort(this.chainSources);
 
         IFcChainSource last = null;
-        for (IFcChainSource sortedSource : descSortedSourceList) {
-            sortedSource.setNextSource(last);
-            last = sortedSource;
-            sortedSource.init();
+        for (IFcChainSource source : this.chainSources) {
+            source.setNextSource(last);
+            last = source;
+            source.init();
         }
 
         this.source = last;

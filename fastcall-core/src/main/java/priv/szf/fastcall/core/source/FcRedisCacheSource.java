@@ -1,8 +1,8 @@
 package priv.szf.fastcall.core.source;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
-import priv.szf.fastcall.common.source.ChainSourceType;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
@@ -13,19 +13,16 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
+@Order(100)
 @RequiredArgsConstructor
-public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, IFcCacheSource {
+public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSource, IFcSource {
 
     private static final String REDIS_KEY_SOURCE_PREFIX = "fastcall:source:";
 
     private final RedisTemplate<Object, Object> redisTemplate;
 
-    private final FastCallProperties properties;
+    private final FastCallProperties.SourceCache sourceCache;
 
-    @Override
-    public ChainSourceType getType() {
-        return ChainSourceType.REDIS;
-    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {
@@ -67,6 +64,6 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcSource, 
     }
 
     private long getExpire() {
-        return this.properties.getSourceCache().getExpire();
+        return this.sourceCache.getExpire();
     }
 }

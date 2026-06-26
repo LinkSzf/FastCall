@@ -60,7 +60,7 @@ public final class FcUtils {
                 .build();
     }
 
-    public static int encodeId(@NonNull String id) {
+    public static long encodeId(@NonNull String id) {
         return id.hashCode();
     }
 
