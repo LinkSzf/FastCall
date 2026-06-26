@@ -30,7 +30,4 @@ public class FcFilterContext {
     @Setter
     private FastCallResponse<?> response;
 
-    @Setter
-    private Exception exception;
-
 }

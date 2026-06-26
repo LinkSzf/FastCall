@@ -16,6 +16,10 @@ fast-call:
   filter:
     enable-rate-limit: true
     enable-request-event: true
+    retry:
+      enable: true
+      attempts: 3
+      interval: 1000
   cache:
     enable: false
     max-size: 10485760
@@ -47,6 +51,9 @@ fast-call:
         enable: true
         host: https://pc5vxpedaq.re.qweatherapi.com
         auth-type: JWT
+      rate-limits:
+        - maximum: 30
+          span: MINUTES
       auth:
         content: |
           {
@@ -64,9 +71,6 @@ fast-call:
               "sub": "248C7MFGFY",
             }
           }
-      rate-limits:
-        - maximum: 30
-          span: MINUTES
 
 
 

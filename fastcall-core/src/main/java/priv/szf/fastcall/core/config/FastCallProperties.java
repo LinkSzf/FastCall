@@ -29,9 +29,6 @@ public class FastCallProperties {
     /** 是否启用事件 */
     private Filter filter = new Filter();
 
-    /** 重试配置 */
-    private Retry retry = new Retry();
-
     /** 请求缓存配置 */
     private Cache cache = new Cache();
 
@@ -52,6 +49,22 @@ public class FastCallProperties {
 
         /** 是否启用请求事件 */
         private boolean enableRequestEvent = false;
+
+        /** 重试配置 */
+        private Retry retry = new Retry();
+
+
+        @Data
+        public static class Retry {
+            /** 是否启用重试 */
+            private boolean enable = false;
+
+            /** 最大重试次数 */
+            private int attempts = 3;
+
+            /** 重试间隔（毫秒） */
+            private long interval = 1000;
+        }
 
     }
 
@@ -152,12 +165,6 @@ public class FastCallProperties {
 
         /** 空闲连接回收时间 */
         private int keepAliveMinutes = 5;
-    }
-
-    @Data
-    public static class Retry {
-        private int maxAttempts = 3;
-        private long delayMillis = 1000;
     }
 
     @Data

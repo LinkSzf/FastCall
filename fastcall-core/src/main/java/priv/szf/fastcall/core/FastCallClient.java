@@ -127,15 +127,9 @@ public class FastCallClient {
         AtomicReference<FastCallResponse<T>> responseRef = new AtomicReference<>();
         FcFilterContext context = createFilterContext(builder);
         this.filterManager.doFilter(context, ctx -> {
-            try {
-                FastCallResponse<T> response = doCall(builder, throwException);
-                responseRef.set(response);
-                ctx.setResponse(response);
-            }
-            catch (Exception e) {
-                ctx.setException(e);
-                throw e;
-            }
+            FastCallResponse<T> response = doCall(builder, throwException);
+            responseRef.set(response);
+            ctx.setResponse(response);
         });
         return responseRef.get();
     }

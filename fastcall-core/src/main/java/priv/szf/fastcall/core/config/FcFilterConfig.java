@@ -12,6 +12,7 @@ import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.filter.FcRateLimitFilter;
 import priv.szf.fastcall.core.filter.FcRequestEventFilter;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
+import priv.szf.fastcall.core.filter.FcRetryFilter;
 import priv.szf.fastcall.core.filter.support.FcRateLimitSupport;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public class FcFilterConfig {
     private static final String REQUEST_EVENT_FILTER = FastCallConsts.NAME + "RequestEventFilter";
 
     private static final String RATE_LIMIT_FILTER = FastCallConsts.NAME + "RateLimitFilter";
+
+    private static final String RETRY_FILTER = FastCallConsts.NAME + "RetryFilter";
 
     @Bean
     public FcFilterManager fcfilterManager(List<FcFilter> filters) {
@@ -47,6 +50,13 @@ public class FcFilterConfig {
     @Bean(REQUEST_EVENT_FILTER)
     public FcRequestEventFilter fcRequestEventFilter(IFcRequestEventPublisher eventPublisher) {
         return new FcRequestEventFilter(eventPublisher);
+    }
+
+    @ConditionalOnProperty(prefix = "fast-call.filter.retry", name = "enable", havingValue = "true")
+    @ConditionalOnMissingBean(name = RETRY_FILTER)
+    @Bean(RETRY_FILTER)
+    public FcRetryFilter fcRetryFilter(FastCallProperties properties) {
+        return new FcRetryFilter(properties);
     }
 
 

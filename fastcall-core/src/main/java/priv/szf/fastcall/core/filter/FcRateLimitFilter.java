@@ -47,7 +47,6 @@ public class FcRateLimitFilter implements FcFilter {
 
     private void updateLimits(FcFilterContext context, Long systemId) {
         Optional.of(context)
-                .filter(c -> Objects.isNull(c.getException()))
                 .map(FcFilterContext::getResponse)
                 .filter(FastCallResponse::isConnected)
                 .filter(r -> !r.isCached())
