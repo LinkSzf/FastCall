@@ -1,5 +1,7 @@
 package priv.szf.fastcall.core.source;
 
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.impl.TimedCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.model.FcSourcePak;
@@ -8,9 +10,7 @@ import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.config.FastCallProperties;
 
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Order(100)
@@ -19,7 +19,15 @@ public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcCache
 
     private final FastCallProperties.SourceCache sourceCache;
 
-    private final Map<String, FcSourcePak> cache = new ConcurrentHashMap<>();
+    private Cache<String, FcSourcePak> cache;
+
+    @Override
+    public void init() {
+        boolean indefinite = this.sourceCache.isIndefinite();
+        long expire = (indefinite) ? 0L : this.sourceCache.getExpire();
+        long expireMillis = expire * 1000L;
+        this.cache = new TimedCache<>(expireMillis);
+    }
 
     @Override
     protected FcSourcePak tryGetSourcePak(String system) {

@@ -190,8 +190,12 @@ public class FastCallProperties {
         /** 缓存引擎*/
         private Engine engine = Engine.memory;
 
-        /** 缓存过期时间（分钟）*/
-        private int expire = 60;
+        /** 缓存过期时间（秒），-1或0表示永不过期*/
+        private long expire = 60;
+
+        public boolean isIndefinite() {
+            return this.expire <= 0;
+        }
 
         /** 缓存过期时刷新*/
         private boolean refreshWhenExpire = true;

@@ -34,7 +34,7 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSou
     protected void doAfterGetFromNextSource(String system, FcSourcePak sourcePak) {
             String redisKey = buildRedisKey(system);
             if (Objects.nonNull(sourcePak)) {
-                this.redisTemplate.opsForValue().set(redisKey, sourcePak, getExpire(), TimeUnit.MINUTES);
+                save(redisKey, sourcePak);
             } else {
                 this.redisTemplate.delete(redisKey);
             }
@@ -47,7 +47,7 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSou
 
         if (Objects.nonNull(sourcePak)) {
             sourcePak.setCredential(credential);
-            this.redisTemplate.opsForValue().set(redisKey, sourcePak, getExpire(), TimeUnit.MINUTES);
+            save(redisKey, sourcePak);
         }
     }
 
@@ -59,11 +59,17 @@ public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSou
         }
     }
 
+    private void save(String redisKey, FcSourcePak sourcePak) {
+        if (this.sourceCache.isIndefinite()) {
+            this.redisTemplate.opsForValue().set(redisKey, sourcePak);
+        } else {
+            long expire = this.sourceCache.getExpire();
+            this.redisTemplate.opsForValue().set(redisKey, sourcePak, expire, TimeUnit.SECONDS);
+        }
+    }
+
     private String buildRedisKey(String system) {
         return REDIS_KEY_SOURCE_PREFIX + system;
     }
 
-    private long getExpire() {
-        return this.sourceCache.getExpire();
-    }
 }
