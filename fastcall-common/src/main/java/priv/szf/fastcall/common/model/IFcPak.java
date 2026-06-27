@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public interface IFcPak extends Serializable, IFcNonNullModel, IFcImmutableModel {
 
-
-    default <T extends IFcPak> T init() {
-        return (T)this.check();
+    default void init() {
+        check();
+        immunize();
     }
 
 

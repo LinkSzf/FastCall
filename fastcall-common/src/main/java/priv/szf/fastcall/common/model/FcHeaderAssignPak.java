@@ -23,7 +23,7 @@ public class FcHeaderAssignPak implements IFcPak {
 
     private final FcHeaderType type;
 
-    private String path;
+    private final String path;
 
     @Override
     public List<Supplier<?>> requireNonNull() {

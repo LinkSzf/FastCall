@@ -3,7 +3,6 @@ package priv.szf.fastcall.data.provider;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -25,8 +24,6 @@ import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcSystem;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Mapper(
-        componentModel = MappingConstants.ComponentModel.SPRING,
-        collectionMappingStrategy = CollectionMappingStrategy.TARGET_IMMUTABLE
+        componentModel = MappingConstants.ComponentModel.SPRING
 )
 public interface FcPakMapping {
 
@@ -113,7 +109,4 @@ public interface FcPakMapping {
                 .build();
     }
 
-    default Collection<?> toImmutableCollection(Collection<?> collection) {
-        return collection == null ? null : Collections.unmodifiableCollection(collection);
-    }
 }
