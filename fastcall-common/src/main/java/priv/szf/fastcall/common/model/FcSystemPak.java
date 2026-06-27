@@ -3,11 +3,9 @@ package priv.szf.fastcall.common.model;
 import lombok.Builder;
 import lombok.Getter;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.FcFuncScope;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 @Builder
@@ -23,8 +21,6 @@ public class FcSystemPak implements IFcPak {
     private final String code;
 
     private final boolean enable;
-
-    private final Set<FcFuncScope> scope;
 
     private final String host;
 

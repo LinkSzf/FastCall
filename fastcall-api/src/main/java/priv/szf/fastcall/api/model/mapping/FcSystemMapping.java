@@ -9,8 +9,7 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {FcAuthMapping.class,
-                FcSystemFuncScopeConverter.class}
+        uses = FcAuthMapping.class
 )
 public interface FcSystemMapping {
     FcSystemVO toVo(FcSystem entity);

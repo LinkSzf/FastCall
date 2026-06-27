@@ -40,10 +40,6 @@ public class FcSystem {
     @TableField("enable")
     private Boolean enable;
 
-    @Column(name = "scope")
-    @TableField("scope")
-    private String scope;
-
     @Column(name = "host")
     @TableField("host")
     private String host;

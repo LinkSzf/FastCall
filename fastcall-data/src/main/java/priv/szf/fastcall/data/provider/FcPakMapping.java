@@ -1,12 +1,10 @@
 package priv.szf.fastcall.data.provider;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
-import priv.szf.fastcall.common.FcFuncScope;
 import priv.szf.fastcall.common.FcParamPos;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
@@ -15,7 +13,6 @@ import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
-import priv.szf.fastcall.data.FcDataConsts;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
@@ -23,14 +20,11 @@ import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcSystem;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING
@@ -65,16 +59,6 @@ public interface FcPakMapping {
 
     default BaseAuthContent toBean(FcAuth entity){
         return JSONUtil.toBean(entity.getContent(), entity.getType().getClazz());
-    }
-
-    default Set<FcFuncScope> toEnumSet(String scope) {
-        if (StrUtil.isBlank(scope)) {
-            return null;
-        }
-        return Arrays.stream(scope.split(FcDataConsts.SYSTEM_FUNC_SCOPE_DELIMITER))
-                .map(String::trim)
-                .map(FcFuncScope::valueOf)
-                .collect(Collectors.toSet());
     }
 
     default FcApiParamPak toApiParamPak(List<FcApiParam> apiParams) {

@@ -2,14 +2,12 @@ package priv.szf.fastcall.api.model.dto;
 
 import lombok.Data;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.FcFuncScope;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 @Data
 public class FcSystemDTO {
@@ -26,8 +24,6 @@ public class FcSystemDTO {
 
     @NotNull(message = "是否启用不能为空")
     private Boolean enable;
-
-    private Set<FcFuncScope> scope;
 
     @NotNull(message = "主机地址不能为空")
     @Size(min = 1, max = 50, message = "主机地址长度必须在1到100个字符之间")
