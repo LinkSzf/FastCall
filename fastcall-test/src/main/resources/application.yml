@@ -52,7 +52,7 @@ fast-call:
         host: https://pc5vxpedaq.re.qweatherapi.com
         auth-type: JWT
       rate-limits:
-        - maximum: 30
+        - maximum: 3
           span: MINUTES
       auth:
         content: |

@@ -3,10 +3,12 @@ package priv.szf.fastcall.core.filter.support;
 import cn.hutool.cache.Cache;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.IdUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
+import priv.szf.fastcall.common.model.IFcPak;
 import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.config.FastCallProperties;
@@ -35,7 +37,7 @@ public class FcRateLimitSupport {
         Map<Long, List<FcRateLimitPak>> systemRateLimitMap = this.pakProvider.getAllRateLimits()
                 .stream()
                 .filter(l -> l.getMaximum() > 0)
-                .map(FcRateLimitPak::<FcRateLimitPak>check)
+                .peek(IFcPak::init)
                 .collect(Collectors.groupingBy(FcRateLimitPak::getSystemId));
 
         this.properties.getEasySource()
@@ -47,11 +49,14 @@ public class FcRateLimitSupport {
                     systemRateLimitMap.computeIfAbsent(systemId, k ->
                             s.getRateLimits().stream()
                             .map(r -> {
-                                FcRateLimitPak pak = new FcRateLimitPak();
-                                pak.setSystemId(systemId);
-                                pak.setSpan(r.getSpan());
-                                pak.setMaximum(r.getMaximum());
-                                return pak.<FcRateLimitPak>check();
+                                FcRateLimitPak pak = FcRateLimitPak.builder()
+                                        .id(IdUtil.getSnowflakeNextId())
+                                        .systemId(systemId)
+                                        .span(r.getSpan())
+                                        .maximum(r.getMaximum())
+                                        .build();
+                                pak.init();
+                                return pak;
                             })
                             .collect(Collectors.toList()));
                 });

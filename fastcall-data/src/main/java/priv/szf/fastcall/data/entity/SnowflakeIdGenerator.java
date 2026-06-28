@@ -3,15 +3,32 @@ package priv.szf.fastcall.data.entity;
 
 import cn.hutool.core.util.IdUtil;
 import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.id.Assigned;
 import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.util.Objects;
+import java.util.Properties;
 
-public class SnowflakeIdGenerator implements IdentifierGenerator {
+public class SnowflakeIdGenerator extends Assigned implements IdentifierGenerator {
+
+    private String entityName;
 
     @Override
-    public Serializable generate(SharedSessionContractImplementor sharedSessionContractImplementor, Object o) throws HibernateException {
-        return IdUtil.getSnowflakeNextId();
+    public Serializable generate(SharedSessionContractImplementor session, Object obj) throws HibernateException {
+        final Serializable manualId = session.getEntityPersister( entityName, obj ).getIdentifier( obj, session );
+        return (Objects.nonNull(manualId)) ? manualId : IdUtil.getSnowflakeNextId();
+    }
+
+    @Override
+    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+        entityName = params.getProperty( ENTITY_NAME );
+        if ( entityName == null ) {
+            throw new MappingException("no entity name");
+        }
     }
 }
