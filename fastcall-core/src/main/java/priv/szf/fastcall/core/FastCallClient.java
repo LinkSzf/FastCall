@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import lombok.Builder;
+import lombok.Getter;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,15 +16,13 @@ import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.FcMediaType;
-import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.core.filter.FcFilterContext;
 import priv.szf.fastcall.common.FcRequestMethod;
-import priv.szf.fastcall.common.model.FcApiPak;
-import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.filter.FcFilterManager;
-import priv.szf.fastcall.core.support.FcHttpRequestFactory;
-import priv.szf.fastcall.core.support.FcHttpResponseMapper;
+import priv.szf.fastcall.core.support.FcFilterContextSupport;
+import priv.szf.fastcall.core.support.FcHttpRequestSupport;
+import priv.szf.fastcall.core.support.FcHttpResponseSupport;
 import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 
 import java.lang.reflect.Type;
@@ -43,35 +42,17 @@ public class FastCallClient {
 
     private final String system;
 
-    private final FcAuthType authType;
-
     private final IFcSource source;
 
     private final FcFilterManager filterManager;
 
-    private <T> Request createRequest(Builder<T> builder) {
-        Request request = FcHttpRequestFactory.createRequest(
-                system,
-                authType,
-                builder.callType,
-                builder.fullUrl,
-                builder.method,
-                builder.contentType,
-                builder.body,
-                builder.headers
-        );
-        return request.newBuilder()
-                .tag(FastCallClient.class, this)
-                .build();
-    }
-
     private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
-        Request request = createRequest(builder);
+        Request request = FcHttpRequestSupport.createRequest(builder, system);
 
-        Call call = client.newCall(request);
+        Call call = this.client.newCall(request);
 
         try (Response response = call.execute()) {
-            return FcHttpResponseMapper.buildStandardResponse(builder.dataType, builder.fullUrl, response);
+            return FcHttpResponseSupport.buildStandardResponse(builder.dataType, builder.fullUrl, response);
         } catch (Exception e) {
             if (throwException) {
                 throw new FcUnexpectedException(e, "Unexpected exception occurred when calling url[{}]", request.url());
@@ -85,39 +66,52 @@ public class FastCallClient {
         }
     }
 
-    public <T> Builder<T> newCall(Class<T> dataType) {
-        return new Builder<>(this, dataType);
+    public <T> PreparedCall<T> newApiCall(String apiName) {
+        return this.<T>newCall()
+                .apiName(apiName)
+                .prepared();
     }
 
-    public <T> Builder<T> newCall(Type dataType) {
-        return new Builder<>(this, dataType);
+    public <T> Builder<T> newCall(Class<T> dataType) {
+        return this.newCall((Type) dataType);
     }
 
     public <T> Builder<T> newCall() {
-        return new Builder<>(this, Object.class);
+        return this.<T>newCall(Object.class);
     }
 
-    public PreparedCall<Object> newApiCall(String apiName) {
-        FcApiPak api = Optional.of(system)
-                .map(source::getSourcePak)
-                .map(FcSourcePak::getApiMap)
-                .map(apiMap -> apiMap.get(apiName))
-                .orElseThrow(() -> new FastCallException("Source infos of api[{}] do not exist", apiName));
-        FcApiParamPak paramPak = api.getParamPak();
-        return newCall(Object.class)
-                .apiName(apiName)
-                .host(api.getParticularHost())
-                .uri(api.getPath())
-                .method(api.getMethod())
-                .headers(paramPak.getHeaders())
-                .params(paramPak.getParams())
-                .body(paramPak.getBody())
-                .prepared();
+    public <T> Builder<T> newCall(Type dataType) {
+        FcSourcePak sourcePak = this.source.getSourcePak(this.system);
+        Builder<T> builder = new Builder<>(this, sourcePak, dataType);
+        if (Objects.nonNull(builder.apiName)) {
+            Optional.of(sourcePak)
+                    .map(FcSourcePak::getApiMap)
+                    .map(apiMap -> apiMap.get(builder.apiName))
+                    .ifPresent(api -> {
+                        builder.host(api.getParticularHost())
+                                .uri(api.getPath())
+                                .method(api.getMethod());
+                        Optional.ofNullable(api.getParamPak())
+                                .ifPresent(paramPak -> {
+                                    builder
+                                            .headers(paramPak.getHeaders())
+                                            .params(paramPak.getParams())
+                                            .body(paramPak.getBody());
+                                });
+                    });
+
+        }
+
+        String host = Optional.of(sourcePak).filter(pak -> Objects.isNull(builder.host)).map(FcSourcePak::getSystem).map(FcSystemPak::getHost).orElse(null);
+        FcAuthType authType = Optional.of(sourcePak).map(FcSourcePak::getSystem).map(FcSystemPak::getAuthType).orElse(FcAuthType.NONE);
+        builder.authType(authType)
+                .host(host);
+        return builder;
     }
 
     private <T> FastCallResponse<T> callIt(Builder<T> builder, boolean throwException) {
         AtomicReference<FastCallResponse<T>> responseRef = new AtomicReference<>();
-        FcFilterContext context = createFilterContext(builder);
+        FcFilterContext context = FcFilterContextSupport.createFilterContext(builder, this.system);
         this.filterManager.doFilter(context, ctx -> {
             FastCallResponse<T> response = doCall(builder, throwException);
             responseRef.set(response);
@@ -126,25 +120,16 @@ public class FastCallClient {
         return responseRef.get();
     }
 
-    private <T> FcFilterContext createFilterContext(Builder<T> builder) {
-        return FcFilterContext.builder()
-                .system(system)
-                .apiName(builder.apiName)
-                .auth(builder.isAuth)
-                .url(builder.fullUrl)
-                .callType(builder.callType)
-                .sourcePak(source.getSourcePak(system))
-                .currentTime(LocalDateTime.now())
-                .build();
-    }
-
-    public class Builder<T> {
-
-        private final Map<String, List<String>> headers = new HashMap<>();
+    @Getter
+    public static class Builder<T> {
 
         private final FastCallClient client;
 
+        private final FcSourcePak sourcePak;
+
         private final Type dataType;
+
+        private final Map<String, List<String>> headers = new HashMap<>();
 
         private FcRequestMethod method = FcRequestMethod.GET;
 
@@ -153,6 +138,8 @@ public class FastCallClient {
         private FcCallType callType = FcCallType.NORMAL;
 
         private boolean isAuth = false;
+
+        private FcAuthType authType;
 
         private String apiName;
 
@@ -164,22 +151,23 @@ public class FastCallClient {
 
         private String fullUrl;
 
-        private Map<String, List<String>> params = new LinkedHashMap<>();
+        private Map<String, List<String>> params;
 
         private Object body;
 
-        private Builder(FastCallClient client, Type dataType) {
+        private Builder(FastCallClient client, FcSourcePak sourcePak, Type dataType) {
             this.client = client;
+            this.sourcePak = sourcePak;
             this.dataType = dataType;
-            this.host = Optional.ofNullable(source)
-                    .map(s -> s.getSourcePak(system))
-                    .map(FcSourcePak::getSystem)
-                    .map(FcSystemPak::getHost)
-                    .orElse(null);
         }
 
         private Builder<T> apiName(String apiName) {
             this.apiName = apiName;
+            return this;
+        }
+
+        public Builder<T> authType(FcAuthType authType) {
+            this.authType = authType;
             return this;
         }
 

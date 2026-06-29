@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Response;
@@ -26,12 +28,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class FcHttpResponseMapper {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class FcHttpResponseSupport {
 
     private static final ObjectMapper OBJECT_MAPPER = initObjectMapper();
 
-    private FcHttpResponseMapper() {
-    }
 
     private static ObjectMapper initObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();

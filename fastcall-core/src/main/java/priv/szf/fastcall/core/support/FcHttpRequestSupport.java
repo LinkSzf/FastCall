@@ -1,14 +1,15 @@
 package priv.szf.fastcall.core.support;
 
 import cn.hutool.json.JSONUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
+import priv.szf.fastcall.core.FastCallClient;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 
 import java.io.File;
@@ -17,35 +18,26 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class FcHttpRequestFactory {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class FcHttpRequestSupport {
 
-    private FcHttpRequestFactory() {
-    }
 
-    public static Request createRequest(
-            String system,
-            FcAuthType authType,
-            FcCallType callType,
-            String url,
-            FcRequestMethod method,
-            FcMediaType contentType,
-            Object body,
-            Map<String, List<String>> headers
-    ) {
-        Headers requestHeaders = buildHeaders(headers);
-        RequestBody requestBody = buildRequestBody(body, contentType, method);
+    public static Request createRequest(FastCallClient.Builder<?> builder, String system) {
+        Headers requestHeaders = buildHeaders(builder.getHeaders());
+        RequestBody requestBody = buildRequestBody(builder.getBody(), builder.getContentType(), builder.getMethod());
         FcRequestContext requestContext = FcRequestContext.builder()
                 .system(system)
-                .authType(authType)
-                .callType(callType)
+                .authType(builder.getAuthType())
+                .callType(builder.getCallType())
                 .build()
                 .check();
 
         return new Request.Builder()
                 .tag(FcRequestContext.class, requestContext)
-                .url(url)
+                .tag(FastCallClient.class, builder.getClient())
+                .url(builder.getFullUrl())
                 .headers(requestHeaders)
-                .method(method.getName(), requestBody)
+                .method(builder.getMethod().getName(), requestBody)
                 .build();
     }
 

@@ -3,6 +3,8 @@ package priv.szf.fastcall.core.support;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,10 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FcRequestBuildSupport {
 
-    private FcRequestBuildSupport() {
-    }
 
     public static Map<String, List<String>> toMultiValueParams(Map<String, String> params) {
         Map<String, List<String>> normalized = new LinkedHashMap<>();

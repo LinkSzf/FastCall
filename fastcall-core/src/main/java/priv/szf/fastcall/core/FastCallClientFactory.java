@@ -12,7 +12,6 @@ import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
-import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.FcClientSettingPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
@@ -76,10 +75,6 @@ public class FastCallClientFactory {
             throw new FastCallException("System[{}] has been set to disable and access cannot be initiated", system);
         }
 
-        FcAuthType authType = Optional.of(sourcePak.getSystem())
-                .map(FcSystemPak::getAuthType)
-                .orElseThrow(() -> new FcDataNotFoundException("System[{}] auth config is missing", system));
-
         FcClientSettingPak clientSetting = getClientSetting(systemPak);
         OkHttpClient client = initCoreClient(clientSetting);
 
@@ -87,7 +82,6 @@ public class FastCallClientFactory {
         return FastCallClient.builder()
                 .client(client)
                 .system(system)
-                .authType(authType)
                 .source(source)
                 .filterManager(filterManager)
                 .build();

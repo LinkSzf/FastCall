@@ -3,6 +3,7 @@ package priv.szf.fastcall.core.filter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.FastCallResponse;
@@ -24,6 +25,8 @@ public class FcFilterContext {
     private final String url;
 
     private final FcCallType callType;
+
+    private final FcAuthType authType;
 
     private final LocalDateTime currentTime;
 
