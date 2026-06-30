@@ -25,6 +25,6 @@ public class TokenCredential extends BaseCredential implements ICredential {
     @Override
     public boolean isValid() {
         return Objects.nonNull(estimatedExpiration)
-                && estimatedExpiration.isBefore(LocalDateTime.now());
+                && estimatedExpiration.isAfter(LocalDateTime.now());
     }
 }
