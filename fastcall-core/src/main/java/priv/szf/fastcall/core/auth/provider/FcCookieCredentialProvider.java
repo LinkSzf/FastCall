@@ -1,15 +1,15 @@
 package priv.szf.fastcall.core.auth.provider;
 
 import cn.hutool.core.collection.CollectionUtil;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.model.content.CookieAuthContent;
 import priv.szf.fastcall.core.FastCallResponse;
-import priv.szf.fastcall.core.auth.IFcAuthProvider;
+import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.core.model.credential.CookieCredential;
-import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.List;
@@ -17,9 +17,10 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class FcCookieAuthProvider extends FcBaseInteractiveAuthProvider<CookieAuthContent, Object>
-        implements IFcAuthProvider {
+public class FcCookieCredentialProvider extends FcBaseInteractiveCredentialProvider<CookieAuthContent, Object>
+        implements IFcCredentialProvider {
 
+    @Getter
     private final FcSourceDelegate source;
 
     @Override
@@ -35,8 +36,4 @@ public class FcCookieAuthProvider extends FcBaseInteractiveAuthProvider<CookieAu
                 .orElse(null);
     }
 
-    @Override
-    protected IFcSource getSource() {
-        return source;
-    }
 }

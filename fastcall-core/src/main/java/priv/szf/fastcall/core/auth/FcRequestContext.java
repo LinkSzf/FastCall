@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.Getter;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcCallType;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.IFcNonNullModel;
+import priv.szf.fastcall.core.FastCallClient;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,10 @@ import java.util.function.Supplier;
 public class FcRequestContext implements IFcNonNullModel {
 
     private final String system;
+
+    private final FastCallClient client;
+
+    private final FcSourcePak source;
 
     private final FcAuthType authType;
 

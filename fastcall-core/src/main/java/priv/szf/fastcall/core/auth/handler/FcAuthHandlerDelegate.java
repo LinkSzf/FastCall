@@ -6,8 +6,11 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.model.FcAuthPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
+import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.model.credential.ICredential;
@@ -23,6 +26,8 @@ import java.util.stream.Collectors;
 @Component
 public class FcAuthHandlerDelegate implements IFcAuthHandler {
 
+    private static final int DEFAULT_UNAUTHORIZED_CODE = 401;
+
     private final Map<FcAuthType, IFcAuthHandler> handlerMap;
 
     @Autowired
@@ -34,11 +39,6 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     @Override
     public FcAuthType getAuthType() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getSystem(Request request) {
-        return getHandler(request).getSystem(request);
     }
 
     @Override
@@ -76,21 +76,27 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
         if (!isRefreshableHandler(handler)) {
             return false;
         }
-        IFcRefreshableAuthHandler refreshableAuthHandler = (IFcRefreshableAuthHandler) handler;
-        Integer unauthorizedCode = refreshableAuthHandler.getUnauthorizedCode(request);
-        if (Objects.isNull(unauthorizedCode) || unauthorizedCode != response.code()) {
+
+        int unauthorizedCode = Optional.of(request)
+                .map(this::getRequestContext)
+                .map(FcRequestContext::getSource)
+                .map(FcSourcePak::getAuth)
+                .map(FcAuthPak::getUnauthorizedCode)
+                .orElse(DEFAULT_UNAUTHORIZED_CODE);
+        if (unauthorizedCode != response.code()) {
             return false;
         }
 
         invalidateCredential(request);
-        return refreshableAuthHandler.refresh(response);
+        return ((IFcRefreshableAuthHandler) handler).refresh(response);
     }
 
     private void invalidateCredential(Request request) {
-        ICredential credential = request.tag(ICredential.class);
-        if (Objects.nonNull(credential)) {
-            credential.invalidate();
-        }
+        Optional.of(request)
+                .map(this::getRequestContext)
+                .map(FcRequestContext::getSource)
+                .map(FcSourcePak::getCredential)
+                .ifPresent(ICredential::invalidate);
     }
 
     private IFcAuthHandler getHandler(Request request) {

@@ -189,7 +189,9 @@ public class FastCallClient {
         }
 
         public Builder<T> uri(String uri) {
-            this.uri = uri;
+            if (StrUtil.isNotBlank(host)) {
+                this.uri = uri;
+            }
             return this;
         }
 

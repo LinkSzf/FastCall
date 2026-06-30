@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core.config;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -10,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.FastCallClientFactory;
-import priv.szf.fastcall.core.auth.provider.FcDigestAuthProvider;
 import priv.szf.fastcall.core.event.FcRequestEventPublisher;
 import priv.szf.fastcall.core.event.FcSourceEventListener;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
@@ -40,10 +38,9 @@ public class FcCoreEventConfig {
     @Bean(SOURCE_EVENT_LISTENER)
     public IFcSourceEventListener fcSourceEventListener(
             List<IFcCacheSource> sources,
-            FastCallClientFactory clientFactory,
-            ObjectProvider<FcDigestAuthProvider> digestAuthProvider
+            FastCallClientFactory clientFactory
     ) {
-        return new FcSourceEventListener(sources, clientFactory, digestAuthProvider.getIfAvailable());
+        return new FcSourceEventListener(sources, clientFactory);
     }
 
 }

@@ -6,13 +6,13 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.model.credential.TokenCredential;
-import priv.szf.fastcall.common.source.IFcSource;
-import priv.szf.fastcall.core.auth.IFcAuthProvider;
+import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.content.TokenAuthContent;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
@@ -22,17 +22,13 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
-public class FcTokenAuthProvider extends FcBaseInteractiveAuthProvider<TokenAuthContent, String>
-        implements IFcAuthProvider {
+public class FcTokenCredentialProvider extends FcBaseInteractiveCredentialProvider<TokenAuthContent, String>
+        implements IFcCredentialProvider {
 
     private static final long DEFAULT_EXPIRES_IN = 60 * 60 * 24 * 7;
 
+    @Getter
     private final FcSourceDelegate source;
-
-    @Override
-    protected IFcSource getSource() {
-        return source;
-    }
 
     @Override
     protected TokenCredential buildCredential(@NonNull FastCallResponse<String> response,

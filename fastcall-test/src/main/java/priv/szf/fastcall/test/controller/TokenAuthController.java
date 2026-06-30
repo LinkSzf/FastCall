@@ -28,7 +28,7 @@ public class TokenAuthController extends BaseAuthController {
 
     protected static final String BASE_URI = "/auth/bearer";
 
-    private LocalDateTime authExpireTime;
+    private volatile LocalDateTime authExpireTime;
 
 
     @Override
@@ -51,7 +51,7 @@ public class TokenAuthController extends BaseAuthController {
     }
 
     @PostMapping("/login")
-    public BearerAuthResponseBody login(@RequestBody BearerAuthRequestBody requestBody) {
+    public synchronized BearerAuthResponseBody login(@RequestBody BearerAuthRequestBody requestBody) {
         log.info("[TEST-({})-登录]正在被请求...", getSystemCode());
 
         checkConRequest();
@@ -72,7 +72,7 @@ public class TokenAuthController extends BaseAuthController {
 
         return BearerAuthResponseBody.builder()
                 .timestamp(System.currentTimeMillis())
-                .system(new BearerAuthResponseBody.System(TOKEN, EXPIRE+20))
+                .system(new BearerAuthResponseBody.System(TOKEN, EXPIRE))
                 .build();
     }
 

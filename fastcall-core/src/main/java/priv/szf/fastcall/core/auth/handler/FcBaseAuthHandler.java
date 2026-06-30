@@ -4,19 +4,21 @@ import cn.hutool.core.util.StrUtil;
 import lombok.NonNull;
 import okhttp3.Request;
 import priv.szf.fastcall.common.FcCallType;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
-import priv.szf.fastcall.core.auth.IFcAuthProvider;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.credential.ICredential;
+import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
 
-    protected abstract IFcAuthProvider getAuthProvider();
+    protected abstract IFcCredentialProvider getCredentialProvider();
 
     @Override
     public FcRequestContext getRequestContext(Request request) {
@@ -28,19 +30,13 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
     }
 
     @Override
-    public String getSystem(Request request) {
-        return getRequestContext(request).getSystem();
-    }
-
-    @Override
     public boolean isNotAuthNeed(Request request) {
         return getRequestContext(request).getCallType() == FcCallType.ANONYMOUS;
     }
 
     @Override
     public Request modifyRequest(Request request) {
-        String system = getSystem(request);
-        ICredential credential = getCredential(system);
+        ICredential credential = obtainCredential(request);
 
         if (Objects.isNull(credential)) {
             return request;
@@ -48,7 +44,6 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
         Request.Builder builder = request.newBuilder();
         return doModifyRequest(builder, credential)
-                .tag(ICredential.class, credential)
                 .build();
     }
 
@@ -58,12 +53,12 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
         return builder.header(FcHttpHeader.AUTHORIZATION.getName(), authorization);
     }
 
-    protected <T extends ICredential> T getCredential(String system) {
-        ICredential credential = getAuthProvider().getCredential(system);
-        if (Objects.isNull(credential)) {
-            return null;
-        }
-        return (T) credential;
+    protected ICredential obtainCredential(Request request) {
+        FcRequestContext requestContext = getRequestContext(request);
+        return Optional.of(requestContext)
+                .map(FcRequestContext::getSource)
+                .map(FcSourcePak::getCredential)
+                .orElseGet(() -> getCredentialProvider().buildCredential(requestContext));
     }
 
     protected final String concatAuthString(ICredential credential) {

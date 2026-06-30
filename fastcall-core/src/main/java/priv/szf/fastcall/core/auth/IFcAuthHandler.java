@@ -7,8 +7,6 @@ public interface IFcAuthHandler {
 
     FcAuthType getAuthType();
 
-    String getSystem(Request request);
-
     Request modifyRequest(Request request);
 
     boolean isNotAuthNeed(Request request);

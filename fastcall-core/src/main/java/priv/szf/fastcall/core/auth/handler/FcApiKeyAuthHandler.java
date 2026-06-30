@@ -1,5 +1,6 @@
 package priv.szf.fastcall.core.auth.handler;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.HttpUrl;
@@ -9,7 +10,7 @@ import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
-import priv.szf.fastcall.core.auth.provider.FcApiKeyAuthProvider;
+import priv.szf.fastcall.core.auth.provider.FcApiKeyCredentialProvider;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
 
@@ -19,16 +20,12 @@ import java.util.Optional;
 @Component
 public class FcApiKeyAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
-    private final FcApiKeyAuthProvider apiKeyAuthProvider;
+    @Getter
+    private final FcApiKeyCredentialProvider credentialProvider;
 
     @Override
     public FcAuthType getAuthType() {
         return FcAuthType.APIKEY;
-    }
-
-    @Override
-    protected FcApiKeyAuthProvider getAuthProvider() {
-        return apiKeyAuthProvider;
     }
 
     @Override

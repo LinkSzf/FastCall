@@ -29,12 +29,13 @@ public final class FcHttpRequestSupport {
                 .system(system)
                 .authType(builder.getAuthType())
                 .callType(builder.getCallType())
+                .client(builder.getClient())
+                .source(builder.getSourcePak())
                 .build()
                 .check();
 
         return new Request.Builder()
                 .tag(FcRequestContext.class, requestContext)
-                .tag(FastCallClient.class, builder.getClient())
                 .url(builder.getFullUrl())
                 .headers(requestHeaders)
                 .method(builder.getMethod().getName(), requestBody)

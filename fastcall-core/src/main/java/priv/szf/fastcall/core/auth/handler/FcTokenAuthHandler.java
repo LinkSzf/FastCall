@@ -1,9 +1,10 @@
 package priv.szf.fastcall.core.auth.handler;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
-import priv.szf.fastcall.core.auth.provider.FcTokenAuthProvider;
+import priv.szf.fastcall.core.auth.provider.FcTokenCredentialProvider;
 import priv.szf.fastcall.common.FcAuthType;
 
 @RequiredArgsConstructor
@@ -11,16 +12,12 @@ import priv.szf.fastcall.common.FcAuthType;
 public class FcTokenAuthHandler extends FcBaseRefreshableAuthHandler
         implements IFcRefreshableAuthHandler {
 
-    private final FcTokenAuthProvider tokenAuthProvider;
+    @Getter
+    private final FcTokenCredentialProvider credentialProvider;
 
     @Override
     public FcAuthType getAuthType() {
         return FcAuthType.BEARER;
-    }
-
-    @Override
-    protected FcTokenAuthProvider getAuthProvider() {
-        return tokenAuthProvider;
     }
 
 }

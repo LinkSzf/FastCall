@@ -7,19 +7,15 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import cn.hutool.jwt.signers.NoneJWTSigner;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.content.JwtAuthContent;
-import priv.szf.fastcall.common.model.credential.ICredential;
-import priv.szf.fastcall.common.source.IFcSource;
-import priv.szf.fastcall.core.auth.IFcAuthProvider;
+import priv.szf.fastcall.core.auth.IFcDynCredentialProvider;
 import priv.szf.fastcall.core.model.credential.JwtCredential;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
 
@@ -35,20 +31,16 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class FcJwtAuthProvider extends FcBaseDynAuthProvider<JwtAuthContent>
-        implements IFcAuthProvider {
+public class FcJwtCredentialProvider extends FcBaseCredentialProvider<JwtAuthContent>
+        implements IFcDynCredentialProvider {
 
     private static final long DEFAULT_EXPIRES_IN = 60 * 60 * 24;
 
+    @Getter
     private final FcSourceDelegate source;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
-    }
-
-    @Override
-    protected IFcSource getSource() {
-        return source;
     }
 
     @Override

@@ -2,12 +2,14 @@ package priv.szf.fastcall.core.auth.handler;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
-import priv.szf.fastcall.core.auth.IFcDynAuthProvider;
+import priv.szf.fastcall.core.auth.FcRequestContext;
+import priv.szf.fastcall.core.auth.IFcDynCredentialProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,13 +19,7 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
     private static final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
     @Override
-    protected abstract IFcDynAuthProvider getAuthProvider();
-
-    @Override
-    public final Integer getUnauthorizedCode(Request request) {
-        String system = getSystem(request);
-        return getAuthProvider().getUnauthorizedCode(system);
-    }
+    protected abstract IFcDynCredentialProvider getCredentialProvider();
 
     @Override
     public boolean preRefresh(Request request) {
@@ -43,15 +39,15 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
     }
 
     private boolean doRefreshToken(Request request, Response response) {
-        String system = getSystem(request);
-
+        FcRequestContext context = getRequestContext(request);
+        String system = context.getSystem();
         ReentrantLock systemLock = SYSTEM_LOCKS.computeIfAbsent(system, k -> new ReentrantLock());
 
-        if (isCredentialInvalid(system)) {
+        if (isCredentialInvalid(request)) {
             systemLock.lock();
             try {
-                if (isCredentialInvalid(system)) {
-                    getAuthProvider().refreshCredential(request, response, system);
+                if (isCredentialInvalid(request)) {
+                    getCredentialProvider().buildCredential(context);
                     return true;
                 }
             } finally {
@@ -62,10 +58,13 @@ public abstract class FcBaseRefreshableAuthHandler extends FcBaseAuthHandler
         return false;
     }
 
-    private boolean isCredentialInvalid(String system) {
-        ICredential credential = getCredential(system);
-        return Objects.isNull(credential)
-                || credential.isInvalid();
+    private boolean isCredentialInvalid(Request request) {
+        return Optional.of(request)
+                .map(this::getRequestContext)
+                .map(FcRequestContext::getSource)
+                .map(FcSourcePak::getCredential)
+                .map(ICredential::isInvalid)
+                .orElse(true);
     }
 
 }
