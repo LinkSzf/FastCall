@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.auth.provider;
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.model.content.CookieAuthContent;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Component
 public class FcCookieCredentialProvider extends FcBaseInteractiveCredentialProvider<CookieAuthContent, Object>
         implements IFcCredentialProvider {
 

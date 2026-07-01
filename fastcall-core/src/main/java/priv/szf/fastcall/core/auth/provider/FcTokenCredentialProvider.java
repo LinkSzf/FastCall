@@ -8,7 +8,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.core.model.credential.TokenCredential;
@@ -20,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-@Component
 public class FcTokenCredentialProvider extends FcBaseInteractiveCredentialProvider<TokenAuthContent, String>
         implements IFcCredentialProvider {
 

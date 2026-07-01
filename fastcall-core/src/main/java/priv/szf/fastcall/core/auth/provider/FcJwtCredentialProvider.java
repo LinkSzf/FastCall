@@ -10,7 +10,6 @@ import cn.hutool.jwt.signers.NoneJWTSigner;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
@@ -29,7 +28,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Component
 public class FcJwtCredentialProvider extends FcBaseCredentialProvider<JwtAuthContent>
         implements IFcDynCredentialProvider {
 
