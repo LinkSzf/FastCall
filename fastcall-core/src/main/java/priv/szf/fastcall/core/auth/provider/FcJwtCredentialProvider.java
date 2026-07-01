@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.content.JwtAuthContent;
 import priv.szf.fastcall.core.auth.IFcDynCredentialProvider;
@@ -41,6 +42,11 @@ public class FcJwtCredentialProvider extends FcBaseCredentialProvider<JwtAuthCon
 
     static {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    @Override
+    public FcAuthType getAuthType() {
+        return FcAuthType.JWT;
     }
 
     @Override

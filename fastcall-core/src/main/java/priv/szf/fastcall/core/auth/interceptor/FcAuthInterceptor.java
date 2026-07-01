@@ -16,32 +16,29 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
 
 
     @Override
-    public boolean shouldSkip(Request request) {
-        FcRequestContext requestContext = getRequestContext(request);
-        FcCallType callType = requestContext.getCallType();
-        FcAuthType authType = requestContext.getAuthType();
+    public boolean shouldSkip(FcRequestContext context) {
+        FcCallType callType = context.getCallType();
+        FcAuthType authType = context.getAuthType();
         boolean skipAuth = (callType == FcCallType.ANONYMOUS)
                 || (authType == FcAuthType.NONE);
         if (skipAuth) {
-            requestContext.getInterceptorContext().setSkipAuth(true);
+            context.getInterceptorContext().setSkipAuth(true);
         }
         return skipAuth;
     }
 
     @Override
-    protected Request doBeforeProceed(Request request) {
-        return super.modifyRequest(request);
+    protected Request doBeforeProceed(Request request, FcRequestContext context) {
+        return super.modifyRequest(request, context);
     }
 
     @Override
-    protected Response doAfterProceed(Chain chain, Request request, Response response) throws IOException {
-        boolean needRetry = getAuthHandler().getRequestContext(request)
-                .getInterceptorContext()
-                .isRecall();
-        if (needRetry) {
+    protected Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) throws IOException {
+        boolean recall = context.getInterceptorContext().isRecall();
+        if (recall) {
             response.close();
-            Request retryBaseRequest = FcUtils.rebuildRequestWithBodySnapshot(request);
-            Request finalRequest = super.modifyRequest(retryBaseRequest);
+            Request rebuildRequest = FcUtils.rebuildRequestWithBodySnapshot(request);
+            Request finalRequest = super.modifyRequest(rebuildRequest, context);
             return chain.proceed(finalRequest);
         }
         return response;

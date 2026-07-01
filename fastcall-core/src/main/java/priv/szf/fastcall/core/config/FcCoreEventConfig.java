@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.source.IFcCacheSource;
 import priv.szf.fastcall.core.FastCallClientFactory;
+import priv.szf.fastcall.core.auth.interceptor.FcAuthSupporter;
 import priv.szf.fastcall.core.event.FcRequestEventPublisher;
 import priv.szf.fastcall.core.event.FcSourceEventListener;
 import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
@@ -38,9 +39,10 @@ public class FcCoreEventConfig {
     @Bean(SOURCE_EVENT_LISTENER)
     public IFcSourceEventListener fcSourceEventListener(
             List<IFcCacheSource> sources,
-            FastCallClientFactory clientFactory
+            FastCallClientFactory clientFactory,
+            FcAuthSupporter authSupporter
     ) {
-        return new FcSourceEventListener(sources, clientFactory);
+        return new FcSourceEventListener(sources, clientFactory, authSupporter);
     }
 
 }

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
@@ -21,6 +22,11 @@ public class FcApiKeyCredentialProvider extends FcBaseCredentialProvider<ApiKeyA
     private final FcSourceDelegate source;
 
     @Override
+    public FcAuthType getAuthType() {
+        return FcAuthType.APIKEY;
+    }
+
+    @Override
     protected ApiKeyCredential buildCredential(@NonNull ApiKeyAuthContent content) {
         readyContent(content);
         String key = content.getKey();
@@ -34,5 +40,4 @@ public class FcApiKeyCredentialProvider extends FcBaseCredentialProvider<ApiKeyA
             content.setPositionOn(FcAuthPosition.HEADER);
         }
     }
-
 }

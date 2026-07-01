@@ -17,7 +17,7 @@ import priv.szf.fastcall.core.model.credential.JwtCredential;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class FcJwtAuthHandler extends FcBaseRefreshableAuthHandler implements IFcAuthHandler {
+public class FcJwtAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
     @Getter
     private final FcJwtCredentialProvider credentialProvider;

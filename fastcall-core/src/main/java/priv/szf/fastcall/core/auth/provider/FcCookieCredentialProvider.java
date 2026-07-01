@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.model.content.CookieAuthContent;
 import priv.szf.fastcall.core.FastCallResponse;
@@ -22,6 +23,11 @@ public class FcCookieCredentialProvider extends FcBaseInteractiveCredentialProvi
 
     @Getter
     private final FcSourceDelegate source;
+
+    @Override
+    public FcAuthType getAuthType() {
+        return FcAuthType.COOKIE;
+    }
 
     @Override
     protected CookieCredential buildCredential(@NonNull FastCallResponse<Object> response,

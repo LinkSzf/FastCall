@@ -18,10 +18,9 @@ import priv.szf.fastcall.core.auth.provider.FcTokenCredentialProvider;
 @Configuration
 public class FcAuthHandlerConfig {
 
-
     @ConditionalOnMissingBean(FcNoneAuthHandler.class)
     @Bean
-    public FcNoneAuthHandler fcApiKeyAuthHandler() {
+    public FcNoneAuthHandler fcNoneAuthHandler() {
         return new FcNoneAuthHandler();
     }
 
@@ -51,7 +50,7 @@ public class FcAuthHandlerConfig {
 
     @ConditionalOnMissingBean(FcJwtAuthHandler.class)
     @Bean
-    public FcJwtAuthHandler fcApiKeyAuthHandler(FcJwtCredentialProvider credentialProvider) {
+    public FcJwtAuthHandler fcJwtAuthHandler(FcJwtCredentialProvider credentialProvider) {
         return new FcJwtAuthHandler(credentialProvider);
     }
 

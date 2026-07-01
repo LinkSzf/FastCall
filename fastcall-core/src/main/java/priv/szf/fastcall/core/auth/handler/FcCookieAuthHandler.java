@@ -6,13 +6,12 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
-import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
+import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.provider.FcCookieCredentialProvider;
 import priv.szf.fastcall.common.model.credential.ICredential;
 
 @RequiredArgsConstructor
-public class FcCookieAuthHandler extends FcBaseRefreshableAuthHandler
-        implements IFcRefreshableAuthHandler {
+public class FcCookieAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
     @Getter
     private final FcCookieCredentialProvider credentialProvider;

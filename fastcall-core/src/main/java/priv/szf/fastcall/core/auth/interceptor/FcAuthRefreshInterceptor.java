@@ -10,24 +10,23 @@ import priv.szf.fastcall.core.auth.FcRequestContext;
 public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements Interceptor {
 
     @Override
-    protected boolean shouldSkip(Request request) {
-        FcRequestContext requestContext = getRequestContext(request);
-        FcRequestContext.InterceptorContext interceptorContext = requestContext.getInterceptorContext();
+    protected boolean shouldSkip(FcRequestContext context) {
+        FcRequestContext.InterceptorContext interceptorContext = context.getInterceptorContext();
         boolean skipAuth = interceptorContext.isSkipAuth();
         boolean recall = interceptorContext.isRecall();
-        boolean nonRefreshable = !getAuthHandler().isAuthRefreshable(request);
+        boolean nonRefreshable = getAuthSupporter().isAuthNonRefreshable(context.getAuthType());
         return skipAuth|| nonRefreshable || recall;
     }
 
     @Override
-    protected Request doBeforeProceed(Request request) {
-        boolean isRefreshed = getAuthHandler().preRefresh(request);
-        return isRefreshed ? super.modifyRequest(request) : request;
+    protected Request doBeforeProceed(Request request, FcRequestContext context) {
+        boolean isRefreshed = getAuthSupporter().preRefresh(context);
+        return isRefreshed ? super.modifyRequest(request, context) : request;
     }
 
     @Override
-    protected Response doAfterProceed(Chain chain, Request request, Response response) {
-        boolean isRefreshedAfterResponse = getAuthHandler().refreshIfNecessary(request, response);
+    protected Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) {
+        boolean isRefreshedAfterResponse = getAuthSupporter().refreshIfNecessary(context, response.code());
         if (isRefreshedAfterResponse) {
             getRequestContext(request).getInterceptorContext().setRecall(true);
         }

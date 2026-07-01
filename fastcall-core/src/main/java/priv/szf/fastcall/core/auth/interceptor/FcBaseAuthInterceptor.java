@@ -8,7 +8,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.core.auth.FcRequestContext;
-import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,31 +16,32 @@ import java.util.Optional;
 public abstract class FcBaseAuthInterceptor implements Interceptor {
 
     @Getter
-    private final FcAuthHandlerDelegate authHandler;
+    private final FcAuthSupporter authSupporter;
 
-    protected abstract boolean shouldSkip(Request request);
+    protected abstract boolean shouldSkip(FcRequestContext context);
 
-    protected abstract Request doBeforeProceed(Request request);
+    protected abstract Request doBeforeProceed(Request request, FcRequestContext context);
 
-    protected abstract Response doAfterProceed(Chain chain, Request request, Response response) throws IOException;
+    protected abstract Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) throws IOException;
 
 
     @Override
     public @NonNull Response intercept(Chain chain) throws IOException {
         Request originRequest = chain.request();
-        if (shouldSkip(originRequest)) {
+        FcRequestContext context = getRequestContext(originRequest);
+        if (shouldSkip(context)) {
             return chain.proceed(originRequest);
         }
 
-        Request request = doBeforeProceed(originRequest);
+        Request request = doBeforeProceed(originRequest, context);
 
         Response response = chain.proceed(request);
 
-        return doAfterProceed(chain, request, response);
+        return doAfterProceed(chain, request, response, context);
     }
 
-    protected final Request modifyRequest(Request request) {
-        return getAuthHandler().modifyRequest(request);
+    protected final Request modifyRequest(Request request, FcRequestContext context) {
+        return getAuthSupporter().modifyRequest(request, context);
     }
 
     protected final @NonNull FcRequestContext getRequestContext(Request request) {
