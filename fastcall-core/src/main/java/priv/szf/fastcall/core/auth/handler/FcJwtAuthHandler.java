@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.FcHttpHeader;
@@ -18,7 +17,6 @@ import priv.szf.fastcall.core.model.credential.JwtCredential;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Component
 public class FcJwtAuthHandler extends FcBaseRefreshableAuthHandler implements IFcAuthHandler {
 
     @Getter

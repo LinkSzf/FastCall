@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FcAuthPosition;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.credential.ICredential;
@@ -17,7 +16,6 @@ import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Component
 public class FcApiKeyAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
     @Getter
