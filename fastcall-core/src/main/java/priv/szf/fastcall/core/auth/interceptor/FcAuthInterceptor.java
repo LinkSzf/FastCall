@@ -1,28 +1,43 @@
 package priv.szf.fastcall.core.auth.interceptor;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.stereotype.Component;
+import priv.szf.fastcall.common.FcAuthType;
+import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.core.FcUtils;
-import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
+import priv.szf.fastcall.core.auth.FcRequestContext;
 
 import java.io.IOException;
 
-@RequiredArgsConstructor
-@Component
+@SuperBuilder
 public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Interceptor {
 
-    @Getter
-    private final FcAuthHandlerDelegate authHandler;
+
+    @Override
+    public boolean shouldSkip(Request request) {
+        FcRequestContext requestContext = getRequestContext(request);
+        FcCallType callType = requestContext.getCallType();
+        FcAuthType authType = requestContext.getAuthType();
+        boolean skipAuth = (callType == FcCallType.ANONYMOUS)
+                || (authType == FcAuthType.NONE);
+        if (skipAuth) {
+            requestContext.getInterceptorContext().setSkipAuth(true);
+        }
+        return skipAuth;
+    }
+
+    @Override
+    protected Request doBeforeProceed(Request request) {
+        return super.modifyRequest(request);
+    }
 
     @Override
     protected Response doAfterProceed(Chain chain, Request request, Response response) throws IOException {
         boolean needRetry = getAuthHandler().getRequestContext(request)
                 .getInterceptorContext()
-                .isNeedRetry();
+                .isRecall();
         if (needRetry) {
             response.close();
             Request retryBaseRequest = FcUtils.rebuildRequestWithBodySnapshot(request);
@@ -30,22 +45,6 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
             return chain.proceed(finalRequest);
         }
         return response;
-    }
-
-    @Override
-    public boolean shouldSkip(Request request) {
-        boolean skip = getAuthHandler().isNotAuthNeed(request);
-        if (skip) {
-            getAuthHandler().getRequestContext(request)
-                    .getInterceptorContext()
-                    .setSkipAuth(true);
-        }
-        return skip;
-    }
-
-    @Override
-    protected Request doBeforeProceed(Request request) {
-        return super.modifyRequest(request);
     }
 
 

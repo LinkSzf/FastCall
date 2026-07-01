@@ -43,7 +43,7 @@ public class FcRequestContext implements IFcNonNullModel {
 
         private boolean skipAuth = false;
 
-        private boolean needRetry = false;
+        private boolean recall = false;
 
         private byte[] requestBodySnapshot;
     }

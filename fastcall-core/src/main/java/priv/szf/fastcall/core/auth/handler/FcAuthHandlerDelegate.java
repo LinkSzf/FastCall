@@ -10,7 +10,6 @@ import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
-import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.core.auth.IFcRefreshableAuthHandler;
 import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.common.model.credential.ICredential;
@@ -44,11 +43,6 @@ public class FcAuthHandlerDelegate implements IFcAuthHandler {
     @Override
     public Request modifyRequest(Request request) {
         return getHandler(request).modifyRequest(request);
-    }
-
-    @Override
-    public boolean isNotAuthNeed(Request request) {
-        return getHandler(request).isNotAuthNeed(request);
     }
 
     @Override

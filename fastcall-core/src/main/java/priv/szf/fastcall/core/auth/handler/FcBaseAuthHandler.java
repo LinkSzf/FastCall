@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.auth.handler;
 import cn.hutool.core.util.StrUtil;
 import lombok.NonNull;
 import okhttp3.Request;
-import priv.szf.fastcall.common.FcCallType;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
@@ -27,11 +26,6 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
             throw new FastCallException("Required request context not found");
         }
         return context;
-    }
-
-    @Override
-    public boolean isNotAuthNeed(Request request) {
-        return getRequestContext(request).getCallType() == FcCallType.ANONYMOUS;
     }
 
     @Override

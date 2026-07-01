@@ -9,7 +9,7 @@ public interface IFcAuthHandler {
 
     Request modifyRequest(Request request);
 
-    boolean isNotAuthNeed(Request request);
-
     FcRequestContext getRequestContext(Request request);
+
+
 }

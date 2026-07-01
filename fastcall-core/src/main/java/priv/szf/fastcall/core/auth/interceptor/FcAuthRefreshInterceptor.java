@@ -1,29 +1,22 @@
 package priv.szf.fastcall.core.auth.interceptor;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.core.auth.FcRequestContext;
-import priv.szf.fastcall.core.auth.handler.FcAuthHandlerDelegate;
 
-@RequiredArgsConstructor
-@Component
+@SuperBuilder
 public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements Interceptor {
-
-    @Getter
-    private final FcAuthHandlerDelegate authHandler;
 
     @Override
     protected boolean shouldSkip(Request request) {
-        FcRequestContext.InterceptorContext interceptorContext = getAuthHandler().getRequestContext(request)
-                .getInterceptorContext();
+        FcRequestContext requestContext = getRequestContext(request);
+        FcRequestContext.InterceptorContext interceptorContext = requestContext.getInterceptorContext();
         boolean skipAuth = interceptorContext.isSkipAuth();
-        boolean needRetry = interceptorContext.isNeedRetry();
-        boolean authRefreshable = getAuthHandler().isAuthRefreshable(request);
-        return skipAuth || needRetry || !authRefreshable;
+        boolean recall = interceptorContext.isRecall();
+        boolean nonRefreshable = !getAuthHandler().isAuthRefreshable(request);
+        return skipAuth|| nonRefreshable || recall;
     }
 
     @Override
@@ -36,7 +29,7 @@ public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements I
     protected Response doAfterProceed(Chain chain, Request request, Response response) {
         boolean isRefreshedAfterResponse = getAuthHandler().refreshIfNecessary(request, response);
         if (isRefreshedAfterResponse) {
-            getAuthHandler().getRequestContext(request).getInterceptorContext().setNeedRetry(true);
+            getRequestContext(request).getInterceptorContext().setRecall(true);
         }
         return response;
     }
