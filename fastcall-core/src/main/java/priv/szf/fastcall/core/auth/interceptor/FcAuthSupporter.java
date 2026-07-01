@@ -10,6 +10,7 @@ import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.core.auth.IFcDynCredentialProvider;
+import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,13 +25,15 @@ public class FcAuthSupporter {
 
     private static final int DEFAULT_UNAUTHORIZED_CODE = 401;
 
-    private static final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
+    private final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
     private final Map<FcAuthType, IFcAuthHandler> authHandlerMap;
 
     private final Map<FcAuthType, IFcCredentialProvider> credentialProviderMap;
 
-    public FcAuthSupporter(List<IFcAuthHandler> authHandlers, List<IFcCredentialProvider> credentialProviders) {
+    private final FcSourceDelegate source;
+
+    public FcAuthSupporter(List<IFcAuthHandler> authHandlers, List<IFcCredentialProvider> credentialProviders, FcSourceDelegate source) {
         this.authHandlerMap = (CollectionUtil.isEmpty(authHandlers)) ?
                 Collections.emptyMap()
                 : Collections.unmodifiableMap(
@@ -42,6 +45,8 @@ public class FcAuthSupporter {
                 : Collections.unmodifiableMap(
                 credentialProviders.stream().collect(Collectors.toMap(IFcCredentialProvider::getAuthType, Function.identity()))
         );
+
+        this.source = source;
     }
 
     public Request modifyRequest(Request request, FcRequestContext context) {
@@ -54,6 +59,12 @@ public class FcAuthSupporter {
                 .map(this.credentialProviderMap::get)
                 .map(handler -> handler instanceof IFcDynCredentialProvider)
                 .orElse(false);
+    }
+
+    public void clearSystemLock(String system) {
+        if (system != null) {
+            this.SYSTEM_LOCKS.remove(system);
+        }
     }
 
     public boolean preRefresh(FcRequestContext context) {
@@ -92,7 +103,8 @@ public class FcAuthSupporter {
             try {
                 if (isCredentialInvalid(context)) {
                     FcAuthType authType = context.getAuthType();
-                    getCredentialProvider(authType).buildCredential(context);
+                    ICredential credential = getCredentialProvider(authType).buildCredential(context);
+                    updateCredential(context, credential);
                     return true;
                 }
             } finally {
@@ -118,10 +130,10 @@ public class FcAuthSupporter {
                 .ifPresent(ICredential::invalidate);
     }
 
-    public void clearSystemLock(String system) {
-        if (system != null) {
-            SYSTEM_LOCKS.remove(system);
-        }
+    private void updateCredential(FcRequestContext context, ICredential credential) {
+        String system = context.getSystem();
+        context.getSource().setCredential(credential);
+        this.source.updateCredential(system, credential);
     }
 
 

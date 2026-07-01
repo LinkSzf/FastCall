@@ -2,7 +2,6 @@ package priv.szf.fastcall.core.auth.provider;
 
 import cn.hutool.core.util.ClassUtil;
 import lombok.NonNull;
-import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.common.model.FcSourcePak;
@@ -18,16 +17,12 @@ public abstract class FcBaseCredentialProvider<C extends BaseAuthContent> implem
 
     private final Class<C> contentClazz = (Class<C>) ClassUtil.getTypeArgument(this.getClass());
 
-    protected abstract IFcSource getSource();
-
     protected abstract ICredential buildCredential(@NonNull C authContent);
 
     @Override
     public ICredential buildCredential(FcRequestContext context) {
         C authContent = getAuthContent(context);
-        ICredential credential = buildCredential(authContent, context);
-        updateCredential(context.getSystem(), credential);
-        return credential;
+        return buildCredential(authContent, context);
     }
 
     protected ICredential buildCredential(C authContent, FcRequestContext context) {
@@ -42,10 +37,6 @@ public abstract class FcBaseCredentialProvider<C extends BaseAuthContent> implem
                 .map(contentClazz::cast)
                 .orElseThrow(() -> new FastCallException("Source infos about auth-content not found"));
 
-    }
-
-    private void updateCredential(String system, ICredential credential) {
-        this.getSource().updateCredential(system, credential);
     }
 
 }

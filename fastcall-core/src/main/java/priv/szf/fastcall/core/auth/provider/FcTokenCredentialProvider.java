@@ -6,7 +6,6 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,6 @@ import priv.szf.fastcall.core.model.credential.TokenCredential;
 import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.content.TokenAuthContent;
-import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -28,8 +26,6 @@ public class FcTokenCredentialProvider extends FcBaseInteractiveCredentialProvid
 
     private static final long DEFAULT_EXPIRES_IN = 60 * 60 * 24 * 7;
 
-    @Getter
-    private final FcSourceDelegate source;
 
     @Override
     public FcAuthType getAuthType() {

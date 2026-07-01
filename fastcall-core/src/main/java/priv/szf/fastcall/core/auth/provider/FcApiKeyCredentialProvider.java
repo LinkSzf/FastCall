@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core.auth.provider;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,7 +8,6 @@ import priv.szf.fastcall.common.FcAuthType;
 import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 import priv.szf.fastcall.common.model.content.ApiKeyAuthContent;
 import priv.szf.fastcall.core.model.credential.ApiKeyCredential;
-import priv.szf.fastcall.core.source.FcSourceDelegate;
 
 import java.util.Objects;
 
@@ -18,8 +16,6 @@ import java.util.Objects;
 public class FcApiKeyCredentialProvider extends FcBaseCredentialProvider<ApiKeyAuthContent>
         implements IFcCredentialProvider {
 
-    @Getter
-    private final FcSourceDelegate source;
 
     @Override
     public FcAuthType getAuthType() {
