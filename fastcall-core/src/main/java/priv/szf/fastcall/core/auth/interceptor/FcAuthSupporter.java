@@ -72,8 +72,8 @@ public class FcAuthSupporter {
                 if (isCredentialInvalid(context)) {
                     ICredential credential = getCredentialProvider(authType).buildCredential(context);
                     updateCredential(context, credential);
-                    return true;
                 }
+                return true;
             } finally {
                 systemLock.unlock();
             }

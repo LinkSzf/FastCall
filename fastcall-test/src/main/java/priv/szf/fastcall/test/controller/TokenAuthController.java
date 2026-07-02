@@ -52,7 +52,7 @@ public class TokenAuthController extends BaseAuthController {
 
     @PostMapping("/login")
     public synchronized BearerAuthResponseBody login(@RequestBody BearerAuthRequestBody requestBody) {
-        log.info("[TEST-({})-登录]正在被请求...", getSystemCode());
+        log.info("[TEST-({})-登录]正在被请求...-----------------------------------", getSystemCode());
 
         checkConRequest();
 
@@ -67,13 +67,13 @@ public class TokenAuthController extends BaseAuthController {
             ));
         }
 
-        log.info("[TEST-({})-登录]用户校验通过！", getSystemCode());
+        log.info("[TEST-({})-登录]用户校验通过！√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√√", getSystemCode());
 
         // 设置token实际过期时间
         this.authExpireTime = LocalDateTime.now().plusSeconds(EXPIRE);
 
         // 返回给客户端的token过期时间
-        long expireIn = EXPIRE + 60L;
+        long expireIn = EXPIRE + 0;
         return BearerAuthResponseBody.builder()
                 .timestamp(System.currentTimeMillis())
                 .system(new BearerAuthResponseBody.System(TOKEN, expireIn))
