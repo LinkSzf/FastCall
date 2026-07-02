@@ -7,9 +7,7 @@ public interface IFcAuthHandler {
 
     FcAuthType getAuthType();
 
-    Request modifyRequest(Request request);
-
-    FcRequestContext getRequestContext(Request request);
+    Request modifyRequest(Request request, FcRequestContext context);
 
 
 }

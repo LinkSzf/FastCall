@@ -28,7 +28,6 @@ import priv.szf.fastcall.core.support.FcRequestBuildSupport;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,26 +44,6 @@ public class FastCallClient {
     private final IFcSource source;
 
     private final FcFilterManager filterManager;
-
-    private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
-        Request request = FcHttpRequestSupport.createRequest(builder, system);
-
-        Call call = this.client.newCall(request);
-
-        try (Response response = call.execute()) {
-            return FcHttpResponseSupport.buildStandardResponse(builder.dataType, builder.fullUrl, response);
-        } catch (Exception e) {
-            if (throwException) {
-                throw new FcUnexpectedException(e, "Unexpected exception occurred when calling url[{}]", request.url());
-            }
-            return FastCallResponse.<T>builder()
-                    .isSuccessful(false)
-                    .isConnected(false)
-                    .exception(e)
-                    .requestTime(LocalDateTime.now())
-                    .build();
-        }
-    }
 
     public <T> PreparedCall<T> newApiCall(String apiName) {
         return this.<T>newCall()
@@ -118,6 +97,26 @@ public class FastCallClient {
             ctx.setResponse(response);
         });
         return responseRef.get();
+    }
+
+    private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
+        Request request = FcHttpRequestSupport.createRequest(builder, system);
+
+        Call call = this.client.newCall(request);
+
+        try (Response response = call.execute()) {
+            return FcHttpResponseSupport.buildStandardResponse(builder.dataType, response);
+        } catch (Exception e) {
+            if (throwException) {
+                throw new FcUnexpectedException(e, "Unexpected exception occurred.");
+            }
+            return FastCallResponse.<T>builder()
+                    .isSuccessful(false)
+                    .isConnected(false)
+                    .exception(e)
+                    .requestTime(LocalDateTime.now())
+                    .build();
+        }
     }
 
     @Getter

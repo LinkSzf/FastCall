@@ -1,6 +1,5 @@
 package priv.szf.fastcall.core.auth.handler;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.HttpUrl;
@@ -11,7 +10,6 @@ import priv.szf.fastcall.common.FcHttpHeader;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
-import priv.szf.fastcall.core.auth.provider.FcJwtCredentialProvider;
 import priv.szf.fastcall.core.model.credential.JwtCredential;
 
 import java.util.Optional;
@@ -19,8 +17,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FcJwtAuthHandler extends FcBaseAuthHandler implements IFcAuthHandler {
 
-    @Getter
-    private final FcJwtCredentialProvider credentialProvider;
 
     @Override
     public FcAuthType getAuthType() {

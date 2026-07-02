@@ -9,11 +9,6 @@ import priv.szf.fastcall.core.auth.handler.FcCookieAuthHandler;
 import priv.szf.fastcall.core.auth.handler.FcJwtAuthHandler;
 import priv.szf.fastcall.core.auth.handler.FcNoneAuthHandler;
 import priv.szf.fastcall.core.auth.handler.FcTokenAuthHandler;
-import priv.szf.fastcall.core.auth.provider.FcApiKeyCredentialProvider;
-import priv.szf.fastcall.core.auth.provider.FcBasicCredentialProvider;
-import priv.szf.fastcall.core.auth.provider.FcCookieCredentialProvider;
-import priv.szf.fastcall.core.auth.provider.FcJwtCredentialProvider;
-import priv.szf.fastcall.core.auth.provider.FcTokenCredentialProvider;
 
 @Configuration
 public class FcAuthHandlerConfig {
@@ -26,32 +21,32 @@ public class FcAuthHandlerConfig {
 
     @ConditionalOnMissingBean(FcApiKeyAuthHandler.class)
     @Bean
-    public FcApiKeyAuthHandler fcApiKeyAuthHandler(FcApiKeyCredentialProvider credentialProvider) {
-        return new FcApiKeyAuthHandler(credentialProvider);
+    public FcApiKeyAuthHandler fcApiKeyAuthHandler() {
+        return new FcApiKeyAuthHandler();
     }
 
     @ConditionalOnMissingBean(FcBasicAuthHandler.class)
     @Bean
-    public FcBasicAuthHandler fcBasicAuthHandler(FcBasicCredentialProvider credentialProvider) {
-        return new FcBasicAuthHandler(credentialProvider);
+    public FcBasicAuthHandler fcBasicAuthHandler() {
+        return new FcBasicAuthHandler();
     }
 
     @ConditionalOnMissingBean(FcTokenAuthHandler.class)
     @Bean
-    public FcTokenAuthHandler fcTokenAuthHandler(FcTokenCredentialProvider credentialProvider) {
-        return new FcTokenAuthHandler(credentialProvider);
+    public FcTokenAuthHandler fcTokenAuthHandler() {
+        return new FcTokenAuthHandler();
     }
 
     @ConditionalOnMissingBean(FcCookieAuthHandler.class)
     @Bean
-    public FcCookieAuthHandler fcCookieAuthHandler(FcCookieCredentialProvider credentialProvider) {
-        return new FcCookieAuthHandler(credentialProvider);
+    public FcCookieAuthHandler fcCookieAuthHandler() {
+        return new FcCookieAuthHandler();
     }
 
     @ConditionalOnMissingBean(FcJwtAuthHandler.class)
     @Bean
-    public FcJwtAuthHandler fcJwtAuthHandler(FcJwtCredentialProvider credentialProvider) {
-        return new FcJwtAuthHandler(credentialProvider);
+    public FcJwtAuthHandler fcJwtAuthHandler() {
+        return new FcJwtAuthHandler();
     }
 
 }

@@ -48,14 +48,7 @@ public class FcAuthSupporter {
 
     public Request modifyRequest(Request request, FcRequestContext context) {
         FcAuthType authType = context.getAuthType();
-        return getAuthHandler(authType).modifyRequest(request);
-    }
-
-    public boolean isAuthNotRefreshable(FcAuthType authType) {
-        return Optional.of(authType)
-                .map(this.credentialProviderMap::get)
-                .map(handler -> !(handler instanceof IFcDynCredentialProvider))
-                .orElse(true);
+        return getAuthHandler(authType).modifyRequest(request, context);
     }
 
     public void clearSystemLock(String system) {
@@ -87,6 +80,13 @@ public class FcAuthSupporter {
         }
 
         return false;
+    }
+
+    private boolean isAuthNotRefreshable(FcAuthType authType) {
+        return Optional.of(authType)
+                .map(this.credentialProviderMap::get)
+                .map(handler -> !(handler instanceof IFcDynCredentialProvider))
+                .orElse(true);
     }
 
     private boolean isCredentialInvalid(FcRequestContext context) {

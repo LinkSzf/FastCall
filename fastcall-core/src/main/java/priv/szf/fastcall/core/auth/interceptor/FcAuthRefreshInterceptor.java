@@ -8,7 +8,6 @@ import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @SuperBuilder
@@ -18,11 +17,7 @@ public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements I
 
     @Override
     protected boolean shouldSkip(FcRequestContext context) {
-        FcRequestContext.InterceptorContext interceptorContext = context.getInterceptorContext();
-        boolean skipAuth = interceptorContext.isSkipAuth();
-        boolean recall = interceptorContext.isRecall();
-        boolean notRefreshable = getAuthSupporter().isAuthNotRefreshable(context.getAuthType());
-        return skipAuth|| notRefreshable || recall;
+        return context.getInterceptorContext().isSkipAuth();
     }
 
     @Override
@@ -32,16 +27,13 @@ public class FcAuthRefreshInterceptor extends FcBaseAuthInterceptor implements I
     }
 
     @Override
-    protected Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) throws IOException {
+    protected Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) {
         if (isAuthorised(context, response)) {
             return response;
         }
 
         getAuthSupporter().invalidateCredential(context);
-        boolean isRefreshedAfterResponse = getAuthSupporter().refresh(context);
-        if (isRefreshedAfterResponse) {
-            getRequestContext(request).getInterceptorContext().setRecall(true);
-        }
+        context.getInterceptorContext().reverseRetry();
         return response;
     }
 

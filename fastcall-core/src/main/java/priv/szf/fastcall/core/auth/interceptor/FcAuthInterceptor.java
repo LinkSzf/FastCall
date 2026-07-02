@@ -22,7 +22,7 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
         boolean skipAuth = (callType == FcCallType.ANONYMOUS)
                 || (authType == FcAuthType.NONE);
         if (skipAuth) {
-            context.getInterceptorContext().setSkipAuth(true);
+            context.getInterceptorContext().markSkipAuth();
         }
         return skipAuth;
     }
@@ -34,11 +34,10 @@ public class FcAuthInterceptor extends FcBaseAuthInterceptor implements Intercep
 
     @Override
     protected Response doAfterProceed(Chain chain, Request request, Response response, FcRequestContext context) throws IOException {
-        boolean recall = context.getInterceptorContext().isRecall();
-        if (recall) {
+        boolean needRetry = context.getInterceptorContext().isNeedRetry();
+        if (needRetry) {
             response.close();
-            Request rebuildRequest = FcUtils.rebuildRequestWithBodySnapshot(request);
-            Request finalRequest = super.modifyRequest(rebuildRequest, context);
+            Request finalRequest = super.modifyRequest(request, context);
             return chain.proceed(finalRequest);
         }
         return response;

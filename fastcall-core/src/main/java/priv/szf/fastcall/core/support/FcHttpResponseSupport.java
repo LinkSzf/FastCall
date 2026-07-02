@@ -44,12 +44,12 @@ public final class FcHttpResponseSupport {
         return objectMapper;
     }
 
-    public static <T> FastCallResponse<T> buildStandardResponse(Type dataType, String url, Response response) {
+    public static <T> FastCallResponse<T> buildStandardResponse(Type dataType, Response response) {
         int code = response.code();
         String message = response.message();
         boolean isSuccessful = response.isSuccessful();
         ResponseBody body = response.body();
-        T data = readResponseBodyData(dataType, body, url);
+        T data = readResponseBodyData(dataType, body);
         String mediaType = Optional.ofNullable(body)
                 .map(ResponseBody::contentType)
                 .map(Object::toString)
@@ -76,7 +76,7 @@ public final class FcHttpResponseSupport {
                 .build();
     }
 
-    private static <T> T readResponseBodyData(Type dataType, ResponseBody body, String url) {
+    private static <T> T readResponseBodyData(Type dataType, ResponseBody body) {
         if (Objects.isNull(body)) {
             return null;
         }
@@ -105,10 +105,9 @@ public final class FcHttpResponseSupport {
             boolean isJsonPayload = isJsonMediaType(contentType) || JSONUtil.isTypeJSON(bodyStr);
             if (!isJsonPayload) {
                 throw new FcUnexpectedException(
-                        "Response content type[{}] is not JSON, cannot convert to type[{}] in url[{}], body length[{}]",
+                        "Response content type[{}] is not JSON, cannot convert to type[{}], body length[{}]",
                         Objects.toString(contentType, "null"),
                         dataType.getTypeName(),
-                        url,
                         bodyStr.length()
                 );
             }
@@ -118,19 +117,17 @@ public final class FcHttpResponseSupport {
             } catch (RuntimeException e) {
                 throw new FcUnexpectedException(
                         e,
-                        "JSON response cannot be converted to type[{}] in url[{}], body length[{}]",
+                        "JSON response cannot be converted to type[{}], body length[{}]",
                         dataType.getTypeName(),
-                        url,
                         bodyStr.length()
                 );
             }
         } catch (IOException e) {
-            throw new FcUnexpectedException(e, "IO exception occurred when reading response body in url[{}]", url);
+            throw new FcUnexpectedException(e, "IO exception occurred when reading response body");
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
-                    "Response body cannot be converted to type[{}] in url[{}]",
-                    dataType.getTypeName(),
-                    url);
+                    "Response body cannot be converted to type[{}]]",
+                    dataType.getTypeName());
         }
     }
 

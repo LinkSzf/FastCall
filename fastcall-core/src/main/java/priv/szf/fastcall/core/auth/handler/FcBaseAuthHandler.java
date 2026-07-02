@@ -7,31 +7,16 @@ import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 import priv.szf.fastcall.core.auth.IFcAuthHandler;
 import priv.szf.fastcall.common.FcHttpHeader;
-import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.model.credential.ICredential;
-import priv.szf.fastcall.core.auth.IFcCredentialProvider;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
-
-    protected abstract IFcCredentialProvider getCredentialProvider();
-
     @Override
-    public FcRequestContext getRequestContext(Request request) {
-        FcRequestContext context = request.tag(FcRequestContext.class);
-        if (Objects.isNull(context)) {
-            throw new FastCallException("Required request context not found");
-        }
-        return context;
-    }
-
-    @Override
-    public Request modifyRequest(Request request) {
-        ICredential credential = obtainCredential(request);
-
+    public Request modifyRequest(Request request, FcRequestContext context) {
+        ICredential credential = getCredential(context);
         if (Objects.isNull(credential)) {
             return request;
         }
@@ -47,12 +32,11 @@ public abstract class FcBaseAuthHandler implements IFcAuthHandler {
         return builder.header(FcHttpHeader.AUTHORIZATION.getName(), authorization);
     }
 
-    protected ICredential obtainCredential(Request request) {
-        FcRequestContext requestContext = getRequestContext(request);
-        return Optional.of(requestContext)
+    protected ICredential getCredential(FcRequestContext context) {
+        return Optional.of(context)
                 .map(FcRequestContext::getSource)
                 .map(FcSourcePak::getCredential)
-                .orElseGet(() -> getCredentialProvider().buildCredential(requestContext));
+                .orElse(null);
     }
 
     protected final String concatAuthString(ICredential credential) {

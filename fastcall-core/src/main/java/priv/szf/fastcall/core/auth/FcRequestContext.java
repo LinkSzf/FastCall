@@ -38,13 +38,19 @@ public class FcRequestContext implements IFcNonNullModel {
         );
     }
 
-    @Data
+    @Getter
     public static class InterceptorContext {
 
         private boolean skipAuth = false;
 
-        private boolean recall = false;
+        private boolean needRetry = false;
 
-        private byte[] requestBodySnapshot;
+        public void reverseRetry() {
+            this.needRetry = !this.needRetry;
+        }
+
+        public void markSkipAuth() {
+            this.skipAuth = true;
+        }
     }
 }
