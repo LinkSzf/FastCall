@@ -3,7 +3,6 @@ package priv.szf.fastcall.core.auth.interceptor;
 import cn.hutool.core.collection.CollectionUtil;
 import okhttp3.Request;
 import priv.szf.fastcall.common.FcAuthType;
-import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.credential.ICredential;
 import priv.szf.fastcall.core.auth.FcRequestContext;
@@ -22,8 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FcAuthSupporter {
-
-    private static final int DEFAULT_UNAUTHORIZED_CODE = 401;
 
     private final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
@@ -54,11 +51,11 @@ public class FcAuthSupporter {
         return getAuthHandler(authType).modifyRequest(request);
     }
 
-    public boolean isAuthNonRefreshable(FcAuthType authType) {
+    public boolean isAuthNotRefreshable(FcAuthType authType) {
         return Optional.of(authType)
                 .map(this.credentialProviderMap::get)
-                .map(handler -> handler instanceof IFcDynCredentialProvider)
-                .orElse(false);
+                .map(handler -> !(handler instanceof IFcDynCredentialProvider))
+                .orElse(true);
     }
 
     public void clearSystemLock(String system) {
@@ -67,34 +64,12 @@ public class FcAuthSupporter {
         }
     }
 
-    public boolean preRefresh(FcRequestContext context) {
+    public boolean refresh(FcRequestContext context) {
         FcAuthType authType = context.getAuthType();
-        if (isAuthNonRefreshable(authType)) {
+        if (isAuthNotRefreshable(authType)) {
             return false;
         }
 
-        return doRefreshCredential(context);
-    }
-
-    public boolean refreshIfNecessary(FcRequestContext context, int responseCode) {
-        int unauthorizedCode = Optional.of(context)
-                .map(FcRequestContext::getSource)
-                .map(FcSourcePak::getAuth)
-                .map(FcAuthPak::getUnauthorizedCode)
-                .orElse(DEFAULT_UNAUTHORIZED_CODE);
-        if (unauthorizedCode != responseCode) {
-            return false;
-        }
-        FcAuthType authType = context.getAuthType();
-        if (isAuthNonRefreshable(authType)) {
-            return false;
-        }
-
-        invalidateCredential(context);
-        return doRefreshCredential(context);
-    }
-
-    private boolean doRefreshCredential(FcRequestContext context) {
         String system = context.getSystem();
         ReentrantLock systemLock = SYSTEM_LOCKS.computeIfAbsent(system, k -> new ReentrantLock());
 
@@ -102,7 +77,6 @@ public class FcAuthSupporter {
             systemLock.lock();
             try {
                 if (isCredentialInvalid(context)) {
-                    FcAuthType authType = context.getAuthType();
                     ICredential credential = getCredentialProvider(authType).buildCredential(context);
                     updateCredential(context, credential);
                     return true;
@@ -123,7 +97,7 @@ public class FcAuthSupporter {
                 .orElse(true);
     }
 
-    private void invalidateCredential(FcRequestContext context) {
+    public void invalidateCredential(FcRequestContext context) {
         Optional.of(context)
                 .map(FcRequestContext::getSource)
                 .map(FcSourcePak::getCredential)

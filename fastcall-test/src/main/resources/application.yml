@@ -17,7 +17,7 @@ fast-call:
     enable-rate-limit: true
     enable-request-event: true
     retry:
-      enable: true
+      enable: false
       attempts: 3
       interval: 1000
   cache:

@@ -1,11 +1,13 @@
 package priv.szf.fastcall.test.model;
 
+import cn.hutool.core.exceptions.ExceptionUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import priv.szf.fastcall.core.FastCallResponse;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 public class TestResponse {
@@ -21,6 +23,8 @@ public class TestResponse {
 
     private final Object data;
 
+    private final String exception;
+
 
     public TestResponse(FastCallResponse<Object> response) {
         this.code = response.getCode();
@@ -28,5 +32,6 @@ public class TestResponse {
         this.isSuccessful = response.isSuccessful();
         this.headers = response.getHeaders();
         this.data = response.getData();
+        this.exception = Optional.ofNullable(response.getException()).map(ExceptionUtil::stacktraceToString).orElse(null);
     }
 }
