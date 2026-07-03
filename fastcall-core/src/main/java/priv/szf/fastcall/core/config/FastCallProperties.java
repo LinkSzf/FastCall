@@ -35,9 +35,6 @@ public class FastCallProperties {
     /** 数据源缓存配置 */
     private SourceCache sourceCache = new SourceCache();
 
-    /** 转发代理配置 */
-    private ForwardProxy forwardProxy = new ForwardProxy();
-
     /** 快捷源配置 */
     private List<EasySource> easySource = new ArrayList<>();
 
@@ -65,19 +62,6 @@ public class FastCallProperties {
             /** 重试间隔（毫秒） */
             private long interval = 1000;
         }
-
-    }
-
-    @Data
-    public static class ForwardProxy {
-        /** 是否启用转发代理 */
-        private boolean enable = false;
-
-        /** 过滤前缀 */
-        private String prefix = "/fc_forward_proxy";
-
-        /** 是否自动添加转发请求头 */
-        private boolean addForwardHeader = true;
 
     }
 

@@ -28,10 +28,6 @@ fast-call:
     engine: memory
     expire: 60
     refresh-when-expire: true
-  forward-proxy:
-    enable: true
-    add-forward-header: true
-    prefix: /fc_forward_proxy
   easy-source:
     - system:
         code: local
