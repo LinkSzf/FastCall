@@ -7,7 +7,6 @@ import okhttp3.Cache;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
-import org.springframework.stereotype.Component;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
@@ -29,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class FastCallClientFactory {
 
