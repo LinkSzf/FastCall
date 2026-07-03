@@ -1,7 +1,5 @@
 package priv.szf.fastcall.core.filter.support;
 
-import cn.hutool.cache.Cache;
-import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.IdUtil;
 import lombok.AllArgsConstructor;
@@ -15,57 +13,41 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class FcRateLimitSupport {
 
-    private final Cache<Long, List<FcRateLimitPak>> cache = new TimedCache<>(0);
-
-    private final Map<Long, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+    private final Map<Long, List<FcRateLimitPak>> cache = new HashMap<>();
 
     private final IFcPakProvider pakProvider;
 
     private final FastCallProperties properties;
 
     public void init() {
-        Map<Long, List<FcRateLimitPak>> systemRateLimitMap = this.pakProvider.getAllRateLimits()
-                .stream()
+        List<FcRateLimitPak> dbLimits = this.pakProvider.getAllRateLimits();
+        Set<Long> idSet = dbLimits.stream().map(FcRateLimitPak::getSystemId).collect(Collectors.toSet());
+        List<FcRateLimitPak> propertyLimits = this.properties.getEasySource().stream().map(this::toRateLimitPak)
+                .flatMap(List::stream)
+                .filter(l -> !idSet.contains(l.getSystemId()))
+                .collect(Collectors.toList());
+
+        Map<Long, List<FcRateLimitPak>> finalLimitMap = CollectionUtil.union(dbLimits, propertyLimits).stream()
                 .filter(l -> l.getMaximum() > 0)
                 .peek(IFcPak::init)
                 .collect(Collectors.groupingBy(FcRateLimitPak::getSystemId));
 
-        this.properties.getEasySource()
-                .stream()
-                .filter(s -> CollectionUtil.isNotEmpty(s.getRateLimits()))
-                .forEach(s -> {
-                    String code = s.getSystem().getCode();
-                    Long systemId = FcUtils.encodeId(code);
-                    systemRateLimitMap.computeIfAbsent(systemId, k ->
-                            s.getRateLimits().stream()
-                            .map(r -> {
-                                FcRateLimitPak pak = FcRateLimitPak.builder()
-                                        .id(IdUtil.getSnowflakeNextId())
-                                        .systemId(systemId)
-                                        .span(r.getSpan())
-                                        .maximum(r.getMaximum())
-                                        .build();
-                                pak.init();
-                                return pak;
-                            })
-                            .collect(Collectors.toList()));
-                });
-
-        systemRateLimitMap.forEach(this.cache::put);
+        this.cache.putAll(finalLimitMap);
     }
 
     public List<FcRateLimitPak> getLimits(Long systemId) {
-        return this.cache.get(systemId, false, Collections::emptyList);
+        return this.cache.getOrDefault(systemId, Collections.emptyList());
     }
 
     @Async(FastCallConsts.ASYNC_EXECUTOR)
@@ -75,27 +57,42 @@ public class FcRateLimitSupport {
             return;
         }
 
-        ReentrantLock lock = this.lockMap.computeIfAbsent(systemId, key -> new ReentrantLock(true));
-        try {
-            lock.lock();
-            for (FcRateLimitPak rateLimit : rateLimits) {
-                LocalDateTime lastTime = rateLimit.getLastTime();
-                boolean hasLastTime = Objects.nonNull(lastTime);
-                if (hasLastTime) {
-                    long current = rateLimit.getCurrent();
-                    current++;
-                    rateLimit.setCurrent(current);
-                } else {
-                    rateLimit.setLastTime(currentTime);
-                    rateLimit.setCurrent(1);
-                }
+        for (FcRateLimitPak rateLimit : rateLimits) {
+            LocalDateTime lastTime = rateLimit.getLastTime();
+            boolean hasLastTime = Objects.nonNull(lastTime);
+            if (hasLastTime) {
+                long current = rateLimit.getCurrent();
+                current++;
+                rateLimit.setCurrent(current);
+            } else {
+                rateLimit.setLastTime(currentTime);
+                rateLimit.setCurrent(1);
             }
-
-            this.pakProvider.saveRateLimits(rateLimits);
-        } finally {
-            lock.unlock();
         }
 
+        this.pakProvider.saveRateLimits(systemId, rateLimits);
+    }
+
+    private List<FcRateLimitPak> toRateLimitPak(FastCallProperties.EasySource easySource) {
+        Long systemId = Optional.of(easySource)
+                .map(FastCallProperties.EasySource::getSystem)
+                .map(FastCallProperties.EasySource.System::getCode)
+                .map(FcUtils::encodeId)
+                .orElse(null);
+        if (Objects.isNull(systemId)) {
+            return Collections.emptyList();
+        }
+
+        return easySource.getRateLimits().stream()
+                .map(r ->
+                        FcRateLimitPak.builder()
+                            .id(IdUtil.getSnowflakeNextId())
+                            .systemId(systemId)
+                            .span(r.getSpan())
+                            .maximum(r.getMaximum())
+                            .build()
+                )
+                .collect(Collectors.toList());
     }
 
 

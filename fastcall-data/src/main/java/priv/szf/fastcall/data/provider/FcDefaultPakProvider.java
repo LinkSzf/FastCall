@@ -25,11 +25,15 @@ import priv.szf.fastcall.data.mapper.FcSystemDao;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class FcDefaultPakProvider implements IFcPakProvider {
+
+    private final Map<Long, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     private final FcSystemDao systemDao;
 
@@ -81,9 +85,15 @@ public class FcDefaultPakProvider implements IFcPakProvider {
     }
 
     @Override
-    public void saveRateLimits(List<FcRateLimitPak> rateLimitPaks) {
-        List<FcRateLimit> list = pakMapping.toRateLimit(rateLimitPaks);
-        rateLimitDao.saveBatch(list);
+    public void saveRateLimits(Long sysId, List<FcRateLimitPak> rateLimitPaks) {
+        ReentrantLock lock = this.lockMap.computeIfAbsent(sysId, key -> new ReentrantLock(true));
+        try {
+            lock.lock();
+            List<FcRateLimit> list = pakMapping.toRateLimit(rateLimitPaks);
+            rateLimitDao.saveBatch(list);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private Map<String, FcApiPak> fillWithApiParams(List<FcApi> apiList) {

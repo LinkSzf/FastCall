@@ -21,6 +21,6 @@ public interface IFcPakProvider {
 
     List<FcRateLimitPak> getAllRateLimits();
 
-    void saveRateLimits(List<FcRateLimitPak> rateLimitPaks);
+    void saveRateLimits(Long sysId, List<FcRateLimitPak> rateLimitPaks);
 
 }
