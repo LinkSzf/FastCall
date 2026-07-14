@@ -87,8 +87,8 @@ public class FcDefaultPakProvider implements IFcPakProvider {
     @Override
     public void saveRateLimits(Long sysId, List<FcRateLimitPak> rateLimitPaks) {
         ReentrantLock lock = this.lockMap.computeIfAbsent(sysId, key -> new ReentrantLock(true));
+        lock.lock();
         try {
-            lock.lock();
             List<FcRateLimit> list = pakMapping.toRateLimit(rateLimitPaks);
             rateLimitDao.saveBatch(list);
         } finally {
