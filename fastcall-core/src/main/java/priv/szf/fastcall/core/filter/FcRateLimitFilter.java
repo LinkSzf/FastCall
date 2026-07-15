@@ -68,7 +68,7 @@ public class FcRateLimitFilter implements FcFilter {
                 continue;
             }
 
-            long current = rateLimit.getCurrent();
+            long current = rateLimit.getCurrentCount();
             long limit = rateLimit.getMaximum();
             if (current >= limit) {
                 long systemId = rateLimit.getSystemId();

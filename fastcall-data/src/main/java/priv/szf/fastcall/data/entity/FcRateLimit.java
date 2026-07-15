@@ -51,8 +51,8 @@ public class FcRateLimit {
     @TableField("maximum")
     private Long maximum;
 
-    @Column(name = "current")
-    @TableField("current")
-    private Long current;
+    @Column(name = "current_count")
+    @TableField("current_count")
+    private Long currentCount;
 
 }

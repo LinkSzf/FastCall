@@ -61,12 +61,12 @@ public class FcRateLimitSupport {
             LocalDateTime lastTime = rateLimit.getLastTime();
             boolean hasLastTime = Objects.nonNull(lastTime);
             if (hasLastTime) {
-                long current = rateLimit.getCurrent();
+                long current = rateLimit.getCurrentCount();
                 current++;
-                rateLimit.setCurrent(current);
+                rateLimit.setCurrentCount(current);
             } else {
                 rateLimit.setLastTime(currentTime);
-                rateLimit.setCurrent(1);
+                rateLimit.setCurrentCount(1);
             }
         }
 

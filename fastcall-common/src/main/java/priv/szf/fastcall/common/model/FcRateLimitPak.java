@@ -28,7 +28,7 @@ public class FcRateLimitPak implements IFcPak {
     private volatile LocalDateTime lastTime;
 
     @Setter
-    private volatile long current;
+    private volatile long currentCount;
 
 
     @Override
