@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.WeekFields;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class FcTimeUtil {
@@ -16,9 +17,25 @@ public final class FcTimeUtil {
         if (ObjUtil.hasNull(time1, time2)) {
             return false;
         }
-        ChronoUnit unit = ChronoUnit.valueOf(timeSpan.name());
-        long between = unit.between(time1, time2);
-        return Math.abs(between) < 1;
+
+        // 对于大单位，使用不同的比较方式
+        switch (timeSpan) {
+            case DAYS:
+                return time1.toLocalDate().equals(time2.toLocalDate());
+            case WEEKS:
+                // 判断是否在同一周（ISO标准，周一为一周开始）
+                return time1.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()) ==
+                        time2.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()) &&
+                        time1.getYear() == time2.getYear();
+            case MONTHS:
+                return time1.getYear() == time2.getYear() &&
+                        time1.getMonth() == time2.getMonth();
+            case YEARS:
+                return time1.getYear() == time2.getYear();
+            default:
+                ChronoUnit unit = ChronoUnit.valueOf(timeSpan.name());
+                return time1.truncatedTo(unit).equals(time2.truncatedTo(unit));
+        }
     }
 
     public static boolean isWithinDuration(FcTimeSpan timeSpan, LocalDateTime time1, LocalDateTime time2, long duration) {
