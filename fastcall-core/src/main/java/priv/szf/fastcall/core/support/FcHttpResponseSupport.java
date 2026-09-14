@@ -2,18 +2,13 @@ package priv.szf.fastcall.core.support;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 import priv.szf.fastcall.common.utils.FcTimeUtil;
 import priv.szf.fastcall.core.FastCallResponse;
 
@@ -28,23 +23,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FcHttpResponseSupport {
+@RequiredArgsConstructor
+public class FcHttpResponseSupport {
 
-    private static final ObjectMapper OBJECT_MAPPER = initObjectMapper();
+    private final FcJsonCodec jsonCodec;
 
 
-    private static ObjectMapper initObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        return objectMapper;
-    }
-
-    public static <T> FastCallResponse<T> buildStandardResponse(Type dataType, Response response) {
+    public <T> FastCallResponse<T> buildStandardResponse(Type dataType, Response response) {
         int code = response.code();
         String message = response.message();
         boolean isSuccessful = response.isSuccessful();
@@ -76,13 +61,15 @@ public final class FcHttpResponseSupport {
                 .build();
     }
 
-    private static <T> T readResponseBodyData(Type dataType, ResponseBody body) {
+    private <T> T readResponseBodyData(Type dataType, ResponseBody body) {
         if (Objects.isNull(body)) {
             return null;
         }
 
+        Type targetType = (Objects.isNull(dataType)) ? Object.class : dataType;
+
         try {
-            Class<?> rawType = getRawType(dataType);
+            Class<?> rawType = getRawType(targetType);
             MediaType contentType = body.contentType();
 
             if (rawType == byte[].class) {
@@ -107,18 +94,20 @@ public final class FcHttpResponseSupport {
                 throw new FcUnexpectedException(
                         "Response content type[{}] is not JSON, cannot convert to type[{}], body length[{}]",
                         Objects.toString(contentType, "null"),
-                        dataType.getTypeName(),
+                        targetType.getTypeName(),
                         bodyStr.length()
                 );
             }
 
             try {
-                return (T) OBJECT_MAPPER.readValue(bodyStr, rawType);
+                return (T) jsonCodec.read(bodyStr, targetType);
+            } catch (FcUnexpectedException e) {
+                throw e;
             } catch (RuntimeException e) {
                 throw new FcUnexpectedException(
                         e,
                         "JSON response cannot be converted to type[{}], body length[{}]",
-                        dataType.getTypeName(),
+                        targetType.getTypeName(),
                         bodyStr.length()
                 );
             }
@@ -127,15 +116,15 @@ public final class FcHttpResponseSupport {
         } catch (ClassCastException e) {
             throw new FcUnexpectedException(e,
                     "Response body cannot be converted to type[{}]]",
-                    dataType.getTypeName());
+                    targetType.getTypeName());
         }
     }
 
-    private static boolean isJsonMediaType(MediaType mediaType) {
+    private boolean isJsonMediaType(MediaType mediaType) {
         return Objects.nonNull(mediaType) && StrUtil.containsIgnoreCase(mediaType.toString(), "json");
     }
 
-    private static Class<?> getRawType(Type type) {
+    private Class<?> getRawType(Type type) {
         if (type instanceof Class) {
             return (Class<?>) type;
         }

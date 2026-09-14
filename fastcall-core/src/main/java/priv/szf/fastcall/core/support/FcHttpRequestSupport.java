@@ -1,14 +1,13 @@
 package priv.szf.fastcall.core.support;
 
-import cn.hutool.json.JSONUtil;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 import priv.szf.fastcall.core.FastCallClient;
 import priv.szf.fastcall.core.auth.FcRequestContext;
 
@@ -18,11 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FcHttpRequestSupport {
+@RequiredArgsConstructor
+public class FcHttpRequestSupport {
+
+    private final FcJsonCodec jsonCodec;
 
 
-    public static Request createRequest(FastCallClient.Builder<?> builder, String system) {
+    public Request createRequest(FastCallClient.Builder<?> builder, String system) {
         Headers requestHeaders = buildHeaders(builder.getHeaders());
         RequestBody requestBody = buildRequestBody(builder.getBody(), builder.getContentType(), builder.getMethod());
         FcRequestContext requestContext = FcRequestContext.builder()
@@ -42,7 +43,7 @@ public final class FcHttpRequestSupport {
                 .build();
     }
 
-    private static Headers buildHeaders(Map<String, List<String>> headers) {
+    private Headers buildHeaders(Map<String, List<String>> headers) {
         Headers.Builder headerBuilder = new Headers.Builder();
         if (Objects.nonNull(headers)) {
             headers.forEach((key, values) -> {
@@ -54,7 +55,7 @@ public final class FcHttpRequestSupport {
         return headerBuilder.build();
     }
 
-    private static RequestBody buildRequestBody(Object body, FcMediaType contentType, FcRequestMethod method) {
+    private RequestBody buildRequestBody(Object body, FcMediaType contentType, FcRequestMethod method) {
         return Optional.ofNullable(body)
                 .map(payload -> {
                     if (payload instanceof RequestBody) {
@@ -71,8 +72,7 @@ public final class FcHttpRequestSupport {
                     if (payload instanceof File) {
                         return RequestBody.create((File) payload, mediaType);
                     }
-                    String jsonStr = JSONUtil.toJsonStr(payload);
-                    return RequestBody.create(jsonStr, mediaType);
+                    return RequestBody.create(jsonCodec.write(payload), mediaType);
                 })
                 .orElse(
                         method == FcRequestMethod.GET ? null

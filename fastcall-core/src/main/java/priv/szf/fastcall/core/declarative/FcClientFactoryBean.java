@@ -7,6 +7,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.declarative.annotation.FcClient;
@@ -60,8 +61,9 @@ public class FcClientFactoryBean implements FactoryBean<Object>, BeanFactoryAwar
 
             FastCall fastCall = beanFactory.getBean(FastCall.class);
             IFcSource source = beanFactory.getBean(FcSourceDelegate.class);
+            FcJsonCodec jsonCodec = beanFactory.getBean(FcJsonCodec.class);
 
-            FcClientInvocationHandler handler = new FcClientInvocationHandler(interfaceType, fastCall, source);
+            FcClientInvocationHandler handler = new FcClientInvocationHandler(interfaceType, fastCall, source, jsonCodec);
             singletonProxy = Proxy.newProxyInstance(
                     interfaceType.getClassLoader(),
                     new Class<?>[]{interfaceType},

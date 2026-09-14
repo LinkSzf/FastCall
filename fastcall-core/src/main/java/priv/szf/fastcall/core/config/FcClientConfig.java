@@ -10,9 +10,22 @@ import priv.szf.fastcall.core.auth.interceptor.FcAuthInterceptor;
 import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
+import priv.szf.fastcall.core.support.FcHttpRequestSupport;
+import priv.szf.fastcall.core.support.FcHttpResponseSupport;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 
 @Configuration
 public class FcClientConfig {
+
+    @Bean
+    public FcHttpRequestSupport fcHttpRequestSupport(FcJsonCodec jsonCodec) {
+        return new FcHttpRequestSupport(jsonCodec);
+    }
+
+    @Bean
+    public FcHttpResponseSupport fcHttpResponseSupport(FcJsonCodec jsonCodec) {
+        return new FcHttpResponseSupport(jsonCodec);
+    }
 
     @Bean
     public FastCallClientFactory fastCallClientFactory(
@@ -22,7 +35,9 @@ public class FcClientConfig {
         Dispatcher dispatcher,
         FcAuthInterceptor authInterceptor,
         FcAuthRefreshInterceptor tokenRefreshInterceptor,
-        FcFilterManager filterManager
+        FcFilterManager filterManager,
+        FcHttpRequestSupport requestSupport,
+        FcHttpResponseSupport responseSupport
     ) {
         return new FastCallClientFactory(
                 source,
@@ -31,7 +46,9 @@ public class FcClientConfig {
                 dispatcher,
                 authInterceptor,
                 tokenRefreshInterceptor,
-                filterManager
+                filterManager,
+                requestSupport,
+                responseSupport
         );
     }
 

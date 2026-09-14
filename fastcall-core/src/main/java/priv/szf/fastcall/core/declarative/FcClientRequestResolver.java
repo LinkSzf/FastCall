@@ -12,31 +12,24 @@ import okio.BufferedSink;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.source.IFcSource;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,9 +38,9 @@ final class FcClientRequestResolver {
 
     private static final Pattern PATH_PLACEHOLDER_PATTERN = Pattern.compile("\\{([^{}]+)}");
 
-    private static final ConcurrentMap<Class<?>, List<PropertyDescriptor>> BEAN_PROPERTY_CACHE = new ConcurrentHashMap<>();
-
     private final IFcSource source;
+
+    private final FcJsonCodec jsonCodec;
 
     FcResolvedRequest resolve(FcClientMethodMetadata metadata, Object[] args) {
         String system = metadata.getSystem();
@@ -160,7 +153,22 @@ final class FcClientRequestResolver {
                 return;
             }
 
-            Map<String, Object> beanMap = toBeanPropertyMap(arg);
+            Map<String, Object> beanMap = jsonCodec.toPropertyMap(arg);
+            if (Objects.isNull(beanMap)) {
+                // 该类型的序列化形态是标量（例如类型上声明了 @JsonValue），无法展开为多个键值
+                String expandKey = StrUtil.trim(binding.getName());
+                if (StrUtil.isBlank(expandKey)) {
+                    throw new FastCallException(
+                            "Parameter[{}] of type[{}] is serialized as a single value, an explicit key is required for the {} parameter",
+                            binding.getIndex(),
+                            arg.getClass().getName(),
+                            type
+                    );
+                }
+                putValue(target, expandKey, jsonCodec.toScalar(arg));
+                return;
+            }
+
             beanMap.forEach((k, v) -> {
                 if (Objects.nonNull(k) && Objects.nonNull(v)) {
                     putValue(target, k, v);
@@ -174,45 +182,6 @@ final class FcClientRequestResolver {
             throw new FastCallException("Blank {} key is not allowed for single-value parameter", type);
         }
         putValue(target, key, arg);
-    }
-
-    private Map<String, Object> toBeanPropertyMap(Object bean) {
-        try {
-            Map<String, Object> result = new LinkedHashMap<>();
-            for (PropertyDescriptor descriptor : getBeanPropertyDescriptors(bean.getClass())) {
-                Method readMethod = descriptor.getReadMethod();
-                if (Objects.isNull(readMethod)) {
-                    continue;
-                }
-                if (!readMethod.isAccessible()) {
-                    readMethod.setAccessible(true);
-                }
-                Object value = readMethod.invoke(bean);
-                if (Objects.nonNull(value)) {
-                    result.put(descriptor.getName(), value);
-                }
-            }
-            return result;
-        } catch (Exception e) {
-            throw new FastCallException(e, "Failed to expand bean parameter [{}]", bean.getClass().getName());
-        }
-    }
-
-    private List<PropertyDescriptor> getBeanPropertyDescriptors(Class<?> beanClass) {
-        return BEAN_PROPERTY_CACHE.computeIfAbsent(beanClass, this::loadBeanPropertyDescriptors);
-    }
-
-    private List<PropertyDescriptor> loadBeanPropertyDescriptors(Class<?> beanClass) {
-        try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(beanClass, Object.class);
-            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-            if (propertyDescriptors == null || propertyDescriptors.length == 0) {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(Arrays.asList(propertyDescriptors));
-        } catch (Exception e) {
-            throw new FastCallException(e, "Failed to inspect bean parameter [{}]", beanClass.getName());
-        }
     }
 
     private void putValue(Map<String, List<String>> target, String key, Object value) {

@@ -2,6 +2,7 @@ package priv.szf.fastcall.core.declarative;
 
 import cn.hutool.core.util.StrUtil;
 import priv.szf.fastcall.common.exception.FastCallException;
+import priv.szf.fastcall.common.json.FcJsonCodec;
 import priv.szf.fastcall.common.source.IFcSource;
 import priv.szf.fastcall.core.FastCall;
 import priv.szf.fastcall.core.FastCallClient;
@@ -25,11 +26,11 @@ final class FcClientInvocationHandler implements InvocationHandler {
 
     private final FcClientRequestResolver requestResolver;
 
-    FcClientInvocationHandler(Class<?> interfaceType, FastCall fastCall, IFcSource source) {
+    FcClientInvocationHandler(Class<?> interfaceType, FastCall fastCall, IFcSource source, FcJsonCodec jsonCodec) {
         this.interfaceType = interfaceType;
         this.fastCall = fastCall;
         this.methodMetadataMap = new FcClientMetadataParser(interfaceType).parse();
-        this.requestResolver = new FcClientRequestResolver(source);
+        this.requestResolver = new FcClientRequestResolver(source, jsonCodec);
     }
 
     @Override

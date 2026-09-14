@@ -45,6 +45,10 @@ public class FastCallClient {
 
     private final FcFilterManager filterManager;
 
+    private final FcHttpRequestSupport requestSupport;
+
+    private final FcHttpResponseSupport responseSupport;
+
     public <T> PreparedCall<T> newApiCall(String apiName) {
         return this.<T>newCall()
                 .apiName(apiName)
@@ -100,12 +104,12 @@ public class FastCallClient {
     }
 
     private <T> FastCallResponse<T> doCall(Builder<T> builder, boolean throwException) {
-        Request request = FcHttpRequestSupport.createRequest(builder, system);
+        Request request = this.requestSupport.createRequest(builder, system);
 
         Call call = this.client.newCall(request);
 
         try (Response response = call.execute()) {
-            return FcHttpResponseSupport.buildStandardResponse(builder.dataType, response);
+            return this.responseSupport.buildStandardResponse(builder.dataType, response);
         } catch (Exception e) {
             if (throwException) {
                 throw new FcUnexpectedException(e, "Unexpected exception occurred.");

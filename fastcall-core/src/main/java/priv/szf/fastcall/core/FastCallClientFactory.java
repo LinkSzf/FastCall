@@ -19,6 +19,8 @@ import priv.szf.fastcall.core.auth.interceptor.FcAuthRefreshInterceptor;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.core.filter.FcFilterManager;
 import priv.szf.fastcall.core.source.FcSourceDelegate;
+import priv.szf.fastcall.core.support.FcHttpRequestSupport;
+import priv.szf.fastcall.core.support.FcHttpResponseSupport;
 
 import java.io.File;
 import java.util.Map;
@@ -47,6 +49,10 @@ public class FastCallClientFactory {
     private final FcAuthRefreshInterceptor tokenRefreshInterceptor;
 
     private final FcFilterManager filterManager;
+
+    private final FcHttpRequestSupport requestSupport;
+
+    private final FcHttpResponseSupport responseSupport;
 
     private volatile Cache sharedCache;
 
@@ -82,6 +88,8 @@ public class FastCallClientFactory {
                 .system(system)
                 .source(source)
                 .filterManager(filterManager)
+                .requestSupport(requestSupport)
+                .responseSupport(responseSupport)
                 .build();
     }
 
