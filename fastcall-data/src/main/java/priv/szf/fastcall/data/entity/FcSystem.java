@@ -73,4 +73,8 @@ public class FcSystem {
     @Transient
     private FcAuth auth;
 
+    @TableField(exist = false)
+    @Transient
+    private FcRetry retry;
+
 }

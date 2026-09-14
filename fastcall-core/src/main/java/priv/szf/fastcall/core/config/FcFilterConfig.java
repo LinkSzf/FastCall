@@ -52,11 +52,11 @@ public class FcFilterConfig {
         return new FcRequestEventFilter(eventPublisher);
     }
 
-    @ConditionalOnProperty(prefix = "fast-call.filter.retry", name = "enable", havingValue = "true")
+    @ConditionalOnProperty(prefix = "fast-call.filter", name = "enable-retry", havingValue = "true")
     @ConditionalOnMissingBean(name = RETRY_FILTER)
     @Bean(RETRY_FILTER)
-    public FcRetryFilter fcRetryFilter(FastCallProperties properties) {
-        return new FcRetryFilter(properties);
+    public FcRetryFilter fcRetryFilter() {
+        return new FcRetryFilter();
     }
 
 

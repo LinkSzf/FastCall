@@ -49,4 +49,7 @@ public class FcSystemDTO {
 
     @Valid
     private FcAuthDTO auth;
+
+    @Valid
+    private FcRetryDTO retry;
 }

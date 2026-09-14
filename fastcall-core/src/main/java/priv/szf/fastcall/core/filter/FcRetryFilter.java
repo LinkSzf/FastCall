@@ -1,63 +1,57 @@
 package priv.szf.fastcall.core.filter;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import priv.szf.fastcall.common.FastCallConsts;
-import priv.szf.fastcall.common.exception.FastCallException;
 import priv.szf.fastcall.common.exception.FcUnexpectedException;
+import priv.szf.fastcall.common.model.FcRetryPak;
+import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.core.FastCallResponse;
-import priv.szf.fastcall.core.config.FastCallProperties;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 请求重试过滤器，重试配置(attempts/duration)为client级别的配置，
+ * 由配置源(FcPropertySource/FcDatabaseSource)在构建FcSourcePak时填充，
+ * 未配置重试或attempts小于等于0的系统不进行重试。
+ */
 @Slf4j
 @Order(Integer.MAX_VALUE)
-@RequiredArgsConstructor
 public class FcRetryFilter implements FcFilter {
-
-    private final FastCallProperties properties;
-
-    private int maxAttempts;
-
-    private long retryInterval;
-
-    @Override
-    public void init() {
-        this.maxAttempts = this.properties.getFilter().getRetry().getAttempts();
-        this.retryInterval = this.properties.getFilter().getRetry().getInterval();
-        check();
-    }
 
     @Override
     public void doFilter(FcFilterContext context, FcFilterChain chain) {
+        FcRetryPak retry = resolveRetry(context);
+        if (Objects.isNull(retry) || !retry.isEnabled()) {
+            chain.doFilter(context);
+            return;
+        }
+
         boolean needRetry;
         try {
             chain.doFilter(context);
-            needRetry = !Optional.of(context)
-                    .map(FcFilterContext::getResponse)
-                    .map(FastCallResponse::isConnected)
-                    .orElse(false);
+            needRetry = !isConnected(context);
         } catch (Exception e) {
             needRetry = true;
         }
 
         if (needRetry) {
-            retry(context, chain);
+            retry(context, chain, retry);
         }
     }
 
-    private void retry(FcFilterContext context, FcFilterChain chain) {
+    private void retry(FcFilterContext context, FcFilterChain chain, FcRetryPak retry) {
+        int maxAttempts = retry.getAttempts();
+        long duration = Math.max(0L, retry.getDuration());
+
         int attempts = 0;
-        while (attempts < this.maxAttempts) {
+        while (attempts < maxAttempts) {
             attempts++;
             log.warn("{}-Retrying call, attempt: {}, system: {}, url: {}", FastCallConsts.NAME, attempts, context.getSystem(), context.getUrl());
-            try {
-                TimeUnit.MILLISECONDS.sleep(retryInterval);
-            } catch (InterruptedException e) {
-                throw new FcUnexpectedException(e,"Interrupted when retrying calls.");
-            }
+
+            sleep(duration);
 
             try {
                 chain.doFilter(context);
@@ -66,20 +60,38 @@ public class FcRetryFilter implements FcFilter {
                     return;
                 }
             } catch (Exception e) {
-                if (attempts >= this.maxAttempts) {
+                if (attempts >= maxAttempts) {
                     throw e;
                 }
             }
         }
     }
 
-    private void check() {
-        if (this.maxAttempts <= 0) {
-            throw new FastCallException("maxAttempts must be greater than 0");
+    private void sleep(long duration) {
+        if (duration <= 0) {
+            return;
         }
-        if (this.retryInterval <= 0) {
-            throw new FastCallException("retryInterval must be greater than 0");
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(duration);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new FcUnexpectedException(e, "Interrupted when retrying calls.");
         }
+    }
+
+    private boolean isConnected(FcFilterContext context) {
+        return Optional.of(context)
+                .map(FcFilterContext::getResponse)
+                .map(FastCallResponse::isConnected)
+                .orElse(false);
+    }
+
+    private FcRetryPak resolveRetry(FcFilterContext context) {
+        return Optional.of(context)
+                .map(FcFilterContext::getSourcePak)
+                .map(FcSourcePak::getRetry)
+                .orElse(null);
     }
 
 }

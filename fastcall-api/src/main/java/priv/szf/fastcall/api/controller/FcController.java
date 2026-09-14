@@ -15,14 +15,17 @@ import priv.szf.fastcall.api.event.IdLevel;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
 import priv.szf.fastcall.api.model.dto.FcHeaderAssignDTO;
+import priv.szf.fastcall.api.model.dto.FcRetryDTO;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiMapping;
 import priv.szf.fastcall.api.model.mapping.FcApiParamMapping;
 import priv.szf.fastcall.api.model.mapping.FcHeaderAssignMapping;
+import priv.szf.fastcall.api.model.mapping.FcRetryMapping;
 import priv.szf.fastcall.api.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
 import priv.szf.fastcall.api.model.vo.FcHeaderAssignVO;
+import priv.szf.fastcall.api.model.vo.FcRetryVO;
 import priv.szf.fastcall.api.model.vo.FcSystemVO;
 import priv.szf.fastcall.common.FastCallConsts;
 import priv.szf.fastcall.common.event.source.FcSourceEventType;
@@ -31,6 +34,7 @@ import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.manager.FcApiManager;
 import priv.szf.fastcall.data.manager.FcApiParamManager;
 import priv.szf.fastcall.data.manager.FcHeaderAssignManager;
+import priv.szf.fastcall.data.manager.FcRetryManager;
 import priv.szf.fastcall.data.manager.FcSystemManager;
 
 import javax.validation.Valid;
@@ -52,6 +56,8 @@ public class FcController {
 
     private final FcHeaderAssignManager headerAssignManager;
 
+    private final FcRetryManager retryManager;
+
     private final FcSystemMapping systemMapping;
 
     private final FcApiMapping apiMapping;
@@ -59,6 +65,8 @@ public class FcController {
     private final FcApiParamMapping apiParamMapping;
 
     private final FcHeaderAssignMapping headerAssignMapping;
+
+    private final FcRetryMapping retryMapping;
 
     @GetMapping("/all")
     public List<FcSystemVO> listAllSystem(){
@@ -152,6 +160,32 @@ public class FcController {
                 .map(list -> headerAssignManager.save(systemId, list))
                 .map(headerAssignMapping::toVoList)
                 .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
+    }
+
+    @GetMapping("/{systemId}/retry")
+    public FcRetryVO findRetryOfSystem(@PathVariable Long systemId) {
+        log.trace("{}-Web request query retry config of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.ofNullable(retryManager.getBySystemId(systemId))
+                .map(retryMapping::toVo)
+                .orElse(null);
+    }
+
+    @FcSourceEventCut(idIndex = 1)
+    @PostMapping("/{systemId}/retry/save")
+    public FcRetryVO saveRetryOfSystem(@PathVariable Long systemId, @Valid @RequestBody FcRetryDTO dto) {
+        log.trace("{}-Web request save retry config of system[{}]", FastCallConsts.NAME, systemId);
+        return Optional.of(dto)
+                .map(retryMapping::toEntity)
+                .map(retry -> retryManager.save(systemId, retry))
+                .map(retryMapping::toVo)
+                .orElse(null);
+    }
+
+    @FcSourceEventCut(idIndex = 1)
+    @DeleteMapping("/{systemId}/retry")
+    public void removeRetryOfSystem(@PathVariable Long systemId) {
+        log.trace("{}-Web request remove retry config of system[{}]", FastCallConsts.NAME, systemId);
+        retryManager.removeBySystemId(systemId);
     }
 
 

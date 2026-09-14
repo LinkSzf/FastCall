@@ -41,27 +41,14 @@ public class FastCallProperties {
     @Data
     public static class Filter {
 
+        /** 是否启用重试 */
+        private boolean enableRetry = false;
+
         /** 是否启用限流 */
         private boolean enableRateLimit = false;
 
         /** 是否启用请求事件 */
         private boolean enableRequestEvent = false;
-
-        /** 重试配置 */
-        private Retry retry = new Retry();
-
-
-        @Data
-        public static class Retry {
-            /** 是否启用重试 */
-            private boolean enable = false;
-
-            /** 最大重试次数 */
-            private int attempts = 3;
-
-            /** 重试间隔（毫秒） */
-            private long interval = 1000;
-        }
 
     }
 
@@ -72,6 +59,9 @@ public class FastCallProperties {
 
         /** 认证配置 */
         private Auth auth = new Auth();
+
+        /** 重试配置 */
+        private Retry retry;
 
         /** 限流配置 */
         private List<RateLimit> rateLimits = new ArrayList<>();
@@ -117,6 +107,17 @@ public class FastCallProperties {
 
             /** 未认证状态码 */
             private Integer unauthorizedCode;
+        }
+
+
+        @Data
+        public static class Retry {
+
+            /** 最大重试次数 */
+            private int attempts = 3;
+
+            /** 重试间隔（毫秒） */
+            private long duration = 1000;
         }
 
         @Data

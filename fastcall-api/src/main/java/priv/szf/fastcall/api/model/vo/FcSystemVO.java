@@ -28,4 +28,6 @@ public class FcSystemVO {
 
     private FcAuthVO auth;
 
+    private FcRetryVO retry;
+
 }

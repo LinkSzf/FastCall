@@ -11,6 +11,7 @@ import priv.szf.fastcall.core.FcUtils;
 import priv.szf.fastcall.core.config.FastCallProperties;
 import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcClientSettingPak;
+import priv.szf.fastcall.common.model.FcRetryPak;
 import priv.szf.fastcall.common.model.FcSourcePak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
@@ -19,6 +20,7 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Order(200)
 @RequiredArgsConstructor
@@ -54,9 +56,21 @@ public class FcPropertySource extends FcBaseChainSource implements IFcChainSourc
         FcSourcePak sourcePak = FcSourcePak.builder()
                 .system(getFcSystemPak(es))
                 .auth(getFcAuthPak(es))
+                .retry(getFcRetryPak(es.getRetry()))
                 .build();
         sourcePak.init();
         return sourcePak;
+    }
+
+    private FcRetryPak getFcRetryPak(FastCallProperties.EasySource.Retry esRetry) {
+        if (Objects.isNull(esRetry)) {
+            return null;
+        }
+
+        return FcRetryPak.builder()
+                .attempts(esRetry.getAttempts())
+                .duration(esRetry.getDuration())
+                .build();
     }
 
     private FcSystemPak getFcSystemPak(FastCallProperties.EasySource es) {

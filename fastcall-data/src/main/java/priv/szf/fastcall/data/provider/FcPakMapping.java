@@ -11,6 +11,7 @@ import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
+import priv.szf.fastcall.common.model.FcRetryPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 import priv.szf.fastcall.common.model.content.BaseAuthContent;
 import priv.szf.fastcall.data.entity.FcApi;
@@ -18,6 +19,7 @@ import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
 import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcRateLimit;
+import priv.szf.fastcall.data.entity.FcRetry;
 import priv.szf.fastcall.data.entity.FcSystem;
 
 import java.util.HashMap;
@@ -46,6 +48,8 @@ public interface FcPakMapping {
 
     @Mapping(target = "systemId", source = "sysId")
     FcRateLimitPak toRateLimitPak(FcRateLimit rateLimit);
+
+    FcRetryPak toRetryPak(FcRetry retry);
 
     List<FcRateLimitPak> toRateLimitPak(List<FcRateLimit> rateLimits);
 

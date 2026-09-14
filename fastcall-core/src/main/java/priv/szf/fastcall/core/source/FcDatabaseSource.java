@@ -33,6 +33,7 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
                 .auth(this.pakProvider.getAuthBySysId(systemId))
                 .apiMap(this.pakProvider.getApisBySysId(systemId))
                 .headerAssigns(this.pakProvider.getHeaderAssignsBySysId(systemId))
+                .retry(this.pakProvider.getRetryBySysId(systemId))
                 .build();
 
         sourcePak.init();
@@ -43,6 +44,5 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
     @Override
     public void tryUpdateCredential(String system, ICredential credential) {
     }
-
 
 }

@@ -4,6 +4,7 @@ import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcAuthPak;
 import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
+import priv.szf.fastcall.common.model.FcRetryPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
 
 import java.util.List;
@@ -22,5 +23,7 @@ public interface IFcPakProvider {
     List<FcRateLimitPak> getAllRateLimits();
 
     void saveRateLimits(Long sysId, List<FcRateLimitPak> rateLimitPaks);
+
+    FcRetryPak getRetryBySysId(Long sysId);
 
 }

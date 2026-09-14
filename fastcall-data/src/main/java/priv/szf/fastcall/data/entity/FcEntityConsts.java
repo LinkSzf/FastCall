@@ -16,6 +16,8 @@ public class FcEntityConsts {
 
     public static final String RATE_LIMIT_TABLE = TABLE_PREFIX + "rate_limit";
 
+    public static final String RETRY_TABLE = TABLE_PREFIX + "retry";
+
 
 
 }

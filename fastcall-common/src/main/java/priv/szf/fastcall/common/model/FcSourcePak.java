@@ -22,6 +22,8 @@ public class FcSourcePak implements IFcPak {
 
     private final FcAuthPak auth;
 
+    private final FcRetryPak retry;
+
     @Setter
     private volatile ICredential credential;
 
