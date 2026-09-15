@@ -12,6 +12,7 @@ import priv.szf.fastcall.core.declarative.annotation.FcPart;
 import priv.szf.fastcall.core.declarative.annotation.FcPath;
 import priv.szf.fastcall.core.declarative.annotation.FcQuery;
 import priv.szf.fastcall.test.model.DeclarativeUser;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
@@ -61,4 +62,14 @@ public interface DeclarativeDemoClient {
             @FcPart(value = "files", fileName = "payload.txt", mediaType = FcMediaType.TEXT_PLAIN) InputStream fileContent,
             @FcPart("meta") String meta
     );
+
+    @FcMethod(uri = "/declarative/target/upload", method = FcRequestMethod.POST)
+    Map<String, Object> uploadFile(
+            @FcPart("desc") String desc,
+            @FcPart("files") MultipartFile fileContent,
+            @FcPart("meta") String meta
+    );
+
+    @FcMethod(uri = "/declarative/target/download", method = FcRequestMethod.GET)
+    MultipartFile download(@FcQuery("name") String name);
 }

@@ -9,6 +9,7 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
+import org.springframework.web.multipart.MultipartFile;
 import priv.szf.fastcall.common.FcMediaType;
 import priv.szf.fastcall.common.FcRequestMethod;
 import priv.szf.fastcall.common.exception.FastCallException;
@@ -257,6 +258,18 @@ final class FcClientRequestResolver {
         String fileName = binding.getPartFileName();
         FcMediaType partType = Optional.ofNullable(binding.getPartMediaType()).orElse(FcMediaType.APPLICATION_OCTET_STREAM);
 
+        if (value instanceof MultipartFile) {
+            MultipartFile multipartFile = (MultipartFile) value;
+            builder.addFormDataPart(
+                    partName,
+                    resolveMultipartFileName(fileName, multipartFile),
+                    RequestBody.create(
+                            readMultipartFileBytes(multipartFile),
+                            resolveMultipartFileMediaType(binding.getPartMediaType(), multipartFile)
+                    )
+            );
+            return;
+        }
         if (value instanceof File) {
             File file = (File) value;
             String finalFileName = StrUtil.blankToDefault(fileName, file.getName());
@@ -283,6 +296,42 @@ final class FcClientRequestResolver {
             return;
         }
         builder.addFormDataPart(partName, String.valueOf(value));
+    }
+
+    /**
+     * 文件名取注解声明的 {@code fileName}，其次文件自身的原始文件名，最后退化为表单字段名。
+     */
+    private String resolveMultipartFileName(String declaredFileName, MultipartFile multipartFile) {
+        String finalFileName = StrUtil.blankToDefault(StrUtil.trim(declaredFileName), multipartFile.getOriginalFilename());
+        return StrUtil.blankToDefault(StrUtil.trim(finalFileName), multipartFile.getName());
+    }
+
+    /**
+     * 部分内容类型：注解显式声明（非 {@code APPLICATION_OCTET_STREAM} 默认值）时以注解为准，
+     * 否则取文件自身声明的类型，最后退化为 {@code application/octet-stream}。
+     */
+    private MediaType resolveMultipartFileMediaType(FcMediaType declaredPartType, MultipartFile multipartFile) {
+        if (Objects.nonNull(declaredPartType) && declaredPartType != FcMediaType.APPLICATION_OCTET_STREAM) {
+            return MediaType.parse(declaredPartType.getName());
+        }
+
+        MediaType fileMediaType = MediaType.parse(StrUtil.trimToEmpty(multipartFile.getContentType()));
+        if (Objects.nonNull(fileMediaType)) {
+            return fileMediaType;
+        }
+        return MediaType.parse(FcMediaType.APPLICATION_OCTET_STREAM.getName());
+    }
+
+    private byte[] readMultipartFileBytes(MultipartFile multipartFile) {
+        try {
+            return multipartFile.getBytes();
+        } catch (IOException e) {
+            throw new FastCallException(
+                    e,
+                    "Failed to read bytes of multipart file[{}]",
+                    multipartFile.getOriginalFilename()
+            );
+        }
     }
 
     private RequestBody createStreamingRequestBody(InputStream inputStream, MediaType mediaType) {

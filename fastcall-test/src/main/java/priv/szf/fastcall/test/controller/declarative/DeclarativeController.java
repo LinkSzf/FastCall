@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.test.client.DeclarativeDemoClient;
 import priv.szf.fastcall.test.model.DeclarativeUser;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,5 +91,21 @@ public class DeclarativeController {
     public Map<String, Object> uploadStream(@RequestParam(defaultValue = "demo upload stream") String desc) {
         byte[] bytes = ("hello-fastcall-stream-" + System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8);
         return client.uploadStream(desc, new ByteArrayInputStream(bytes), "{\"biz\":\"fastcall-stream\"}");
+    }
+
+    /**
+     * 下载为 MultipartFile 后再原样上传，验证响应侧文件语义与请求侧文件部分是否闭环。
+     */
+    @GetMapping("/download")
+    public Map<String, Object> download(@RequestParam(defaultValue = "report.txt") String name) throws IOException {
+        MultipartFile file = client.download(name);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("fileName", file.getOriginalFilename());
+        result.put("size", file.getSize());
+        result.put("contentType", file.getContentType());
+        result.put("content", new String(file.getBytes(), StandardCharsets.UTF_8));
+        result.put("uploaded", client.uploadFile("downloaded file", file, "{\"biz\":\"fastcall-download\"}"));
+        return result;
     }
 }

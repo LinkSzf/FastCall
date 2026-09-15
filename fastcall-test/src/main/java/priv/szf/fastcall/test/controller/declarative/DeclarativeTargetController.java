@@ -1,6 +1,8 @@
 package priv.szf.fastcall.test.controller.declarative;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,13 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 import priv.szf.fastcall.test.model.DeclarativeUser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/declarative/target")
@@ -109,5 +114,21 @@ public class DeclarativeTargetController {
         result.put("size", file.getSize());
         result.put("contentType", file.getContentType());
         return result;
+    }
+
+    /**
+     * 文件下载接口：同时下发 {@code filename} 与 RFC 5987 的 {@code filename*}，并返回二进制内容。
+     */
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> download(@RequestParam(value = "name", required = false) String name) {
+        String fileName = (Objects.isNull(name) || name.trim().isEmpty()) ? "report.txt" : name.trim();
+        byte[] content = ("download-content:" + fileName).getBytes(StandardCharsets.UTF_8);
+        String disposition = "attachment; filename=\"report.txt\"; filename*=UTF-8''"
+                + UriUtils.encode(fileName, StandardCharsets.UTF_8);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(content);
     }
 }
