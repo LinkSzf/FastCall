@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import priv.szf.fastcall.common.model.FcApiPak;
 import priv.szf.fastcall.common.model.FcApiParamPak;
 import priv.szf.fastcall.common.model.FcAuthPak;
-import priv.szf.fastcall.common.model.FcHeaderAssignPak;
 import priv.szf.fastcall.common.model.FcRateLimitPak;
 import priv.szf.fastcall.common.model.FcRetryPak;
 import priv.szf.fastcall.common.model.FcSystemPak;
@@ -13,14 +12,12 @@ import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.data.entity.FcApi;
 import priv.szf.fastcall.data.entity.FcApiParam;
 import priv.szf.fastcall.data.entity.FcAuth;
-import priv.szf.fastcall.data.entity.FcHeaderAssign;
 import priv.szf.fastcall.data.entity.FcRateLimit;
 import priv.szf.fastcall.data.entity.FcRetry;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
-import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import priv.szf.fastcall.data.mapper.FcRateLimitDao;
 import priv.szf.fastcall.data.mapper.FcRetryDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
@@ -45,8 +42,6 @@ public class FcDefaultPakProvider implements IFcPakProvider {
     private final FcApiDao apiDao;
 
     private final FcApiParamDao apiParamDao;
-
-    private final FcHeaderAssignDao headerAssignDao;
 
     private final FcRateLimitDao rateLimitDao;
 
@@ -75,12 +70,6 @@ public class FcDefaultPakProvider implements IFcPakProvider {
         }
 
         return fillWithApiParams(apiList);
-    }
-
-    @Override
-    public List<FcHeaderAssignPak> getHeaderAssignsBySysId(Long systemId) {
-        List<FcHeaderAssign> headerAssignList = headerAssignDao.listBySystemId(systemId);
-        return pakMapping.toHeaderAssignPak(headerAssignList);
     }
 
     @Override

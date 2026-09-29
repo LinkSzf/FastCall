@@ -36,7 +36,6 @@ public class FcDatabaseSource extends FcBaseChainSource implements IFcDatabaseSo
                 .system(system)
                 .auth(this.pakProvider.getAuthBySysId(systemId))
                 .apiMap(this.pakProvider.getApisBySysId(systemId))
-                .headerAssigns(this.pakProvider.getHeaderAssignsBySysId(systemId))
                 .retry(this.pakProvider.getRetryBySysId(systemId))
                 .build();
 

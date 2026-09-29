@@ -24,7 +24,6 @@ fast-call:
     enable: true
     engine: memory
     expire: 60
-    refresh-when-expire: true
   easy-source:
     - system:
         code: local

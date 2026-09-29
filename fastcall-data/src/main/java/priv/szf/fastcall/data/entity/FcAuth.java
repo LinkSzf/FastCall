@@ -55,11 +55,6 @@ public class FcAuth {
     @TableField("content")
     private String content;
 
-    /** Credential lifetime of the auth record; not consulted by the current credential providers. */
-    @Column(name = "expiration")
-    @TableField("expiration")
-    private Long expiration;
-
     /** Time of the last successful authentication call, updated by the auth request event listener. */
     @Column(name = "last_access_time")
     @TableField("last_access_time")

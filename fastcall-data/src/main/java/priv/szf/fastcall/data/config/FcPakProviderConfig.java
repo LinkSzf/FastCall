@@ -9,7 +9,6 @@ import priv.szf.fastcall.common.source.IFcPakProvider;
 import priv.szf.fastcall.data.mapper.FcApiDao;
 import priv.szf.fastcall.data.mapper.FcApiParamDao;
 import priv.szf.fastcall.data.mapper.FcAuthDao;
-import priv.szf.fastcall.data.mapper.FcHeaderAssignDao;
 import priv.szf.fastcall.data.mapper.FcRateLimitDao;
 import priv.szf.fastcall.data.mapper.FcRetryDao;
 import priv.szf.fastcall.data.mapper.FcSystemDao;
@@ -29,7 +28,6 @@ public class FcPakProviderConfig {
             FcAuthDao authDao,
             FcApiDao apiDao,
             FcApiParamDao apiParamDao,
-            FcHeaderAssignDao headerAssignDao,
             FcRateLimitDao rateLimitDao,
             FcRetryDao retryDao,
             FcPakMapping pakMapping
@@ -40,7 +38,6 @@ public class FcPakProviderConfig {
                 authDao,
                 apiDao,
                 apiParamDao,
-                headerAssignDao,
                 rateLimitDao,
                 retryDao,
                 pakMapping

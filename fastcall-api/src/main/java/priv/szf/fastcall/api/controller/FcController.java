@@ -14,17 +14,14 @@ import priv.szf.fastcall.api.event.FcSourceEventCut;
 import priv.szf.fastcall.api.event.IdLevel;
 import priv.szf.fastcall.api.model.dto.FcApiDTO;
 import priv.szf.fastcall.api.model.dto.FcApiParamDTO;
-import priv.szf.fastcall.api.model.dto.FcHeaderAssignDTO;
 import priv.szf.fastcall.api.model.dto.FcRetryDTO;
 import priv.szf.fastcall.api.model.dto.FcSystemDTO;
 import priv.szf.fastcall.api.model.mapping.FcApiMapping;
 import priv.szf.fastcall.api.model.mapping.FcApiParamMapping;
-import priv.szf.fastcall.api.model.mapping.FcHeaderAssignMapping;
 import priv.szf.fastcall.api.model.mapping.FcRetryMapping;
 import priv.szf.fastcall.api.model.mapping.FcSystemMapping;
 import priv.szf.fastcall.api.model.vo.FcApiParamVO;
 import priv.szf.fastcall.api.model.vo.FcApiVO;
-import priv.szf.fastcall.api.model.vo.FcHeaderAssignVO;
 import priv.szf.fastcall.api.model.vo.FcRetryVO;
 import priv.szf.fastcall.api.model.vo.FcSystemVO;
 import priv.szf.fastcall.common.FastCallConsts;
@@ -33,7 +30,6 @@ import priv.szf.fastcall.common.exception.FcDataNotFoundException;
 import priv.szf.fastcall.data.entity.FcSystem;
 import priv.szf.fastcall.data.manager.FcApiManager;
 import priv.szf.fastcall.data.manager.FcApiParamManager;
-import priv.szf.fastcall.data.manager.FcHeaderAssignManager;
 import priv.szf.fastcall.data.manager.FcRetryManager;
 import priv.szf.fastcall.data.manager.FcSystemManager;
 
@@ -54,8 +50,6 @@ public class FcController {
 
     private final FcApiParamManager apiParamManager;
 
-    private final FcHeaderAssignManager headerAssignManager;
-
     private final FcRetryManager retryManager;
 
     private final FcSystemMapping systemMapping;
@@ -63,8 +57,6 @@ public class FcController {
     private final FcApiMapping apiMapping;
 
     private final FcApiParamMapping apiParamMapping;
-
-    private final FcHeaderAssignMapping headerAssignMapping;
 
     private final FcRetryMapping retryMapping;
 
@@ -140,26 +132,6 @@ public class FcController {
                 .map(params -> apiParamManager.save(apiId, params))
                 .map(apiParamMapping::toVoList)
                 .orElseThrow(()->new FcDataNotFoundException("The api[{}] no longer exists.", apiId));
-    }
-
-    @GetMapping("/{systemId}/header_assign/all")
-    public List<FcHeaderAssignVO> listAllHeaderAssignOfSystem(@PathVariable Long systemId) {
-        log.trace("{}-Web request query header assign list of system[{}]", FastCallConsts.NAME, systemId);
-        return Optional.of(systemId)
-                .map(headerAssignManager::listAllHeaderAssignBySystemId)
-                .map(headerAssignMapping::toVoList)
-                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
-    }
-
-    @FcSourceEventCut(idIndex = 1)
-    @PostMapping("/{systemId}/header_assign/save")
-    public List<FcHeaderAssignVO> saveHeaderAssignOfSystem(@PathVariable Long systemId, @Valid @RequestBody List<FcHeaderAssignDTO> headerAssignList) {
-        log.trace("{}-Web request save header assign list of system[{}]", FastCallConsts.NAME, systemId);
-        return Optional.of(headerAssignList)
-                .map(headerAssignMapping::toEntityList)
-                .map(list -> headerAssignManager.save(systemId, list))
-                .map(headerAssignMapping::toVoList)
-                .orElseThrow(()->new FcDataNotFoundException("The system[{}] no longer exists.", systemId));
     }
 
     @GetMapping("/{systemId}/retry")

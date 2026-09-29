@@ -16,8 +16,6 @@ public class FcAuthPak implements IFcPak {
 
     private final BaseAuthContent content;
 
-    private final Integer expiration;
-
     private final String path;
 
     private final String particularHost;

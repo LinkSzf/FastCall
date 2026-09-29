@@ -215,9 +215,6 @@ public class FastCallProperties {
             return this.expire <= 0;
         }
 
-        /** Whether an expired pak is refreshed; not consulted by the current cache implementations. */
-        private boolean refreshWhenExpire = true;
-
         /**
          * Cache engine backing the source cache, either Redis or an in-memory timed cache.
          */
