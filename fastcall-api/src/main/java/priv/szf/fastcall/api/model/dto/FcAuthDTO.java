@@ -34,6 +34,6 @@ public class FcAuthDTO {
 
     @Min(value = 100, message = "Auth failure status code must not be less than 100")
     @Max(value = 999, message = "Auth failure status code must not be greater than 999")
-    private Integer statusCode;
+    private Integer unauthorizedCode;
 
 }

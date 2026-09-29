@@ -18,8 +18,8 @@ public class ApiKeyAuthDTO extends BaseAuthContentDTO {
     @Size(min = 1, max = 100, message = "Value length must be between 1 and 1000 characters")
     private String value;
 
-    @NotNull(message = "addTo must not be null")
-    private In addTo;
+    @NotNull(message = "positionOn must not be null")
+    private In positionOn;
 
     public enum In {
         QUERY,
