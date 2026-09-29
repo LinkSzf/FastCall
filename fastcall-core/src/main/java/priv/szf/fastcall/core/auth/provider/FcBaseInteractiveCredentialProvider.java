@@ -19,6 +19,10 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Optional;
 
+/**
+ * Base provider for interactive auth: it calls the configured auth endpoint anonymously and builds the credential
+ * from that response; a non-successful auth response raises a {@code FastCallException}.
+ */
 public abstract class FcBaseInteractiveCredentialProvider<C extends BaseDynAuthContent, R>
         extends FcBaseCredentialProvider<C>
         implements IFcDynCredentialProvider {

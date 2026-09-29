@@ -12,6 +12,10 @@ import priv.szf.fastcall.core.event.IFcRequestEventPublisher;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Publishes a request event for every call in a finally block, so failed calls are reported too.
+ * Ordered outside {@code FcRetryFilter}, it emits one api, auth or generic event per call.
+ */
 @RequiredArgsConstructor
 @Order(1000)
 public class FcRequestEventFilter implements FcFilter {

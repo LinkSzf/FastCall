@@ -10,15 +10,15 @@ import javax.validation.constraints.Size;
 @Data
 public class ApiKeyAuthDTO extends BaseAuthContentDTO {
 
-    @NotNull(message = "key不能为空")
-    @Size(min = 1, max = 100, message = "key长度必须在1到100个字符之间")
+    @NotNull(message = "Key must not be null")
+    @Size(min = 1, max = 100, message = "Key length must be between 1 and 100 characters")
     private String key;
 
-    @NotNull(message = "value不能为空")
-    @Size(min = 1, max = 100, message = "value长度必须在1到1000个字符之间")
+    @NotNull(message = "Value must not be null")
+    @Size(min = 1, max = 100, message = "Value length must be between 1 and 1000 characters")
     private String value;
 
-    @NotNull(message = "addTo不能为空")
+    @NotNull(message = "addTo must not be null")
     private In addTo;
 
     public enum In {

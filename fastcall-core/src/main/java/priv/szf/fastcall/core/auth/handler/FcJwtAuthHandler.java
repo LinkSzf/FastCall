@@ -34,7 +34,7 @@ public class FcJwtAuthHandler extends FcBaseAuthHandler implements IFcAuthHandle
         else if (positionOn == FcAuthPosition.QUERY) {
             String url = Optional.ofNullable(builder.getUrl$okhttp())
                     .map(HttpUrl::toString)
-                    .orElseThrow(() -> new FcUnexpectedException("Url 为空"));
+                    .orElseThrow(() -> new FcUnexpectedException("URL must not be null"));
             String newUrl = url + (url.contains("?") ? "&" : "?") +
                     FcHttpHeader.AUTHORIZATION.getName() + "=" + authorization;
             builder.url(newUrl);

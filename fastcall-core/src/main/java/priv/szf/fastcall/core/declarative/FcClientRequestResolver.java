@@ -156,7 +156,7 @@ final class FcClientRequestResolver {
 
             Map<String, Object> beanMap = jsonCodec.toPropertyMap(arg);
             if (Objects.isNull(beanMap)) {
-                // 该类型的序列化形态是标量（例如类型上声明了 @JsonValue），无法展开为多个键值
+                // This type serializes to a scalar (for example when @JsonValue is declared on the type), so it cannot be expanded into multiple key-value pairs
                 String expandKey = StrUtil.trim(binding.getName());
                 if (StrUtil.isBlank(expandKey)) {
                     throw new FastCallException(
@@ -299,7 +299,7 @@ final class FcClientRequestResolver {
     }
 
     /**
-     * 文件名取注解声明的 {@code fileName}，其次文件自身的原始文件名，最后退化为表单字段名。
+     * The file name comes from the {@code fileName} declared on the annotation, then from the file's own original file name, and finally falls back to the form field name.
      */
     private String resolveMultipartFileName(String declaredFileName, MultipartFile multipartFile) {
         String finalFileName = StrUtil.blankToDefault(StrUtil.trim(declaredFileName), multipartFile.getOriginalFilename());
@@ -307,8 +307,8 @@ final class FcClientRequestResolver {
     }
 
     /**
-     * 部分内容类型：注解显式声明（非 {@code APPLICATION_OCTET_STREAM} 默认值）时以注解为准，
-     * 否则取文件自身声明的类型，最后退化为 {@code application/octet-stream}。
+     * Part content type: when the annotation declares it explicitly (not the {@code APPLICATION_OCTET_STREAM} default), the annotation wins,
+     * otherwise the type declared by the file itself is used, and finally it falls back to {@code application/octet-stream}.
      */
     private MediaType resolveMultipartFileMediaType(FcMediaType declaredPartType, MultipartFile multipartFile) {
         if (Objects.nonNull(declaredPartType) && declaredPartType != FcMediaType.APPLICATION_OCTET_STREAM) {

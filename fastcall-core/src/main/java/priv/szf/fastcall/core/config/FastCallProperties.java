@@ -10,183 +10,221 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Root binding of the {@code fast-call} namespace, holding client, pool, cache and inline system settings.
+ */
 @ConfigurationProperties(prefix = "fast-call")
 @Data
 public class FastCallProperties {
 
-    /** 最大并发请求数 */
+    /** Maximum number of concurrent requests allowed in total; also sizes the shared client thread pool. */
     private int maxRequests = 200;
 
-    /** 每主机最大并发请求数 */
+    /** Maximum number of concurrent requests allowed towards a single host. */
     private int maxRequestsPerHost = 30;
 
-    /** 客户端配置 */
+    /** Global client settings, applied when a system declares no timeout of its own. */
     private Client client = new Client();
 
-    /** 连接池配置 */
+    /** Connection pool settings shared by every generated client. */
     private Pool pool = new Pool();
 
-    /** 是否启用事件 */
+    /** Switches enabling the optional request filters. */
     private Filter filter = new Filter();
 
-    /** 请求缓存配置 */
+    /** Disk based HTTP response cache of the shared client; disabled by default. */
     private Cache cache = new Cache();
 
-    /** 数据源缓存配置 */
+    /** Cache settings for the system paks resolved by the source chain. */
     private SourceCache sourceCache = new SourceCache();
 
-    /** 快捷源配置 */
+    /** Systems declared inline, so that no database configuration is needed. */
     private List<EasySource> easySource = new ArrayList<>();
 
+    /**
+     * Switches enabling the optional request filters, bound from {@code fast-call.filter.*}.
+     */
     @Data
     public static class Filter {
 
-        /** 是否启用重试 */
+        /** Whether the retry filter is registered; disabled by default. */
         private boolean enableRetry = false;
 
-        /** 是否启用限流 */
+        /** Whether the rate limit filter is registered; disabled by default. */
         private boolean enableRateLimit = false;
 
-        /** 是否启用请求事件 */
+        /** Whether request events are published to the default database listeners; disabled by default. */
         private boolean enableRequestEvent = false;
 
     }
 
+    /**
+     * One system declared inline under {@code fast-call.easy-source}, used instead of database configuration.
+     */
     @Data
     public static class EasySource {
-        /** 系统配置 */
+        /** System settings of this inline definition. */
         private System system = new System();
 
-        /** 认证配置 */
+        /** Authentication settings, applied when the system auth type is not {@code NONE}. */
         private Auth auth = new Auth();
 
-        /** 重试配置 */
+        /** Retry policy of this system; {@code null} leaves the system without retry. */
         private Retry retry;
 
-        /** 限流配置 */
+        /** Rate limit rules of this system, each one counted over its own time window. */
         private List<RateLimit> rateLimits = new ArrayList<>();
 
+        /**
+         * System settings of one inline definition, describing how the system is reached and authenticated.
+         */
         @Data
         public static class System {
-            /** 系统名称 */
+            /** Display name of the system. */
             private String name;
 
-            /** 系统编码 */
+            /** Unique system code used to obtain the client; required and unique across all systems. */
             private String code;
 
-            /** 是否启用 */
+            /** Whether the system is callable, where a disabled system rejects client creation; defaults to true. */
             private boolean enable = true;
 
-            /** 系统访问地址 */
+            /** Base access address of the system, used as the host of every call without a host of its own. */
             private String host;
 
-            /** 认证类型 */
+            /** Authentication type of the system, where {@code NONE} applies no credential; defaults to {@code NONE}. */
             private FcAuthType authType = FcAuthType.NONE;
 
-            /** 连接超时 */
+            /** Connect timeout in seconds; {@code null} falls back to the global client setting. */
             private Integer connectTimeout;
 
-            /** 读取超时 */
+            /** Read timeout in seconds; {@code null} falls back to the global client setting. */
             private Integer readTimeout;
 
-            /** 写入超时 */
+            /** Write timeout in seconds; {@code null} falls back to the global client setting. */
             private Integer writeTimeout;
         }
 
+        /**
+         * Authentication settings of one inline system, whose content is JSON bound to the auth type.
+         */
         @Data
         public static class Auth {
 
-            /** 认证路径 */
+            /** Request path of the authentication endpoint, relative to the host used for authentication. */
             private String path;
 
-            /** 认证内容 */
+            /** Credential content as JSON, bound to the content class of the system auth type. */
             private String content;
 
-            /** 特定主机认证 */
+            /** Host used for authentication requests instead of the system host; {@code null} keeps the system host. */
             private String particularHost;
 
-            /** 未认证状态码 */
+            /** Response status code marking the credential as invalid; {@code null} means the default 401. */
             private Integer unauthorizedCode;
         }
 
 
+        /**
+         * Retry policy of one inline system, applied after a call that failed or returned disconnected.
+         */
         @Data
         public static class Retry {
 
-            /** 最大重试次数 */
+            /** Maximum retry attempts after the first call, where a value less than 1 disables retry; defaults to 3. */
             private int attempts = 3;
 
-            /** 重试间隔（毫秒） */
+            /** Interval in milliseconds waited before each retry, where a value less than 1 retries at once; defaults to 1000. */
             private long duration = 1000;
         }
 
+        /**
+         * Rate limit rule of one inline system, counted per time window on the system level.
+         */
         @Data
         public static class RateLimit {
 
-            /** 次数*/
+            /** Requests allowed within one {@code span} window; rules with a value less than 1 are ignored. */
             private Long maximum;
 
-            /** 时间跨度 */
+            /** Time window the maximum applies to, from {@code SECONDS} up to {@code YEARS}. */
             private FcTimeSpan span;
         }
     }
 
+    /**
+     * Global timeouts of the generated HTTP clients, expressed in seconds and overridden per system or api.
+     */
     @Data
     public static class Client {
-        /** 连接超时 */
+        /** Connect timeout in seconds; defaults to 10. */
         private int connectTimeout = 10;
 
-        /** 读取超时 */
+        /** Read timeout in seconds; defaults to 30. */
         private int readTimeout = 30;
 
-        /** 写入超时 */
+        /** Write timeout in seconds; defaults to 30. */
         private int writeTimeout = 30;
     }
 
+    /**
+     * Connection pool settings shared by every generated HTTP client.
+     */
     @Data
     public static class Pool {
-        /** 最大空闲连接数 */
+        /** Maximum number of idle connections kept in the pool; defaults to 50. */
         private int maxIdleConnections = 50;
 
-        /** 空闲连接回收时间 */
+        /** Minutes an idle connection is kept before it is reclaimed; defaults to 5. */
         private int keepAliveMinutes = 5;
     }
 
+    /**
+     * Disk based HTTP response cache of the shared client, backed by an OkHttp cache directory.
+     */
     @Data
     public static class Cache {
-        /** 启用请求缓存*/
+        /** Whether the shared HTTP response cache is enabled; disabled by default. */
         private boolean enable = false;
 
-        /** 缓存最大大小（Byte）*/
+        /** Maximum size of the cache directory in bytes; defaults to 10485760. */
         private long maxSize = 10 * 1024 * 1024;
 
-        /** 缓存存储路径*/
+        /** Directory holding the cache files; defaults to a {@code fast-call-cache} folder in the temp directory. */
         private String path = Paths.get(
                                         System.getProperty("java.io.tmpdir"),
                                         "fast-call-cache"
                                 ).toString();
     }
 
+    /**
+     * Cache settings of the source chain, controlling how long a resolved system pak is cached.
+     */
     @Data
     public static class SourceCache {
-        /** 启用数据源缓存*/
+        /** Whether the source chain caches system paks; enabled by default. */
         private boolean enable = true;
 
-        /** 缓存引擎*/
+        /** Cache engine used when caching is enabled; defaults to {@code memory}. */
         private Engine engine = Engine.memory;
 
-        /** 缓存过期时间（秒），-1或0表示永不过期*/
+        /** Cache time to live in seconds, where a value less than 1 means the pak never expires; defaults to 60. */
         private long expire = 60;
 
         public boolean isIndefinite() {
             return this.expire <= 0;
         }
 
-        /** 缓存过期时刷新*/
+        /** Whether an expired pak is refreshed; not consulted by the current cache implementations. */
         private boolean refreshWhenExpire = true;
 
+        /**
+         * Cache engine backing the source cache, either Redis or an in-memory timed cache.
+         */
         public enum Engine {
+            /** Redis backed cache, used when a {@code RedisTemplate} bean is available. */
             redis,
+            /** In-memory timed cache holding the paks inside the current JVM. */
             memory
         }
     }

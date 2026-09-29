@@ -7,6 +7,10 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Holds the ordered {@code FcFilter} beans, sorted by {@code @Order} and initialized once.
+ * Each call runs a fresh chain that finally delegates to the terminal HTTP call.
+ */
 public class FcFilterManager {
 
     private final List<FcFilter> filters;

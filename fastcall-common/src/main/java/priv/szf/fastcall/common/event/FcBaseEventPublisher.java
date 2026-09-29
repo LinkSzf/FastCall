@@ -13,7 +13,7 @@ public abstract class FcBaseEventPublisher<T extends IFcEvent> implements IFcEve
     @Override
     public void publish(IFcEvent event) {
         if (Objects.isNull(event)) {
-            throw new FcUnexpectedException("发布事件时event为空");
+            throw new FcUnexpectedException("Event must not be null when publishing");
         }
         doPublish((T) event);
     }
@@ -21,7 +21,7 @@ public abstract class FcBaseEventPublisher<T extends IFcEvent> implements IFcEve
     @Override
     public void publishAll(Collection<IFcEvent> events) {
         if (CollectionUtil.isEmpty(events)) {
-            throw new FcUnexpectedException("发布事件时event为空");
+            throw new FcUnexpectedException("Event must not be null when publishing");
         }
 
         events.forEach(this::publish);

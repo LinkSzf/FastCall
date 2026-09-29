@@ -13,6 +13,10 @@ import priv.szf.fastcall.common.source.IFcSource;
 
 import java.util.Objects;
 
+/**
+ * Final node of the source chain that loads the pak of a system from the database via {@code IFcPakProvider}.
+ * Loaded after the cache and property nodes, and credential updates are not persisted back.
+ */
 @Order(300)
 @Transactional
 @RequiredArgsConstructor

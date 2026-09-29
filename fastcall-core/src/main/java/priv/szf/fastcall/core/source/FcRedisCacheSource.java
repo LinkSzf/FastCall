@@ -13,6 +13,10 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * Cache node of the source chain that stores the pak of a system in Redis with the configured TTL.
+ * Registered only when the source cache is enabled with the redis engine and a {@code RedisTemplate} exists.
+ */
 @Order(100)
 @RequiredArgsConstructor
 public class FcRedisCacheSource extends FcBaseChainSource implements IFcCacheSource, IFcSource {

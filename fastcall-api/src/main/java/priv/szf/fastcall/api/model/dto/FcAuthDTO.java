@@ -15,25 +15,25 @@ public class FcAuthDTO {
 
     private Long id;
 
-    @NotNull(message = "认证类型不能为空")
+    @NotNull(message = "Auth type must not be null")
     private FcAuthType type;
 
-    @Size(min = 1, max = 200, message = "认证路径长度必须在1到200个字符之间")
+    @Size(min = 1, max = 200, message = "Auth path length must be between 1 and 200 characters")
     private String path;
 
     @Valid
-    @NotNull(message = "认证信息不能为空")
+    @NotNull(message = "Auth content must not be null")
     private BaseAuthContentDTO content;
 
-    @Min(value = 1, message = "授权过期时间不能小于1")
-    @Max(value = Integer.MAX_VALUE, message = "授权过期时间过大")
+    @Min(value = 1, message = "Auth expiration must not be less than 1")
+    @Max(value = Integer.MAX_VALUE, message = "Auth expiration is too large")
     private Integer expiration;
 
-    @Size(min = 1, max = 100, message = "指定主机长度必须在1到100个字符之间")
+    @Size(min = 1, max = 100, message = "Particular host length must be between 1 and 100 characters")
     private String particularHost;
 
-    @Min(value = 100, message = "认证失效状态码不能小于100")
-    @Max(value = 999, message = "认证失效状态码不能大于999")
+    @Min(value = 100, message = "Auth failure status code must not be less than 100")
+    @Max(value = 999, message = "Auth failure status code must not be greater than 999")
     private Integer statusCode;
 
 }

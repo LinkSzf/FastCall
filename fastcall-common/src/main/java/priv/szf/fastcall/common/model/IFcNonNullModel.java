@@ -23,7 +23,7 @@ public interface IFcNonNullModel {
             Object value = f.get();
 
             if (value == null) {
-                throw new FcSourceAbsenceException("必需系统信息[{}-属性{}]未设置", this.getClass().getSimpleName(), index);
+                throw new FcSourceAbsenceException("Required system info [{}-property{}] is not set", this.getClass().getSimpleName(), index);
             }
 
             if (value instanceof IFcNonNullModel) {

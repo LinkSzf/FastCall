@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * 重试配置，属于client(SystemPak)级别的配置
+ * Retry configuration, scoped to the client (SystemPak) level
  */
 @Builder
 @Getter
@@ -16,10 +16,10 @@ public class FcRetryPak implements IFcPak {
 
     private static final long serialVersionUID = -6648577437597825361L;
 
-    /** 最大重试次数，小于等于0表示不重试 */
+    /** Maximum retry attempts; a value less than or equal to 0 means no retry */
     private final int attempts;
 
-    /** 重试间隔（毫秒），小于0时按0处理 */
+    /** Retry interval in milliseconds; a value less than 0 is treated as 0 */
     private final long duration;
 
     public boolean isEnabled() {

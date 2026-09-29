@@ -13,6 +13,10 @@ import priv.szf.fastcall.core.config.FastCallProperties;
 import java.util.Objects;
 
 
+/**
+ * Cache node of the source chain that keeps the pak of a system in a Hutool {@code TimedCache}.
+ * Registered as the cache when the source cache is enabled but Redis is not selected.
+ */
 @Order(100)
 @RequiredArgsConstructor
 public class FcInMemoryCacheSource extends FcBaseChainSource implements IFcCacheSource, IFcSource {

@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+/**
+ * MyBatis-Plus base mapper that implements {@code FastCallDao} on top of {@code BaseMapper}.
+ * Queries are built with {@code Wrappers} on the id column and saves go through {@code Db.saveOrUpdate}.
+ */
 public interface FcBaseMapper<T> extends BaseMapper<T>, FastCallDao<T> {
 
     @Override

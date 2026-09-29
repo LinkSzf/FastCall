@@ -96,7 +96,7 @@ public class FcJacksonJsonCodec implements FcJsonCodec {
         JavaType javaType = this.objectMapper.getTypeFactory().constructType(bean.getClass());
         BeanDescription description = config.introspect(javaType);
         if (Objects.nonNull(description.findJsonValueAccessor())) {
-            // 该类型的序列化形态是标量，无法展开成多个键值
+            // This type serializes to a scalar, so it cannot be expanded into multiple key-value pairs
             return null;
         }
 
@@ -124,8 +124,8 @@ public class FcJacksonJsonCodec implements FcJsonCodec {
     }
 
     /**
-     * 读取类型上声明的 {@code @JsonIgnoreProperties}。
-     * Jackson 的内省结果不会剔除这些属性，序列化时由 BeanSerializerFactory 另行过滤，此处需显式处理。
+     * Reads the {@code @JsonIgnoreProperties} declared on the type.
+     * Jackson introspection does not remove these properties, and serialization filters them separately in BeanSerializerFactory, so they must be handled explicitly here.
      */
     private Set<String> resolveIgnoredNames(SerializationConfig config, BeanDescription description) {
         JsonIgnoreProperties.Value ignoral = config.getAnnotationIntrospector()
@@ -181,7 +181,7 @@ public class FcJacksonJsonCodec implements FcJsonCodec {
                 ((Field) member).setAccessible(true);
             }
         } catch (RuntimeException ignore) {
-            // 在模块化环境下可能不允许强制开放访问，公开成员依旧可以正常调用
+            // Forcing access to open may not be allowed in a modular environment; public members can still be invoked normally
         }
     }
 }

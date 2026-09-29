@@ -11,29 +11,29 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /**
- * 以字节数组承载的 {@link MultipartFile} 实现。
+ * A {@link MultipartFile} implementation backed by a byte array.
  * <p>
- * 用于把已完整载入内存的内容（例如 HTTP 响应体、{@code byte[]}）包装成 Spring 的文件对象，
- * 便于继续参与文件上传、Spring Web 的文件参数处理等场景。
+ * It wraps content already fully loaded into memory (such as an HTTP response body or a {@code byte[]}) as a Spring file object,
+ * so that it can take part in file uploads, Spring Web file argument handling, and similar scenarios.
  * <p>
- * 实例创建后内容不再变化：{@link #getBytes()} 直接返回内部数组，
- * {@link #getInputStream()} 每次返回一个新的字节流，可重复读取。
+ * Content never changes after an instance is created: {@link #getBytes()} returns the internal array directly,
+ * {@link #getInputStream()} returns a new byte stream on every call, so it can be read repeatedly.
  */
 @Getter
 public class FcMultipartFile implements MultipartFile {
 
     /**
-     * 表单字段名。
+     * Form field name.
      */
     private final String name;
 
     /**
-     * 原始文件名，可能为 {@code null}。
+     * Original file name, possibly {@code null}.
      */
     private final String originalFilename;
 
     /**
-     * 内容类型，可能为 {@code null}。
+     * Content type, possibly {@code null}.
      */
     private final String contentType;
 

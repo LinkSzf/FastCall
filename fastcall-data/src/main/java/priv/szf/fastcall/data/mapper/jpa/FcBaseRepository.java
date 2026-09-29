@@ -8,6 +8,10 @@ import priv.szf.fastcall.data.mapper.FastCallDao;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * JPA base repository that implements {@code FastCallDao} on top of Spring Data's {@code JpaRepository}.
+ * Saving uses the flush-immediately variants, and the not-in batch delete is a derived query method.
+ */
 @NoRepositoryBean
 public interface FcBaseRepository<T> extends JpaRepository<T, Long>, FastCallDao<T> {
 

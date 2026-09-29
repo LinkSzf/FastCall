@@ -9,45 +9,53 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Declares how one client interface method becomes a FastCall request; required on every abstract method.
+ * Exactly one of {@link #api()} and {@link #uri()} must be set.
+ */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FcMethod {
 
     /**
-     * 可选系统编码覆盖。为空时使用 {@link FcClient#system()}。
+     * System code overriding {@link FcClient#system()}; when blank the interface-level system is used.
      */
     String system() default "";
 
     /**
-     * FastCall配置中的API名称。
-     * `api` 与 `uri` 必须且只能设置一个。
+     * Name of a preconfigured API whose path, method, host and default parameters are applied.
+     * Exactly one of it and {@link #uri()} must be set.
      */
     String api() default "";
 
     /**
-     * 请求URI。
-     * `api` 与 `uri` 必须且只能设置一个。
+     * Request URI resolved against the host, for example {@code /users/{id}}.
+     * Exactly one of it and {@link #api()} must be set, and every placeholder needs a matching {@link FcPath}.
      */
     String uri() default "";
 
     /**
-     * 请求方法。若设置了 `api` 且API已配置method，则以API配置为准。
+     * Request method of the call, {@code GET} by default.
+     * Ignored when {@link #api()} points to an API that already declares a method.
      */
     FcRequestMethod method() default FcRequestMethod.GET;
 
     /**
-     * 可选host覆盖。
+     * Host override for this call; when blank the host configured for the system is used.
+     * With {@link #api()} set, the API's particular host takes precedence over the system host.
      */
     String host() default "";
 
     /**
-     * 是否跳过认证，以匿名模式发起调用。
+     * Whether the call is sent without authentication, as an anonymous call.
+     * Defaults to {@code false}, which applies the authentication configured for the system.
      */
     boolean anonymous() default false;
 
     /**
-     * 请求体存在时默认的媒体类型。
+     * Media type of the request body, defaulting to {@code application/json}.
+     * Overridden by {@link FcBody#mediaType()}, and replaced by multipart when a {@link FcPart} is declared.
      */
     FcMediaType bodyType() default FcMediaType.APPLICATION_JSON;
 }

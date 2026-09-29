@@ -12,6 +12,10 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 
 import java.util.Optional;
 
+/**
+ * Base credential provider that resolves the typed auth content from the source pak in the context
+ * and delegates to {@code buildCredential(C)}; missing auth content raises a {@code FastCallException}.
+ */
 @SuppressWarnings("unchecked")
 public abstract class FcBaseCredentialProvider<C extends BaseAuthContent> implements IFcCredentialProvider {
 

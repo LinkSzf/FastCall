@@ -9,6 +9,10 @@ import priv.szf.fastcall.common.source.IFcSource;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Base node of the source chain that resolves the pak itself and otherwise delegates to the next source.
+ * A pak obtained from the next source is passed to {@code doAfterGetFromNextSource}, e.g. for caching.
+ */
 @Slf4j
 public abstract class FcBaseChainSource implements IFcChainSource {
 

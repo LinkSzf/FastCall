@@ -18,12 +18,12 @@ public final class FcTimeUtil {
             return false;
         }
 
-        // 对于大单位，使用不同的比较方式
+        // Use a different comparison strategy for the larger units
         switch (timeSpan) {
             case DAYS:
                 return time1.toLocalDate().equals(time2.toLocalDate());
             case WEEKS:
-                // 判断是否在同一周（ISO标准，周一为一周开始）
+                // Determine whether both fall in the same week (ISO standard, weeks start on Monday)
                 return time1.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()) ==
                         time2.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear()) &&
                         time1.getYear() == time2.getYear();

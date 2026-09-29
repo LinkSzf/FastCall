@@ -150,10 +150,10 @@ public class DigestCredential extends BaseCredential implements ICredential {
     private String hash(String text) {
         Digester md = new Digester(algorithm.getHashAlgorithm());
 
-        // 处理SHA-512-256特殊情况（截断的SHA-512）
+        // Handle the SHA-512-256 special case (a truncated SHA-512)
         if (algorithm == DigestAlgorithm.SHA_512_256) {
             byte[] hash = md.digest(text.getBytes());
-            // 截断为256位（32字节）
+            // Truncate to 256 bits (32 bytes)
             byte[] truncated = new byte[32];
             System.arraycopy(hash, 0, truncated, 0, 32);
             return HexUtil.encodeHexStr(truncated);
@@ -216,19 +216,19 @@ public class DigestCredential extends BaseCredential implements ICredential {
 
         public DigestCredential build() {
             if (StrUtil.hasEmpty(credential.username, credential.password)) {
-                throw new IllegalArgumentException("用户名和密码不能为空");
+                throw new IllegalArgumentException("Username and password must not be null");
             }
 
             if (StrUtil.hasEmpty(credential.realm, credential.nonce)) {
-                throw new IllegalArgumentException("realm和nonce不能为空");
+                throw new IllegalArgumentException("realm and nonce must not be null");
             }
 
             if (StrUtil.hasEmpty(credential.uri, credential.method)) {
-                throw new IllegalArgumentException("URI和HTTP方法不能为空");
+                throw new IllegalArgumentException("URI and HTTP method must not be null");
             }
 
             if ("auth-int".equals(credential.qop) && StrUtil.isEmpty(credential.bodyHash)) {
-                throw new IllegalArgumentException("qop为auth-int时，bodyHash不能为空");
+                throw new IllegalArgumentException("bodyHash must not be null when qop is auth-int");
             }
 
             return credential;

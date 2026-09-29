@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public abstract class BaseAuthContentDTO extends BaseAuthContent {
 
-    @NotNull(message = "认证类型不能为空")
+    @NotNull(message = "Auth type must not be null")
     private FcAuthType type;
 
 }

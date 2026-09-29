@@ -29,7 +29,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- 版本管理 -->
+        <!-- Version management -->
         <bcprov-jdk15on.version>1.70</bcprov-jdk15on.version>
         <fastjson.version>1.2.83</fastjson.version>
         <hutool.version>5.8.40</hutool.version>
@@ -160,7 +160,7 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
-            <!-- 如果在 Java 8 下需额外添加 Ed25519 密码提供者（如 BouncyCastle） -->
+            <!-- If running on Java 8, an additional Ed25519 security provider (e.g. BouncyCastle) must be added -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
@@ -185,7 +185,7 @@
                     </executions>
                 </plugin>
 
-                <!-- Maven 编译插件 -->
+                <!-- Maven compiler plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -195,7 +195,7 @@
                         <target>${java.version}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <annotationProcessorPaths>
-                            <!-- MapStruct 注解处理器 -->
+                            <!-- MapStruct annotation processor -->
                             <path>
                                 <groupId>org.mapstruct</groupId>
                                 <artifactId>mapstruct-processor</artifactId>

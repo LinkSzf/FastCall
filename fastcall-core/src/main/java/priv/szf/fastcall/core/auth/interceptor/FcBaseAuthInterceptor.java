@@ -12,6 +12,10 @@ import priv.szf.fastcall.core.auth.FcRequestContext;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Abstract OkHttp interceptor template for auth: resolves the mandatory {@code FcRequestContext} request tag,
+ * then runs the subclass skip, rewrite (through {@code FcAuthSupporter}) and response hooks.
+ */
 @SuperBuilder
 public abstract class FcBaseAuthInterceptor implements Interceptor {
 

@@ -34,6 +34,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Per-system client that builds and executes HTTP calls through the fluent {@code newCall} entry points.
+ * Created and cached by {@code FastCallClientFactory}, sharing its OkHttp connection pool and dispatcher.
+ */
 @Builder
 public class FastCallClient {
 

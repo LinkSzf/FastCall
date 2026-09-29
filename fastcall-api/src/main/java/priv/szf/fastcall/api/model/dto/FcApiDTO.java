@@ -13,35 +13,35 @@ public class FcApiDTO {
 
     private Long id;
 
-    @NotNull(message = "系统ID不能为空")
+    @NotNull(message = "System ID must not be null")
     private Long sysId;
 
-    @Size(min = 1, max = 50, message = "名称长度必须在1到50个字符之间")
-    @NotNull(message = "名称不能为空")
+    @Size(min = 1, max = 50, message = "Name length must be between 1 and 50 characters")
+    @NotNull(message = "Name must not be null")
     private String name;
 
-    @Size(min = 1, max = 200, message = "路径长度必须在1到200个字符之间")
-    @NotNull(message = "路径不能为空")
+    @Size(min = 1, max = 200, message = "Path length must be between 1 and 200 characters")
+    @NotNull(message = "Path must not be null")
     private String path;
 
-    @NotNull(message = "请求方式不能为空")
+    @NotNull(message = "Request method must not be null")
     private FcApiMethod method;
 
-    @Min(value = 1, message = "连接超时不能小于1")
-    @Max(value = Integer.MAX_VALUE, message = "连接超时过大")
+    @Min(value = 1, message = "Connect timeout must not be less than 1")
+    @Max(value = Integer.MAX_VALUE, message = "Connect timeout is too large")
     private Integer connectTimeout;
 
-    @Min(value = 1, message = "读取超时不能小于1")
-    @Max(value = Integer.MAX_VALUE, message = "读取超时过大")
+    @Min(value = 1, message = "Read timeout must not be less than 1")
+    @Max(value = Integer.MAX_VALUE, message = "Read timeout is too large")
     private Integer readTimeout;
 
-    @Min(value = 1, message = "写入超时不能小于1")
-    @Max(value = Integer.MAX_VALUE, message = "写入超时过大")
+    @Min(value = 1, message = "Write timeout must not be less than 1")
+    @Max(value = Integer.MAX_VALUE, message = "Write timeout is too large")
     private Integer writeTimeout;
 
-    @Size(min = 1, max = 50, message = "指定主机长度必须在1到100个字符之间")
+    @Size(min = 1, max = 50, message = "Particular host length must be between 1 and 100 characters")
     private String particularHost;
 
-    @Size(min = 1, max = 200, message = "描述长度必须在1到200个字符之间")
+    @Size(min = 1, max = 200, message = "Description length must be between 1 and 200 characters")
     private String description;
 }

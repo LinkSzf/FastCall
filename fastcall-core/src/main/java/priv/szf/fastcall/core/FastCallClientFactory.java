@@ -29,6 +29,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Creates and caches one {@code FastCallClient} per system code, reusing the connection pool and dispatcher.
+ * Fails when the system is not configured or is disabled, and drops cached clients on config changes.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class FastCallClientFactory {

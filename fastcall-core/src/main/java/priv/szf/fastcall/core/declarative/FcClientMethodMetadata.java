@@ -54,8 +54,8 @@ final class FcClientMethodMetadata {
         private final FcMediaType partMediaType;
 
         /**
-         * 仅对 QUERY/HEADER 生效：
-         * true 表示参数按 map/bean 展开为多键值；false 表示按单键值写入。
+         * Only applies to QUERY/HEADER:
+         * true means the argument is expanded from a map/bean into multiple key-value pairs; false means it is written as a single key-value pair.
          */
         private final boolean expandEntries;
     }

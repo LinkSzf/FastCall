@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Source chain node that serves the paks declared in {@code fast-call.easy-source} from memory.
+ * Duplicated system codes are rejected at init, and credential updates are not persisted back.
+ */
 @Order(200)
 @RequiredArgsConstructor
 public class FcPropertySource extends FcBaseChainSource implements IFcChainSource, IFcSource {

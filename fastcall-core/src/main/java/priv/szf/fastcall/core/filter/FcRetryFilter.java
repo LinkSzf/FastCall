@@ -13,9 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 请求重试过滤器，重试配置(attempts/duration)为client级别的配置，
- * 由配置源(FcPropertySource/FcDatabaseSource)在构建FcSourcePak时填充，
- * 未配置重试或attempts小于等于0的系统不进行重试。
+ * Retry filter retrying a failed request per the client-level {@code FcRetryPak} config, ordered last in the chain.
+ * Skipped without retry config or when attempts are <= 0; each retry waits {@code duration} milliseconds.
  */
 @Slf4j
 @Order(Integer.MAX_VALUE)

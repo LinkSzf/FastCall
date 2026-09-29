@@ -91,9 +91,9 @@ public class FcHttpRequestSupport {
     }
 
     /**
-     * {@link MultipartFile} 作为请求体时按 {@code multipart/form-data} 的单文件部分发送：
-     * 部分名取表单字段名，文件名取原始文件名，部分内容类型优先取文件自身声明的类型。
-     * 需要发送不带表单结构的纯二进制内容时，请直接传入 {@code byte[]}/{@code File}/{@code InputStream}。
+     * When a {@link MultipartFile} is used as the request body, it is sent as a single-file part of {@code multipart/form-data}:
+     * The part name is the form field name, the file name is the original file name, and the part content type prefers the type declared by the file itself.
+     * To send raw binary content without a form structure, pass {@code byte[]}/{@code File}/{@code InputStream} directly.
      */
     private RequestBody buildMultipartFileBody(MultipartFile payload) {
         String partName = StrUtil.blankToDefault(StrUtil.trim(payload.getName()), DEFAULT_PART_NAME);

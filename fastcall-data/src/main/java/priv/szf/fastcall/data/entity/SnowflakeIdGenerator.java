@@ -14,6 +14,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Properties;
 
+/**
+ * Hibernate identifier generator that keeps an explicitly assigned id and otherwise generates a snowflake id.
+ * Declared per entity via {@code @GenericGenerator}; uniqueness relies on Hutool's thread-safe snowflake.
+ */
 public class SnowflakeIdGenerator extends Assigned implements IdentifierGenerator {
 
     private String entityName;

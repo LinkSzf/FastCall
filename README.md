@@ -1,42 +1,44 @@
 # FastCall
 
-## 介绍
-FastCall是一款专用于进行调用三方系统HTTP接口的便捷访问工具。支持多种认证方式的自动认证，开发只需专注于系统的配置和业务接口调用。
-推荐的使用方式为在数据库事先进行系统及接口配置，前端只需调用公共接口传入指定的api名称即可。
+**[Chinese](README-cn.md)**
+
+## Introduction
+FastCall is a convenience tool dedicated to calling HTTP APIs of third-party systems. It handles authentication automatically for a variety of auth schemes, so developers only need to focus on system configuration and business API calls.
+The recommended approach is to configure systems and APIs in the database up front; the front end then only needs to call a common API and pass in the required api name.
 
 
-## 项目模块说明
-* **fastcall-common:** 公共模块，供其他模块引用。主要包含一些常量，异常定义，接口声明等；
-* **fastcall-core:** 核心模块，FastCall的主要逻辑都在这里；
-* **fastcall-data:** 数据持久化模块，用于支持与数据库交互；
-* **fastcall-api:** web接口模块，提供一套简易的数据维护接口，需要在SpringWeb项目中使用；
-* **fastcall-test:** 开发调试模块，用于开发过程中调试功能；
-* **fastcall-spring-boot-starter:** SpringBoot集成模块，为便于引用，引入此包即自动包含common,core,data,api模块的依赖；
+## Modules
+* **fastcall-common:** Shared module referenced by the other modules. It mainly contains constants, exception definitions, interface declarations and so on;
+* **fastcall-core:** Core module. Most of the FastCall logic lives here;
+* **fastcall-data:** Data persistence module, providing database interaction support;
+* **fastcall-api:** Web API module. It provides a simple set of data maintenance endpoints and must be used in a Spring Web project;
+* **fastcall-test:** Development and debugging module used to exercise features during development;
+* **fastcall-spring-boot-starter:** Spring Boot integration module. For convenience, importing this package automatically pulls in the common, core, data and api modules;
 
-## 功能特性
-* 进行业务接口请求时无须额外考虑认证问题，若认证失效会自动处理并重试业务接口。
-* 支持定义API，支持定义接口参数。
-* 支持反向代理，支持请求头、响应头修改。
-* 支持定义请求线程池大小。
-* 支持定义并发请求数量及单系统并发请求数量限制。
-* 支持定义链接超时，写入超时，读取超时。
-* 支持接口缓存。
-* 支持的认证方式：Basic，ApiKey，Digest，Cookie，Token，JWT。
-* 支持Feign风格的声明式客户端调用。
-* 支持的配置缓存：Redis，InMemory。会根据引用项目的环境自动选择。
-* 支持的数据源：数据库，配置文件。
-* 支持的持久化框架：Hibernate，MybatisPlus。会根据引用项目的环境自动选择。
-* 支持发布请求事件。
+## Features
+* No need to worry about authentication when calling business APIs; expired authentication is handled and the API call is retried automatically.
+* Supports defining APIs and their parameters.
+* Supports reverse proxying and modification of request and response headers.
+* Supports configuring the request thread pool size.
+* Supports configuring the overall concurrent request limit and the per-system concurrent request limit.
+* Supports configuring connect timeout, write timeout and read timeout.
+* Supports API response caching.
+* Supported authentication schemes: Basic, ApiKey, Digest, Cookie, Token, JWT.
+* Supports Feign-style declarative client calls.
+* Supported configuration caches: Redis and InMemory. The appropriate one is selected automatically based on the referencing project's environment.
+* Supported data sources: database and configuration file.
+* Supported persistence frameworks: Hibernate and MybatisPlus. The appropriate one is selected automatically based on the referencing project's environment.
+* Supports publishing request events.
 
-## 计划清单
-* 增加以系统或API为粒度的请求频率控制
+## Roadmap
+* Add request rate control at system or API granularity
 
-## 环境依赖
+## Requirements
 JDK 1.8 +
 
-## 使用说明
+## Usage
 
-### 通过Maven引入需要的模块
+### Import the required module via Maven
 ```xml
 <dependency>
     <groupId>priv.szf</groupId>
@@ -45,7 +47,7 @@ JDK 1.8 +
 </dependency>
 ```
 
-### 在配置文件中进行设置
+### Configure the application
 
 ```yaml
 fast-call:
@@ -74,7 +76,7 @@ fast-call:
   easy-source:
     - system:
         code: none-system
-        name: 测试无认证的系统
+        name: system-without-auth
         enable: true
         host: http://127.0.0.1:8080
       auth:
@@ -86,25 +88,25 @@ fast-call:
             "password": "123456"
           }
 ```
-> 注:
-> 以上配置示例均有默认值，可根据项目需要自行设置。
+> Note:
+> All the configuration examples above have default values and can be adjusted to suit your project.
 
-### 进行系统配置
+### Configure systems
 
-* 必须配置系统信息，包含系统名称、系统地址、认证方式等。
-* 如需要使用API功能，需要配置API信息和API参数。
-* 如需要使用代理转发功能，需要配置HeaderAssign。
-* 设置完成后需要在系统的功能中启用对应的scope:AUTH,API,HEADER_ASSIGN
+* System information is mandatory and includes the system name, system address, authentication type and so on.
+* To use the API feature, configure the API information and API parameters.
+* To use proxy forwarding, configure HeaderAssign.
+* Once configured, enable the corresponding scopes on the system: AUTH, API, HEADER_ASSIGN
 
-### 在代码中使用
+### Use it in code
 
-注入Bean
+Inject the Bean
 ```java
 @Autowired
 private FastCall fastCall;
 ```
 
-链式调用
+Fluent call
 ```java
 FastCallResponse<Object> response = fastCall.getClient(sytemCode)
                 .newCall()
@@ -113,9 +115,9 @@ FastCallResponse<Object> response = fastCall.getClient(sytemCode)
                 .callIt();
 ```
 
-### 声明式客户端调用（Feign风格，基于FastCall）
+### Declarative client calls (Feign style, built on FastCall)
 
-1. 在启动类开启扫描：
+1. Enable scanning on the application class:
 ```java
 import priv.szf.fastcall.core.declarative.annotation.EnableFastCallClients;
 
@@ -125,7 +127,7 @@ public class App {
 }
 ```
 
-2. 定义客户端接口：
+2. Define the client interface:
 ```java
 import priv.szf.fastcall.core.FastCallResponse;
 import priv.szf.fastcall.common.FcRequestMethod;
@@ -161,13 +163,13 @@ public interface DemoClient {
 }
 ```
 
-3. 直接注入接口调用：
+3. Inject the interface and call it directly:
 ```java
 @Autowired
 private DemoClient demoClient;
 ```
 
-## 版本说明
-* v1.0.0 第一个正式版发布
+## Release notes
+* v1.0.0 First official release
 
 

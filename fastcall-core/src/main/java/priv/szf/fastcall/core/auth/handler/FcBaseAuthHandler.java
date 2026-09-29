@@ -12,6 +12,10 @@ import priv.szf.fastcall.common.model.credential.ICredential;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Base auth handler that reads the credential from the source pak held in the context.
+ * Prepends the auth type prefix, sets {@code Authorization}, and passes the request through without credential.
+ */
 public abstract class FcBaseAuthHandler implements IFcAuthHandler {
 
     @Override

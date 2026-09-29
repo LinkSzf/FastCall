@@ -20,6 +20,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Central auth collaborator mapping each {@code FcAuthType} to its handler and credential provider.
+ * Refreshes only through {@code IFcDynCredentialProvider}s, serialized per system by a {@code ReentrantLock}.
+ */
 public class FcAuthSupporter {
 
     private final Map<String, ReentrantLock> SYSTEM_LOCKS = new ConcurrentHashMap<>();

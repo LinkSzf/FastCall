@@ -36,7 +36,7 @@ public class FcHttpResponseSupport {
     private static final String DEFAULT_FILE_NAME = "file";
 
     /**
-     * RFC 5987 形式的文件名：filename*=UTF-8''%E4%B8%AD%E6%96%87.txt
+     * File name in RFC 5987 form: filename*=UTF-8''%E4%B8%AD%E6%96%87.txt
      */
     private static final Pattern FILENAME_STAR_PATTERN = Pattern.compile(
             "filename\\*\\s*=\\s*([^;]+)", Pattern.CASE_INSENSITIVE);
@@ -103,7 +103,7 @@ public class FcHttpResponseSupport {
             }
 
             if (MultipartFile.class.isAssignableFrom(rawType)) {
-                // MultipartFile 以文件语义承载响应体，始终按二进制内容读取，不参与 JSON 反序列化
+                // MultipartFile carries the response body with file semantics; it is always read as binary content and does not participate in JSON deserialization
                 byte[] content = body.bytes();
                 if (content.length == 0) {
                     return null;
@@ -157,7 +157,7 @@ public class FcHttpResponseSupport {
     }
 
     /**
-     * 解析下载文件名：优先 {@code Content-Disposition}，其次 URL 末段，最后退化为 {@link #DEFAULT_FILE_NAME}。
+     * Resolves the download file name: {@code Content-Disposition} first, then the last URL segment, and finally falls back to {@link #DEFAULT_FILE_NAME}.
      */
     private String resolveFileName(Response response) {
         String fileName = parseDispositionFileName(response.header("Content-Disposition"));
@@ -178,7 +178,7 @@ public class FcHttpResponseSupport {
                 return fileName;
             }
         } catch (IllegalArgumentException ignore) {
-            // 头部不合规时退化为手工解析
+            // Fall back to manual parsing when the header is not well-formed
         }
 
         String encodedFileName = matchGroup(FILENAME_STAR_PATTERN, disposition);

@@ -9,6 +9,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Enables scanning for {@code @FcClient} interfaces and registers each one as a singleton proxy bean.
+ * Falls back to the package of the annotated class when neither attribute declares a base package.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -16,12 +20,12 @@ import java.lang.annotation.Target;
 public @interface EnableFastCallClients {
 
     /**
-     * 扫描包路径。
+     * Packages scanned for {@code @FcClient} interfaces. Empty by default, and blank entries are ignored.
      */
     String[] basePackages() default {};
 
     /**
-     * 扫描锚点类。
+     * Classes whose package is scanned for {@code @FcClient} interfaces. Empty by default.
      */
     Class<?>[] basePackageClasses() default {};
 }

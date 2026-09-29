@@ -10,6 +10,10 @@ import priv.szf.fastcall.common.source.IFcSource;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Entry point of the source chain that links all {@code IFcChainSource} beans ordered by {@code @Order}.
+ * Lower order values are queried first, so the lookup goes cache, then property source, then database.
+ */
 @RequiredArgsConstructor
 public class FcSourceDelegate implements IFcSource {
 

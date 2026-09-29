@@ -89,7 +89,7 @@ public class FcClientRegistrar implements ImportBeanDefinitionRegistrar,
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FcClientFactoryBean.class);
         builder.addConstructorArgValue(interfaceType);
         builder.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-        // 显式声明FactoryBean产物类型，便于Spring类型推断与IDE识别
+        // Explicitly declare the FactoryBean product type to help Spring type inference and IDE recognition
         builder.getRawBeanDefinition().setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceType);
         registry.registerBeanDefinition(beanName, builder.getBeanDefinition());
     }

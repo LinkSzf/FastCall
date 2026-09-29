@@ -10,6 +10,10 @@ import priv.szf.fastcall.common.model.FcSystemPak;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Source of the configured paks of a system, covering system, auth, apis, header assigns and retry.
+ * Implemented by the database-backed provider and consumed by {@code FcDatabaseSource}.
+ */
 public interface IFcPakProvider {
 
     FcSystemPak getSystemByCode(String systemCode);

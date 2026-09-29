@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Rate limit filter guarding each system against its configured request limit before the call.
+ * Throws {@code FcRateLimitedException} when the limit is reached; a no-op without limits.
+ */
 @RequiredArgsConstructor
 @Order(100)
 public class FcRateLimitFilter implements FcFilter {
@@ -72,7 +76,7 @@ public class FcRateLimitFilter implements FcFilter {
             long limit = rateLimit.getMaximum();
             if (current >= limit) {
                 long systemId = rateLimit.getSystemId();
-                throw new FcRateLimitedException("系统请求频率超出限制，systemId: {}, span: {}, limit: {}, time: {}",
+                throw new FcRateLimitedException("System request rate limit exceeded, systemId: {}, span: {}, limit: {}, time: {}",
                         systemId, span, limit, time);
             }
         }

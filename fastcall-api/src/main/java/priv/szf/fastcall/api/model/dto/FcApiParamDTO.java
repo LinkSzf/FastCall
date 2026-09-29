@@ -11,19 +11,19 @@ public class FcApiParamDTO {
 
     private Long id;
 
-    @NotNull(message = "apiID不能为空")
+    @NotNull(message = "API ID must not be null")
     private Long apiId;
 
-    @Size(min = 1, max = 50, message = "名称长度必须在1到50个字符之间")
-    @NotNull(message = "名称不能为空")
+    @Size(min = 1, max = 50, message = "Name length must be between 1 and 50 characters")
+    @NotNull(message = "Name must not be null")
     private String name;
 
-    @NotNull(message = "参数位置不能为空")
+    @NotNull(message = "Parameter position must not be null")
     private FcParamPos position;
 
-    @NotNull(message = "是否为Json对象不能为空")
+    @NotNull(message = "Json object flag must not be null")
     private Boolean jsonObj;
 
-    @Size(max = 500, message = "默认值最大不能超过500个字符")
+    @Size(max = 500, message = "Default value must not exceed 500 characters")
     private String defaultValue;
 }
