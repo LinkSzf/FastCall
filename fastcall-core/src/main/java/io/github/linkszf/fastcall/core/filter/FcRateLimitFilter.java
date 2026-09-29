@@ -1,0 +1,94 @@
+package io.github.linkszf.fastcall.core.filter;
+
+import cn.hutool.core.collection.CollectionUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
+import io.github.linkszf.fastcall.common.FcTimeSpan;
+import io.github.linkszf.fastcall.common.exception.FcRateLimitedException;
+import io.github.linkszf.fastcall.common.exception.FcUnexpectedException;
+import io.github.linkszf.fastcall.common.model.FcRateLimitPak;
+import io.github.linkszf.fastcall.common.model.FcSourcePak;
+import io.github.linkszf.fastcall.common.model.FcSystemPak;
+import io.github.linkszf.fastcall.common.utils.FcTimeUtil;
+import io.github.linkszf.fastcall.core.FastCallResponse;
+import io.github.linkszf.fastcall.core.filter.support.FcRateLimitSupport;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * Rate limit filter guarding each system against its configured request limit before the call.
+ * Throws {@code FcRateLimitedException} when the limit is reached; a no-op without limits.
+ */
+@RequiredArgsConstructor
+@Order(100)
+public class FcRateLimitFilter implements FcFilter {
+
+    private final FcRateLimitSupport support;
+
+    @Override
+    public void init() {
+        this.support.init();
+    }
+
+    @Override
+    public void doFilter(FcFilterContext context, FcFilterChain chain) {
+        Long systemId = getSystemId(context);
+        List<FcRateLimitPak> rateLimits = this.support.getLimits(systemId);
+        if (CollectionUtil.isEmpty(rateLimits)) {
+            chain.doFilter(context);
+            return;
+        }
+
+        checkWithLimits(rateLimits, context.getCurrentTime());
+
+        chain.doFilter(context);
+
+        updateLimits(context, systemId);
+    }
+
+    private void updateLimits(FcFilterContext context, Long systemId) {
+        Optional.of(context)
+                .map(FcFilterContext::getResponse)
+                .filter(FastCallResponse::isConnected)
+                .filter(r -> !r.isCached())
+                .map(FastCallResponse::getRequestTime)
+                .ifPresent(requestTime -> this.support.updateLimits(systemId, requestTime));
+    }
+
+    private void checkWithLimits(List<FcRateLimitPak> rateLimits, LocalDateTime now) {
+        for (FcRateLimitPak rateLimit : rateLimits) {
+            LocalDateTime time = rateLimit.getLastTime();
+            if (Objects.isNull(time)) {
+                continue;
+            }
+
+            FcTimeSpan span = rateLimit.getSpan();
+            boolean inSameTimeSpan = FcTimeUtil.isInSameTimeSpan(span, time, now);
+            if (!inSameTimeSpan) {
+                rateLimit.setLastTime(null);
+                continue;
+            }
+
+            long current = rateLimit.getCurrentCount();
+            long limit = rateLimit.getMaximum();
+            if (current >= limit) {
+                long systemId = rateLimit.getSystemId();
+                throw new FcRateLimitedException("System request rate limit exceeded, systemId: {}, span: {}, limit: {}, time: {}",
+                        systemId, span, limit, time);
+            }
+        }
+    }
+
+    private Long getSystemId(FcFilterContext context) {
+        return Optional.of(context)
+                .map(FcFilterContext::getSourcePak)
+                .map(FcSourcePak::getSystem)
+                .map(FcSystemPak::getId)
+                .orElseThrow(() -> new FcUnexpectedException("SystemId not found"));
+    }
+
+
+}

@@ -1,6 +1,6 @@
 # FastCall
 
-**[Chinese](README-cn.md) | English**
+**[Chinese](README-CN.md) | English**
 
 > A Spring Boot toolkit for calling third-party HTTP APIs: automatic authentication, transparent credential renewal, and Feign-style declarative clients.
 
@@ -80,9 +80,9 @@ Adding `fastcall-spring-boot-starter` is enough: everything is auto-configured, 
 
 ```xml
 <dependency>
-    <groupId>priv.szf</groupId>
+    <groupId>io.github.linkszf</groupId>
     <artifactId>fastcall-spring-boot-starter</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>{latest-version}</version>
 </dependency>
 ```
 

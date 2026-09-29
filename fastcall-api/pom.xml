@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>priv.szf</groupId>
+        <groupId>io.github.linkszf</groupId>
         <artifactId>fastcall</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -14,12 +14,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>priv.szf</groupId>
+            <groupId>io.github.linkszf</groupId>
             <artifactId>fastcall-common</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>priv.szf</groupId>
+            <groupId>io.github.linkszf</groupId>
             <artifactId>fastcall-data</artifactId>
         </dependency>
 

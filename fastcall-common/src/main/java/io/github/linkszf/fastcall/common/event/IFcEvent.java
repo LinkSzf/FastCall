@@ -1,0 +1,11 @@
+package io.github.linkszf.fastcall.common.event;
+
+import java.time.LocalDateTime;
+
+public interface IFcEvent {
+
+    String getEventId();
+
+    LocalDateTime getOccurredOn();
+
+}
