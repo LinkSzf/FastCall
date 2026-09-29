@@ -8,11 +8,45 @@
 
     <groupId>io.github.linkszf</groupId>
     <artifactId>fastcall</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <packaging>pom</packaging>
 
     <name>FastCall</name>
+    <description>A Spring Boot toolkit for calling third-party HTTP APIs: automatic authentication,
+        transparent credential renewal, and Feign-style declarative clients.
+    </description>
+    <url>https://github.com/LinkSzf/FastCall</url>
+
+    <!-- Required by Maven Central -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- Required by Maven Central -->
+    <developers>
+        <developer>
+            <id>LinkSzf</id>
+            <name>LinkSzf</name>
+            <url>https://github.com/LinkSzf</url>
+        </developer>
+    </developers>
+
+    <!-- Required by Maven Central -->
+    <scm>
+        <connection>scm:git:https://github.com/LinkSzf/FastCall.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/LinkSzf/FastCall.git</developerConnection>
+        <url>https://github.com/LinkSzf/FastCall</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/LinkSzf/FastCall/issues</url>
+    </issueManagement>
 
     <modules>
         <module>fastcall-common</module>
@@ -41,6 +75,24 @@
         <okhttp.version>4.11.0</okhttp.version>
         <slf4j.version>1.7.36</slf4j.version>
         <spring-boot.version>2.7.18</spring-boot.version>
+
+        <!-- Build plugin versions (release pipeline) -->
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
+
+        <!--
+          false = the bundle is uploaded and validated, then you click "Publish" on
+                  https://central.sonatype.com/publishing/deployments yourself.
+          true  = publish immediately once validation succeeds (fully automated).
+          Can be overridden from the command line: -Dcentral.autoPublish=true
+        -->
+        <central.autoPublish>false</central.autoPublish>
+        <!-- true = only build target/central-publishing/central-bundle.zip locally,
+             do not upload anything. Handy to check a release before tagging:
+             mvn -Prelease -Dcentral.skipPublishing=true -Dgpg.skip=true clean deploy -->
+        <central.skipPublishing>false</central.skipPublishing>
     </properties>
 
     <dependencyManagement>
@@ -219,8 +271,137 @@
                         </annotationProcessorPaths>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>${central-publishing-maven-plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <!--
+          Maven Central release pipeline.
+
+          Usage (CI does this for you, see .github/workflows/release.yml):
+
+              mvn -Prelease -DskipTests deploy
+
+          With -Dcentral.autoPublish=true the deployment is published automatically
+          as soon as Central has validated it; otherwise you publish it manually at
+          https://central.sonatype.com/publishing/deployments
+
+          Required environment:
+            * a GPG key whose public part is on a public keyserver, plus either
+              MAVEN_GPG_PASSPHRASE or an unprotected key;
+            * a Central Portal user token stored in ~/.m2/settings.xml under the
+              server id "central";
+            * a version that does not end with -SNAPSHOT.
+        -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- <artifactId>-<version>-sources.jar -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- <artifactId>-<version>-javadoc.jar -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <!-- Sources were written without full javadoc; never let
+                                 doclint warnings block a release. -->
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                            <failOnError>false</failOnError>
+                            <failOnWarnings>false</failOnWarnings>
+                            <!-- Do not probe external javadoc links over the network. -->
+                            <detectLinks>false</detectLinks>
+                            <detectJavaApiLink>false</detectJavaApiLink>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- <file>.asc for every deployed file -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Builds the bundle and uploads it to the Central Portal -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>${central.autoPublish}</autoPublish>
+                            <skipPublishing>${central.skipPublishing}</skipPublishing>
+                            <!-- fastcall-test is a Spring Boot demo application,
+                                 not a library: keep it out of the release. -->
+                            <excludeArtifacts>
+                                <excludeArtifact>fastcall-test</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

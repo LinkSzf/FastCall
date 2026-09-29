@@ -74,6 +74,11 @@ fabric.properties
 
 **/target/
 
+# Local release secrets (GPG private keys must never be committed)
+*.key
+*.gpg
+release.properties
+
 
 /.idea
 /.idea/**

@@ -8,11 +8,22 @@
     <parent>
         <groupId>io.github.linkszf</groupId>
         <artifactId>fastcall</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>fastcall-test</artifactId>
+    <name>FastCall :: Test</name>
     <packaging>jar</packaging>
+
+    <properties>
+        <!--
+          This module is a runnable Spring Boot demo application, not a library.
+          A repackaged (fat) jar must never be published to Maven Central, so it is
+          skipped by the deploy phase. It is additionally listed in
+          <excludeArtifacts> of central-publishing-maven-plugin in the root pom.
+        -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <dependencies>
         <dependency>

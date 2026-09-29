@@ -1,0 +1,100 @@
+name: Release to Maven Central
+
+# 触发方式：
+#   1) 推送形如 v1.0.0 的 tag —— tag 名必须与 pom.xml 的 <version> 完全一致；
+#   2) 手动运行本 workflow（Actions -> Release to Maven Central -> Run workflow）。
+# 凭据（4 个仓库 Secret）与 GPG 密钥的准备步骤见仓库根目录 RELEASE.md。
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      autoPublish:
+        description: 'Central 校验通过后自动发布（不勾选则需要去 central.sonatype.com 手动点 Publish）'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to Maven Central
+    runs-on: ubuntu-latest
+    # 作用域很关键：
+    #   - 若 4 个 secret 建在 Settings -> Environments -> <名字> 下，
+    #     必须在这里声明同名环境，否则 secrets.* 会被解析成空字符串
+    #     （表现为 gpg: no default secret key: No secret key）。
+    #   - 若建在 Settings -> Secrets and variables -> Actions（仓库级）下，
+    #     本行可有可无，仓库级 secret 照样可见。
+    environment: default
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check that all required secrets are visible
+        env:
+          CENTRAL_USERNAME_VALUE: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN_VALUE: ${{ secrets.CENTRAL_TOKEN }}
+          GPG_KEY_VALUE: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE_VALUE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          missing=""
+          [ -n "${CENTRAL_USERNAME_VALUE}" ]  || missing="${missing} CENTRAL_USERNAME"
+          [ -n "${CENTRAL_TOKEN_VALUE}" ]     || missing="${missing} CENTRAL_TOKEN"
+          [ -n "${GPG_KEY_VALUE}" ]           || missing="${missing} GPG_PRIVATE_KEY"
+          [ -n "${GPG_PASSPHRASE_VALUE}" ]    || missing="${missing} GPG_PASSPHRASE"
+          if [ -n "${missing}" ]; then
+            echo "::error::以下 secret 对本次 job 不可见:${missing}"
+            echo "常见原因：secret 建在 Environment 下但名字与 workflow 里的 environment 不一致（当前为 default），"
+            echo "或者建成了 Environment secret 而 workflow 没有声明 environment。"
+            exit 1
+          fi
+          echo "必需的 secret 均可见 ✓"
+
+      - name: Set up JDK, Maven credentials and GPG key
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # 产物字节码仍然是 Java 8（source/target=1.8），这里用 17 构建只是为了
+          # 让 GPG 签名和 javadoc 在 CI 上更稳定。
+          java-version: '17'
+          cache: maven
+          # 生成 ~/.m2/settings.xml：<server id="central"> 对应 pom 里的 publishingServerId
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          # 导入私钥，并让后续步骤通过 MAVEN_GPG_PASSPHRASE 读取口令
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Verify that the tag matches pom.xml
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          POM_VERSION="$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' pom.xml | head -n 1)"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "pom.xml <version> = ${POM_VERSION}"
+          echo "tag             = ${GITHUB_REF_NAME}"
+          if [ "${POM_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match <version>${POM_VERSION}</version> in pom.xml"
+            exit 1
+          fi
+
+      - name: Deploy bundle to the Central Portal
+        env:
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          AUTO_PUBLISH="${{ github.event.inputs.autoPublish || 'false' }}"
+          case "${AUTO_PUBLISH}" in
+            true|false) ;;
+            *) echo "::error::unexpected autoPublish value: ${AUTO_PUBLISH}"; exit 1 ;;
+          esac
+          echo "central.autoPublish=${AUTO_PUBLISH}"
+          mvn -B -Prelease -Dcentral.autoPublish="${AUTO_PUBLISH}" clean deploy
