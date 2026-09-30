@@ -1,8 +1,85 @@
 # FastCall
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.linkszf/fastcall-spring-boot-starter)](https://central.sonatype.com/artifact/io.github.linkszf/fastcall-spring-boot-starter)
+[![License](https://img.shields.io/github/license/LinkSzf/FastCall)](LICENSE)
+[![JDK](https://img.shields.io/badge/JDK-1.8%2B-blue)](#3-requirements)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.x-6DB33F)](#3-requirements)
+[![Gitee](https://img.shields.io/badge/Gitee-szf__newbee-C71D23?logo=gitee&logoColor=white)](https://gitee.com/szf_newbee/fastcall)
+
 **[Chinese](README-CN.md) | English**
 
 > A Spring Boot toolkit for calling third-party HTTP APIs: automatic authentication, transparent credential renewal, and Feign-style declarative clients.
+
+## 30-Second Example
+
+Add the starter:
+
+```xml
+<dependency>
+    <groupId>io.github.linkszf</groupId>
+    <artifactId>fastcall-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Describe a third-party system once — in `application.yml` (or in your database):
+
+```yaml
+fast-call:
+  easy-source:
+    - system:
+        code: basic-system
+        name: Basic auth system
+        host: https://api.example.com
+        auth-type: BASIC
+      auth:
+        content: |
+          {
+            "username": "admin",
+            "password": "123456"
+          }
+```
+
+Then call it. Authentication, credential renewal, retry and rate limiting are already handled:
+
+```java
+@Autowired
+private FastCall fastCall;
+
+// 1) call a preconfigured API by its name
+FastCallResponse<Object> response = fastCall.getClient("basic-system")
+        .newApiCall("queryUser")
+        .callIt();
+
+// 2) or build the request yourself
+FastCallResponse<User> userResponse = fastCall.getClient("basic-system")
+        .newCall(User.class)
+        .uri("/api/users")
+        .method(FcRequestMethod.POST)
+        .header("X-Tag", "demo")
+        .body(payload, FcMediaType.APPLICATION_JSON)
+        .prepared()
+        .callIt();
+```
+
+```java
+// 3) or declare the interface once (Feign style) and inject it like a local bean
+@SpringBootApplication
+@EnableFastCallClients(basePackageClasses = Application.class)
+public class Application { /* ... */ }
+
+@FcClient(system = "basic-system")
+public interface UserClient {
+    @FcMethod(uri = "/api/users/{id}", method = FcRequestMethod.GET)
+    User query(@FcPath("id") String id);
+}
+```
+
+Full quick start: [chapter 4](#4-quick-start) · all six authentication schemes: [chapter 5](#5-authentication-configuration)
+
+> **Keeping the configuration in a database instead of `easy-source`?** Create the tables with
+> [`sql/fastcall-schema-mysql.sql`](sql/fastcall-schema-mysql.sql), and maintain the records through the
+> small management API shipped by the `fastcall-api` module — see [4.5](#45-database-schema-and-management-api).
 
 ## Table of Contents
 
@@ -62,6 +139,21 @@ Adding `fastcall-spring-boot-starter` is enough: everything is auto-configured, 
 - Thread pool and async support;
 - Every key component is a replaceable bean (auth handlers, credential providers, source nodes, filters, event listeners, JSON codec) that can be overridden via `@ConditionalOnMissingBean`.
 
+### How it compares
+
+| | FastCall | OpenFeign | RestTemplate / WebClient | Plain OkHttp |
+| --- | --- | --- | --- | --- |
+| Declarative interface calls | ✅ | ✅ | ❌ | ❌ |
+| Authentication built in (6 schemes) | ✅ | ⚠️ write a `RequestInterceptor` | ❌ | ❌ |
+| Credential renewal + request replay on rejection | ✅ | ❌ implement it yourself | ❌ | ❌ |
+| APIs as configuration (register in a database or yml, call by name) | ✅ | ❌ | ❌ | ❌ |
+| Local JWT signing (HS\*, RSA, EC, EdDSA) | ✅ | ❌ | ❌ | ❌ |
+| Rate limiting / retry / request events | ✅ | ⚠️ retry only (`Retryer`) | ❌ | ❌ |
+| Extra runtime footprint | one starter on top of OkHttp | Spring Cloud stack | Spring Web | OkHttp only |
+
+`❌` means the library does not ship that capability — not that it cannot be built on top of it.
+The comparison covers only the concerns this project addresses; see each project's own documentation for its full feature set.
+
 ## 3. Requirements
 
 | Dependency | Version | Notes |
@@ -77,6 +169,8 @@ Adding `fastcall-spring-boot-starter` is enough: everything is auto-configured, 
 ## 4. Quick Start
 
 ### 4.1 Add the dependency
+
+Maven:
 
 ```xml
 <dependency>
@@ -258,6 +352,40 @@ String result = demoClient.echo("1001", "hello", "req-1");
 > - Each method parameter must carry exactly one parameter annotation; at most one `@FcBody` is allowed and it cannot be combined with `@FcPart` (with form-urlencoded the argument must be a `Map`);
 > - `@FcPart` requires a non-blank value; `@FcQuery` / `@FcHeader` need an explicit name for scalar arguments, while `Map` or custom bean arguments may omit it and are expanded automatically;
 > - When `@FcPath` omits its value the parameter name is used, which requires parameter names at compile time (the compiler `-parameters` option).
+
+### 4.5 Database schema and management API
+
+When the configuration is kept in a database instead of `easy-source`, create the tables first —
+[`sql/fastcall-schema-mysql.sql`](sql/fastcall-schema-mysql.sql) holds the statements for MySQL:
+
+```bash
+mysql -h127.0.0.1 -P3306 -uroot -p your_database < sql/fastcall-schema-mysql.sql
+```
+
+It creates six tables: `fastcall_system` (system configuration), `fastcall_api` (predefined apis of a
+system), `fastcall_api_param` (api parameters), `fastcall_auth` (credential and how to renew it),
+`fastcall_rate_limit` (rate limit windows) and `fastcall_retry` (retry policy).
+
+You do not have to maintain those records with hand-written SQL: the `fastcall-api` module ships a small
+management API (`FcController`) under the base path `/fc/system`.
+
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/fc/system/all` | list all systems |
+| GET | `/fc/system/{systemId}` | get one system together with its credential |
+| POST | `/fc/system/save` | create or update a system (credential included) |
+| DELETE | `/fc/system/{systemId}` | delete a system |
+| GET | `/fc/system/{systemId}/api/all` | list the apis of a system |
+| POST | `/fc/system/{systemId}/api/save` | create or update the apis of a system |
+| GET | `/fc/system/api/{apiId}/param/all` | list the parameters of an api |
+| POST | `/fc/system/api/{apiId}/param/save` | create or update the parameters of an api |
+| GET | `/fc/system/{systemId}/retry` | get the retry policy of a system |
+| POST | `/fc/system/{systemId}/retry/save` | create or update the retry policy of a system |
+| DELETE | `/fc/system/{systemId}/retry` | remove the retry policy of a system |
+
+Those endpoints read and write configuration and add no authentication of their own, so expose them only
+inside your own network. Rate limit records are not covered by the management API yet: maintain
+`fastcall_rate_limit` with SQL or through your own code.
 
 ## 5. Authentication Configuration
 

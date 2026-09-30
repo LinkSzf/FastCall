@@ -1,8 +1,85 @@
 # FastCall
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.linkszf/fastcall-spring-boot-starter)](https://central.sonatype.com/artifact/io.github.linkszf/fastcall-spring-boot-starter)
+[![License](https://img.shields.io/github/license/LinkSzf/FastCall)](LICENSE)
+[![JDK](https://img.shields.io/badge/JDK-1.8%2B-blue)](#三环境依赖)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.x-6DB33F)](#三环境依赖)
+[![Gitee](https://img.shields.io/badge/Gitee-szf__newbee-C71D23?logo=gitee&logoColor=white)](https://gitee.com/szf_newbee/fastcall)
+
 **中文 | [English](README.md)**
 
 > 面向 Spring Boot 的第三方 HTTP 接口调用工具包：认证自动注入、凭证失效自动重建、Feign 风格声明式客户端。
+
+## 30 秒示例
+
+引入 starter：
+
+```xml
+<dependency>
+    <groupId>io.github.linkszf</groupId>
+    <artifactId>fastcall-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+把第三方系统描述一次——写在 `application.yml` (或数据库里)：
+
+```yaml
+fast-call:
+  easy-source:
+    - system:
+        code: basic-system
+        name: Basic 认证系统
+        host: https://api.example.com
+        auth-type: BASIC
+      auth:
+        content: |
+          {
+            "username": "admin",
+            "password": "123456"
+          }
+```
+
+然后直接调用，认证、凭证续期、重试与限流都已经由框架处理：
+
+```java
+@Autowired
+private FastCall fastCall;
+
+// 1）按 api 名调用已配置好的接口
+FastCallResponse<Object> response = fastCall.getClient("basic-system")
+        .newApiCall("queryUser")
+        .callIt();
+
+// 2) 或者自由定义请求
+FastCallResponse<User> userResponse = fastCall.getClient("basic-system")
+        .newCall(User.class)
+        .uri("/api/users")
+        .method(FcRequestMethod.POST)
+        .header("X-Tag", "demo")
+        .body(payload, FcMediaType.APPLICATION_JSON)
+        .prepared()
+        .callIt();
+```
+
+```java
+// 3）或者只声明一次接口（Feign 风格），像本地 Bean 一样注入使用
+@SpringBootApplication
+@EnableFastCallClients(basePackageClasses = Application.class)
+public class Application { /* ... */ }
+
+@FcClient(system = "basic-system")
+public interface UserClient {
+    @FcMethod(uri = "/api/users/{id}", method = FcRequestMethod.GET)
+    User query(@FcPath("id") String id);
+}
+```
+
+完整快速使用见 [第四章](#四快速使用)，六种认证方案的配置见第五章。
+
+> **要把配置放进数据库（而不是 `easy-source`）？** 用
+> [`sql/fastcall-schema-mysql.sql`](sql/fastcall-schema-mysql.sql) 建表，再通过 `fastcall-api` 模块自带的
+> 简单运维接口维护数据 —— 见 [4.5](#45-数据库建表脚本与运维接口)。
 
 ## 目录
 
@@ -62,6 +139,21 @@ FastCallResponse<Object> response = fastCall.getClient("order-system")
 - 线程池与异步支持；
 - 关键组件均为可替换 Bean（认证处理器、凭证提供者、配置来源、过滤器、事件监听器、JSON 编解码），通过 `@ConditionalOnMissingBean` 覆盖。
 
+### 横向对比
+
+| 能力 | FastCall | OpenFeign | RestTemplate / WebClient | 裸 OkHttp |
+| --- | --- | --- | --- | --- |
+| 声明式接口调用 | ✅ | ✅ | ❌ | ❌ |
+| 内置认证（6 种方案） | ✅ | ⚠️ 需自己写 `RequestInterceptor` | ❌ | ❌ |
+| 凭证失效自动重建 + 请求重放 | ✅ | ❌ 需自行实现 | ❌ | ❌ |
+| 接口即配置（数据库/yml 注册，按名调用） | ✅ | ❌ | ❌ | ❌ |
+| 本地 JWT 签名（HS\*、RSA、EC、EdDSA） | ✅ | ❌ | ❌ | ❌ |
+| 限流 / 重试 / 请求事件 | ✅ | ⚠️ 仅重试（`Retryer`） | ❌ | ❌ |
+| 额外依赖体积 | 一个 starter（基于 OkHttp） | 需引入 Spring Cloud 体系 | Spring Web | 仅 OkHttp |
+
+`❌` 表示该库本身不提供此能力（并非无法在其之上自行实现）。
+此处只对比与本项目重叠的关注点，各库的完整能力请以其官方文档为准。
+
 ## 三、环境依赖
 
 | 依赖 | 版本 | 说明 |
@@ -77,6 +169,8 @@ FastCallResponse<Object> response = fastCall.getClient("order-system")
 ## 四、快速使用
 
 ### 4.1 引入依赖
+
+Maven：
 
 ```xml
 <dependency>
@@ -258,6 +352,38 @@ String result = demoClient.echo("1001", "hello", "req-1");
 > - 每个方法参数必须且只能标注一个参数注解；`@FcBody` 至多一个，且不能与 `@FcPart` 同时使用（`mediaType` 为 form-urlencoded 时实参必须是 `Map`）；
 > - `@FcPart` 的 value 必填；`@FcQuery` / `@FcHeader` 用于标量参数时必须显式写名称，用于 `Map` 或自定义 Bean 时可省略并自动展开；
 > - `@FcPath` 省略 value 时使用参数名，此时需要编译期保留参数名（编译器 `-parameters` 选项）。
+
+### 4.5 数据库建表脚本与运维接口
+
+当配置放在数据库而不是 `easy-source` 里时，先把表建好 ——
+[`sql/fastcall-schema-mysql.sql`](sql/fastcall-schema-mysql.sql) 就是 MySQL 的建表语句：
+
+```bash
+mysql -h127.0.0.1 -P3306 -uroot -p your_database < sql/fastcall-schema-mysql.sql
+```
+
+脚本创建六张表：`fastcall_system`（系统配置）、`fastcall_api`（系统预置接口配置）、
+`fastcall_api_param`（接口参数）、`fastcall_auth`（凭证信息与续期方式）、
+`fastcall_rate_limit`（限流窗口）、`fastcall_retry`（重试策略）。
+
+这些数据不必手写 SQL 维护：`fastcall-api` 模块自带一套简单的运维接口（`FcController`），基路径为 `/fc/system`。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/fc/system/all` | 查询全部系统 |
+| GET | `/fc/system/{systemId}` | 查询单个系统（含凭证） |
+| POST | `/fc/system/save` | 新增或修改系统（含凭证） |
+| DELETE | `/fc/system/{systemId}` | 删除系统 |
+| GET | `/fc/system/{systemId}/api/all` | 查询系统下的接口列表 |
+| POST | `/fc/system/{systemId}/api/save` | 新增或修改系统下的接口 |
+| GET | `/fc/system/api/{apiId}/param/all` | 查询接口的参数列表 |
+| POST | `/fc/system/api/{apiId}/param/save` | 新增或修改接口的参数 |
+| GET | `/fc/system/{systemId}/retry` | 查询系统的重试配置 |
+| POST | `/fc/system/{systemId}/retry/save` | 新增或修改系统的重试配置 |
+| DELETE | `/fc/system/{systemId}/retry` | 删除系统的重试配置 |
+
+这些接口直接读写配置且自身不带认证，请只在内网暴露。限流数据目前没有对应的运维接口，
+`fastcall_rate_limit` 需要自行用 SQL 或代码维护。
 
 ## 五、认证方式配置详解
 
